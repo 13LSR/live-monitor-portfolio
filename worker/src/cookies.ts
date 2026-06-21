@@ -78,17 +78,17 @@ export async function verifySessionCookie(
 export function buildSetCookie(value: string, request: Request) {
   const url = new URL(request.url);
   const isHttps = url.protocol === "https:";
-  const securePart = isHttps ? "; Secure" : "";
+  const sameSitePart = isHttps ? "; SameSite=None; Secure" : "; SameSite=Lax";
 
-  return `admin_session=${value}; Path=/; HttpOnly; SameSite=Lax; Max-Age=604800${securePart}`;
+  return `admin_session=${value}; Path=/; HttpOnly${sameSitePart}; Max-Age=604800`;
 }
 
 export function buildClearCookie(request: Request) {
   const url = new URL(request.url);
   const isHttps = url.protocol === "https:";
-  const securePart = isHttps ? "; Secure" : "";
+  const sameSitePart = isHttps ? "; SameSite=None; Secure" : "; SameSite=Lax";
 
-  return `admin_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${securePart}`;
+  return `admin_session=; Path=/; HttpOnly${sameSitePart}; Max-Age=0`;
 }
 
 export function readCookie(request: Request, name: string) {
