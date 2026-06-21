@@ -49,7 +49,11 @@ export function PortfolioGridClient() {
         console.error("无法获取监控数据", error);
 
         if (!ignore) {
-          setSites(mergeSitesWithStatuses(resolvedSites, {}));
+          setSites(
+            mergeSitesWithStatuses(resolvedSites, {}, {
+              monitorDataLoaded: true,
+            })
+          );
           setIsLoading(false);
         }
       }

@@ -2,7 +2,7 @@ import { DEFAULT_MONITOR_API_URL } from "@/app/_lib/constants";
 import type { MonitorMap, UptimeFlareResponse } from "@/shared/types";
 
 const monitorApiUrl =
-  process.env.NEXT_PUBLIC_UPTIMEFLARE_API_URL ?? DEFAULT_MONITOR_API_URL;
+  process.env.NEXT_PUBLIC_UPTIMEFLARE_API_URL || DEFAULT_MONITOR_API_URL;
 
 export async function fetchMonitorMap(): Promise<MonitorMap> {
   const response = await fetch(monitorApiUrl, {
