@@ -53,19 +53,19 @@ export function AdminSiteForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,rgba(15,23,42,0.96)_0%,rgba(2,6,23,0.96)_100%)] p-6 shadow-xl shadow-slate-950/20"
+      className="space-y-6 border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.16)]"
     >
-      <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-white">
+      <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] pb-4">
+        <h2 className="text-lg font-semibold text-[var(--ink)]">
           {mode === "create" ? "新增站点" : "编辑站点"}
         </h2>
         {mode === "edit" && onCancel ? (
           <button
             type="button"
             onClick={onCancel}
-            className="rounded-full border border-white/10 px-3 py-1 text-xs uppercase tracking-[0.2em] text-slate-300 transition hover:border-white/20 hover:text-white"
+            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
           >
-            Cancel
+            取消
           </button>
         ) : null}
       </div>
@@ -235,7 +235,7 @@ export function AdminSiteForm({
           />
         </ToggleCard>
       </div>
-      <div className="rounded-2xl border border-cyan-400/12 bg-cyan-400/6 p-4 text-sm leading-6 text-slate-300">
+      <div className="border border-[var(--line)] bg-[#e7eadf] p-4 text-sm leading-6 text-[var(--muted)]">
         推荐填写规则：
         <br />
         - 普通在线网站：分类选 `web`
@@ -245,16 +245,16 @@ export function AdminSiteForm({
         - UptimeFlare 监控：`Monitor Key` 填该网站在 monitors 里的键名
       </div>
       {isEditModeWithoutSelection ? (
-        <div className="rounded-2xl border border-amber-400/15 bg-amber-400/8 p-4 text-sm leading-6 text-amber-100">
-          先在上方站点列表里点击 `Edit`，再修改并提交当前站点。
+        <div className="border border-[var(--line)] bg-[#f7d879] p-4 text-sm leading-6 text-[var(--ink)]">
+          先在上方站点列表里点击“编辑”，再修改并提交当前站点。
         </div>
       ) : null}
       <button
         type="submit"
         disabled={pending || isEditModeWithoutSelection}
-        className="rounded-full border border-cyan-400/35 bg-cyan-400/12 px-5 py-2.5 text-xs font-medium uppercase tracking-[0.22em] text-cyan-100 transition hover:border-cyan-300/60 hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-60"
+        className="border border-[var(--line)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-[#fffaf0] transition hover:bg-[var(--green)] disabled:cursor-not-allowed disabled:opacity-60"
       >
-        {pending ? "Saving..." : mode === "create" ? "Create Site" : "Update Site"}
+        {pending ? "保存中..." : mode === "create" ? "创建站点" : "更新站点"}
       </button>
     </form>
   );
@@ -270,9 +270,13 @@ function Field({
   children: React.ReactNode;
 }) {
   return (
-    <label className="block min-w-0 space-y-2 text-sm text-slate-300">
-      <span className="block font-medium text-slate-100">{label}</span>
-      {hint ? <span className="block text-xs leading-5 text-slate-500">{hint}</span> : null}
+    <label className="block min-w-0 space-y-2 text-sm text-[var(--ink)]">
+      <span className="block font-semibold text-[var(--ink)]">{label}</span>
+      {hint ? (
+        <span className="block text-xs leading-5 text-[var(--muted)]">
+          {hint}
+        </span>
+      ) : null}
       {children}
     </label>
   );
@@ -288,11 +292,11 @@ function ToggleCard({
   children: React.ReactNode;
 }) {
   return (
-    <label className="flex items-start gap-3 rounded-2xl border border-white/10 bg-slate-900/70 p-4 text-sm text-slate-300">
+    <label className="flex items-start gap-3 border border-[var(--line)] bg-[#fffdf7] p-4 text-sm text-[var(--ink)]">
       <span className="pt-1">{children}</span>
       <span className="block">
-        <span className="block font-medium text-slate-100">{title}</span>
-        <span className="mt-1 block text-xs leading-5 text-slate-500">
+        <span className="block font-semibold text-[var(--ink)]">{title}</span>
+        <span className="mt-1 block text-xs leading-5 text-[var(--muted)]">
           {description}
         </span>
       </span>

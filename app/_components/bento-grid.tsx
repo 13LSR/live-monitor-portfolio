@@ -6,16 +6,23 @@ interface BentoGridProps {
 }
 
 export function BentoGrid({ sites }: BentoGridProps) {
+  const [featuredSite, ...otherSites] = sites;
+
   return (
-    <section className="space-y-6">
-      <div className="grid gap-6 md:grid-cols-2 2xl:grid-cols-3">
-        {sites.map((site) => (
-          <LiveProjectCard key={site.id} site={site} />
-        ))}
-      </div>
+    <section className="space-y-5">
+      {featuredSite ? (
+        <LiveProjectCard site={featuredSite} featured />
+      ) : null}
+      {otherSites.length > 0 ? (
+        <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
+          {otherSites.map((site) => (
+            <LiveProjectCard key={site.id} site={site} />
+          ))}
+        </div>
+      ) : null}
       {sites.length === 0 ? (
-        <article className="rounded-[28px] border border-dashed border-white/10 bg-slate-950/50 p-10 text-center text-slate-400 shadow-xl shadow-slate-950/20">
-          暂时还没有公开展示的网站。
+        <article className="border border-dashed border-[var(--line)] bg-[var(--paper-raised)] p-10 text-center text-[var(--muted)] shadow-[8px_8px_0_rgba(31,37,35,0.18)]">
+          暂时还没有公开展示的网站
         </article>
       ) : null}
     </section>

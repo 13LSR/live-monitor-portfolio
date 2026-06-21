@@ -37,14 +37,14 @@ export function AdminLoginForm({
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="space-y-4 rounded-[28px] border border-white/10 bg-slate-950/80 p-6 shadow-xl shadow-slate-950/20"
-    >
-      <div>
+    <div className="flex min-h-[70vh] items-center justify-center">
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-sm border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.2)]"
+      >
         <label
           htmlFor="admin-password"
-          className="mb-2 block text-sm font-medium text-slate-200"
+          className="block text-sm font-semibold text-[var(--ink)]"
         >
           管理员密码
         </label>
@@ -53,19 +53,21 @@ export function AdminLoginForm({
           type="password"
           value={password}
           onChange={(event) => setPassword(event.target.value)}
-          className="w-full rounded-2xl border border-white/10 bg-slate-900 px-4 py-3 text-sm text-slate-100 outline-none transition focus:border-cyan-400/60"
+          className="admin-input mt-3"
           placeholder="请输入密码"
         />
-      </div>
-      <button
-        type="submit"
-        disabled={submitting}
-        className="rounded-full border border-cyan-400/35 bg-cyan-400/10 px-4 py-2 text-xs font-medium uppercase tracking-[0.22em] text-cyan-100 transition hover:border-cyan-300/60 hover:bg-cyan-300/18 disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {submitting ? "校验中..." : "进入管理"}
-      </button>
-      <p className="text-sm leading-6 text-slate-400">{localMessage}</p>
-    </form>
+        <button
+          type="submit"
+          disabled={submitting}
+          className="mt-4 w-full border border-[var(--line)] bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-[#fffaf0] transition hover:bg-[var(--green)] disabled:cursor-not-allowed disabled:opacity-60"
+        >
+          {submitting ? "校验中..." : "进入管理"}
+        </button>
+        <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
+          {localMessage}
+        </p>
+      </form>
+    </div>
   );
 }
 

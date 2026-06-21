@@ -73,7 +73,9 @@ export function PortfolioGridClient() {
   return (
     <>
       {isLoading ? (
-        <p className="mb-8 text-sm text-slate-400">正在加载网站...</p>
+        <p className="mb-8 font-mono text-sm text-[var(--muted)]">
+          正在加载网站...
+        </p>
       ) : null}
       <BentoGrid sites={sites} />
     </>

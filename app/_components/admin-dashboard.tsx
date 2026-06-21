@@ -149,17 +149,22 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-wrap items-center justify-between gap-4 rounded-[28px] border border-white/10 bg-slate-950/80 p-6 shadow-xl shadow-slate-950/20">
+      <section className="flex flex-wrap items-center justify-between gap-4 border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.18)]">
         <div>
-          <h1 className="text-lg font-semibold text-white">
+          <p className="font-mono text-xs uppercase text-[var(--muted)]">
+            Admin workspace
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold text-[var(--ink)]">
             小茄的网站集合管理
           </h1>
-          <p className="mt-2 text-sm leading-6 text-slate-400">{message}</p>
+          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+            {message}
+          </p>
         </div>
         <button
           type="button"
           onClick={() => void handleLogout()}
-          className="rounded-full border border-white/10 px-4 py-2 text-xs uppercase tracking-[0.2em] text-slate-200 transition hover:border-white/20 hover:text-white"
+          className="border border-[var(--line)] bg-[#fffaf0] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
         >
           退出登录
         </button>

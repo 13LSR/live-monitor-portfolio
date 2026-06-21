@@ -1,10 +1,19 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --font-sans-stack: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --font-mono-stack: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  --background: #f4f0e8;
+  --foreground: #1f2523;
+  --ink: #1f2523;
+  --paper: #f4f0e8;
+  --paper-raised: #fffaf0;
+  --muted: #6c716d;
+  --line: #1f2523;
+  --green: #167761;
+  --red: #c24a3a;
+  --amber: #d89a2b;
+  --blue: #376f95;
+  --font-sans-stack: "Aptos Display", "Trebuchet MS", "Gill Sans", sans-serif;
+  --font-mono-stack: "Cascadia Code", "Lucida Console", monospace;
 }
 
 @theme inline {
@@ -12,13 +21,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans-stack);
   --font-mono: var(--font-mono-stack);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
 }
 
 body {
@@ -41,11 +43,11 @@ select {
 .admin-input {
   width: 100%;
   min-width: 0;
-  border-radius: 18px;
-  border: 1px solid rgba(148, 163, 184, 0.16);
-  background: rgba(15, 23, 42, 0.9);
-  color: #e2e8f0;
-  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(31, 37, 35, 0.24);
+  background: #fffaf0;
+  color: #1f2523;
+  padding: 0.8rem 0.9rem;
   outline: none;
   transition:
     border-color 160ms ease,
@@ -54,16 +56,24 @@ select {
 }
 
 .admin-input::placeholder {
-  color: #64748b;
+  color: #8b8d87;
 }
 
 .admin-input:hover {
-  border-color: rgba(56, 189, 248, 0.24);
-  background: rgba(15, 23, 42, 0.96);
+  border-color: rgba(31, 37, 35, 0.42);
+  background: #fffdf7;
 }
 
 .admin-input:focus {
-  border-color: rgba(34, 211, 238, 0.65);
-  box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.12);
-  background: rgba(15, 23, 42, 1);
+  border-color: #167761;
+  box-shadow: 0 0 0 3px rgba(22, 119, 97, 0.14);
+  background: #fffdf7;
+}
+
+.portfolio-surface {
+  background:
+    linear-gradient(rgba(31, 37, 35, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(31, 37, 35, 0.055) 1px, transparent 1px),
+    var(--paper);
+  background-size: 28px 28px;
 }

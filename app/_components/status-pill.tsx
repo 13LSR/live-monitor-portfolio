@@ -23,26 +23,26 @@ export function StatusPill({
     hasMonitorKey && monitorDataLoaded && !monitorMatched;
 
   return (
-    <div className="absolute left-4 top-4 z-20 flex items-center gap-2 rounded-full border border-white/10 bg-slate-950/75 px-3 py-1.5 text-sm text-slate-100 shadow-lg backdrop-blur-md">
+    <div className="flex items-center gap-2 border border-[var(--line)] bg-[var(--paper-raised)] px-2.5 py-1.5 text-xs text-[var(--ink)] shadow-[3px_3px_0_rgba(31,37,35,0.18)]">
       <span className="relative flex h-3 w-3">
         {isOnline ? (
           <>
-            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex h-3 w-3 rounded-full bg-emerald-400" />
+            <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-[var(--green)] opacity-60" />
+            <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--green)]" />
           </>
         ) : isOnline === false ? (
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-rose-500" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--red)]" />
         ) : !hasMonitorKey ? (
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-slate-500" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--muted)]" />
         ) : isMissingMonitorData ? (
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-amber-400" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--amber)]" />
         ) : (
-          <span className="relative inline-flex h-3 w-3 rounded-full bg-slate-500" />
+          <span className="relative inline-flex h-3 w-3 rounded-full bg-[var(--muted)]" />
         )}
       </span>
       <span>{label}</span>
       {isOnline && latency !== null ? (
-        <span className="border-l border-white/15 pl-2 text-xs text-slate-300">
+        <span className="border-l border-[var(--line)] pl-2 font-mono text-xs text-[var(--muted)]">
           {latency}ms
         </span>
       ) : null}
