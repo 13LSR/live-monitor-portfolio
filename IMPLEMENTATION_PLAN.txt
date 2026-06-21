@@ -1,0 +1,379 @@
+LIVE MONITOR PORTFOLIO - IMPLEMENTATION PLAN
+Last updated: 2026-06-20
+
+1. TARGET ARCHITECTURE
+
+Frontend:
+- Next.js 16 App Router project
+- Static export build
+- Deploy to Cloudflare Pages
+- Public site + admin UI only
+
+Backend:
+- Cloudflare Worker in /worker
+- Password-based admin auth
+- CRUD APIs for site management
+- Optional status aggregation API in phase 2
+
+Data:
+- Cloudflare D1 stores site metadata and display settings
+- UptimeFlare remains an external monitoring service
+
+Deployment:
+- GitHub Actions deploy Pages
+- GitHub Actions deploy Worker
+- Push to GitHub triggers automated deployment
+
+
+2. REPOSITORY LAYOUT
+
+/
+|- app/
+|  |- page.tsx
+|  |- admin/page.tsx
+|  |- _components/
+|  |  |- live-project-card.tsx
+|  |  |- bento-grid.tsx
+|  |  |- status-pill.tsx
+|  |  |- admin-login-form.tsx
+|  |  |- admin-site-form.tsx
+|  |  |- admin-site-table.tsx
+|  |- _lib/
+|  |  |- api-client.ts
+|  |  |- uptimeflare.ts
+|  |  |- site-mappers.ts
+|  |  |- constants.ts
+|- shared/
+|  |- types.ts
+|  |- contracts.ts
+|- worker/
+|  |- src/
+|  |  |- index.ts
+|  |  |- auth.ts
+|  |  |- db.ts
+|  |  |- cookies.ts
+|  |  |- routes/
+|  |  |  |- auth.ts
+|  |  |  |- sites.ts
+|  |- migrations/
+|  |  |- 0001_init.sql
+|  |- package.json
+|  |- tsconfig.json
+|  |- wrangler.toml
+|- .github/workflows/
+|  |- deploy-pages.yml
+|  |- deploy-worker.yml
+|- IMPLEMENTATION_PLAN.txt
+
+
+3. FRONTEND PAGE SPLIT
+
+Public page (/):
+- Fetch site list from Worker GET /sites
+- Fetch monitor data directly from UptimeFlare /api/data
+- Render Bento layout
+- Show live iframe cards for deployed sites
+- Show only website portfolio cards and related empty-state messaging
+
+Admin page (/admin):
+- Unauthenticated state: password form only
+- Authenticated state: site table + add/edit form + delete action
+- Session check on load via Worker GET /auth/me
+
+Important frontend rules:
+- Keep app/page.tsx small; compose from _components
+- Use "use client" only where iframe interaction, forms, state, or effects are needed
+- Do not place secrets in Pages env vars
+- Default public cards to pointer-events: none
+- Allow opening target site in a new tab
+
+
+4. DATA MODEL (D1)
+
+Table: sites
+
+Columns:
+- id INTEGER PRIMARY KEY AUTOINCREMENT
+- name TEXT NOT NULL
+- slug TEXT NOT NULL UNIQUE
+- url TEXT NOT NULL
+- monitor_key TEXT
+- category TEXT NOT NULL DEFAULT 'web'
+- description TEXT DEFAULT ''
+- cover_mode TEXT NOT NULL DEFAULT 'iframe'
+- sort_order INTEGER NOT NULL DEFAULT 0
+- is_visible INTEGER NOT NULL DEFAULT 1
+- allow_interaction INTEGER NOT NULL DEFAULT 0
+- created_at TEXT NOT NULL
+- updated_at TEXT NOT NULL
+
+Recommended meanings:
+- slug: stable identifier for routing or UI keys
+- monitor_key: UptimeFlare monitors object key, for example wyy.331106.xyz
+- category: web, landing, tool, other
+- cover_mode: iframe, text, gallery
+- allow_interaction: whether UI can enable pointer interaction mode
+
+
+5. D1 MIGRATION CONTENT
+
+CREATE TABLE sites (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  url TEXT NOT NULL,
+  monitor_key TEXT,
+  category TEXT NOT NULL DEFAULT 'web',
+  description TEXT DEFAULT '',
+  cover_mode TEXT NOT NULL DEFAULT 'iframe',
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_visible INTEGER NOT NULL DEFAULT 1,
+  allow_interaction INTEGER NOT NULL DEFAULT 0,
+  created_at TEXT NOT NULL,
+  updated_at TEXT NOT NULL
+);
+
+CREATE INDEX idx_sites_sort_order ON sites(sort_order);
+CREATE INDEX idx_sites_visible ON sites(is_visible);
+CREATE INDEX idx_sites_category ON sites(category);
+
+
+6. WORKER API CONTRACT
+
+Authentication:
+
+POST /auth/login
+Request:
+{
+  "password": "string"
+}
+Response 200:
+{
+  "ok": true
+}
+Behavior:
+- Validate password against Worker secret ADMIN_PASSWORD
+- Set signed HttpOnly session cookie
+
+POST /auth/logout
+Response 200:
+{
+  "ok": true
+}
+Behavior:
+- Clear session cookie
+
+GET /auth/me
+Response 200:
+{
+  "authenticated": true
+}
+or
+{
+  "authenticated": false
+}
+
+Sites:
+
+GET /sites
+Response 200:
+{
+  "sites": [
+    {
+      "id": 1,
+      "name": "Example Site",
+      "slug": "example-site",
+      "url": "https://example.com",
+      "monitorKey": "example.com",
+      "category": "web",
+      "description": "Short text",
+      "coverMode": "iframe",
+      "sortOrder": 10,
+      "isVisible": true,
+      "allowInteraction": false,
+      "createdAt": "2026-06-20T10:00:00.000Z",
+      "updatedAt": "2026-06-20T10:00:00.000Z"
+    }
+  ]
+}
+Behavior:
+- Public read is acceptable for this project
+- Return only visible sites unless admin mode is needed
+
+POST /sites
+Auth required
+Request:
+{
+  "name": "string",
+  "slug": "string",
+  "url": "https://...",
+  "monitorKey": "string",
+  "category": "web",
+  "description": "string",
+  "coverMode": "iframe",
+  "sortOrder": 0,
+  "isVisible": true,
+  "allowInteraction": false
+}
+
+PUT /sites/:id
+Auth required
+Request body same shape as POST /sites
+
+DELETE /sites/:id
+Auth required
+Response:
+{
+  "ok": true
+}
+
+Phase 2 optional endpoint:
+
+GET /status
+Response:
+{
+  "monitors": {
+    "example.com": {
+      "up": true,
+      "latency": 122
+    }
+  }
+}
+Behavior:
+- Worker fetches UptimeFlare and returns normalized data
+- Add short cache if request volume becomes a problem
+
+
+7. AUTH DESIGN
+
+Chosen approach:
+- Single admin password only
+- Password stored in Worker secret: ADMIN_PASSWORD
+- Cookie signing secret stored in Worker secret: SESSION_SECRET
+
+Session flow:
+1. Admin submits password from /admin
+2. Worker validates password
+3. Worker returns Set-Cookie with HttpOnly, Secure, SameSite=Lax
+4. Frontend calls GET /auth/me to confirm logged-in state
+5. Admin CRUD requests include cookie automatically
+
+Do not do:
+- Do not validate password in frontend code
+- Do not store raw password in localStorage
+- Do not expose ADMIN_PASSWORD as NEXT_PUBLIC_ env var
+
+
+8. ENVIRONMENT VARIABLES
+
+Pages public env vars:
+- NEXT_PUBLIC_API_BASE_URL
+- NEXT_PUBLIC_UPTIMEFLARE_API_URL
+
+Worker secrets:
+- ADMIN_PASSWORD
+- SESSION_SECRET
+
+Worker config vars if needed:
+- CORS_ORIGIN
+- UPTIMEFLARE_API_URL
+
+
+9. DEPLOYMENT DESIGN
+
+Pages deployment:
+- Build command: npm run build
+- Output directory: out
+- next.config.ts must use output: 'export'
+- Deploy via GitHub Actions to Cloudflare Pages
+
+Worker deployment:
+- Deploy from /worker using Wrangler
+- Bind D1 database in wrangler.toml
+- Store secrets in Cloudflare Worker settings or CI secret setup
+
+GitHub repository secrets:
+- CLOUDFLARE_API_TOKEN
+- CLOUDFLARE_ACCOUNT_ID
+
+
+10. GITHUB ACTIONS OUTLINE
+
+deploy-pages.yml
+- Trigger: push to main
+- Setup Node
+- npm ci
+- npm run build
+- Deploy ./out to Cloudflare Pages
+
+deploy-worker.yml
+- Trigger: push to main when worker/** changes, or manual dispatch
+- Setup Node
+- Install worker dependencies
+- Run wrangler deploy
+
+Optional:
+- Separate manual workflow for D1 migrations
+- Avoid automatic production migrations until API is stable
+
+
+11. PHASED DEVELOPMENT PLAN
+
+Phase 1: Frontend refactor
+- Extract current demo from app/page.tsx into reusable components
+- Replace hard-coded values with typed site config contracts
+- Make static export compatible
+
+Phase 2: Worker scaffold
+- Create /worker project
+- Add auth routes
+- Add signed cookie utilities
+- Add D1 connection and sites CRUD
+
+Phase 3: Admin UI
+- Build /admin login form
+- Build site list table
+- Build create/edit form
+- Connect CRUD API
+
+Phase 4: Public data integration
+- Fetch sites from Worker
+- Fetch monitor status from UptimeFlare
+- Join site list with monitor state in UI
+- Treat Worker as the primary site source when NEXT_PUBLIC_API_BASE_URL is configured
+- Show explicit empty/error states instead of silently falling back when Worker is expected
+
+Phase 5: Bento layout
+- Build the website-card grid layout
+- Add offline overlay and status design
+- Add responsive layout tuning
+
+Phase 6: Deployment hardening
+- Add GitHub Actions
+- Configure Pages and Worker environments
+- Validate iframe headers on all showcased sites
+
+
+12. NON-NEGOTIABLE TECHNICAL RULES
+
+- Public frontend stays static-first
+- Sensitive logic stays in Worker only
+- Use D1 only for portfolio metadata, not monitor history
+- UptimeFlare remains the monitoring source of truth
+- Every showcased site must allow iframe embedding
+- Keep monitor polling interval conservative to control free-tier usage
+- Do not let Next server routes become the backend by accident
+
+
+13. FIRST IMPLEMENTATION TASKS
+
+Immediate next tasks for coding:
+1. Update next.config.ts for static export readiness
+2. Create shared/types.ts and shared/contracts.ts
+3. Extract current page.tsx into LiveProjectCard + status helpers
+4. Create worker skeleton with wrangler config
+5. Add D1 migration 0001_init.sql
+6. Implement POST /auth/login, GET /auth/me, POST /auth/logout
+7. Implement GET /sites and POST /sites
+8. Build /admin login UI
+9. Replace hard-coded site entry with API-backed rendering

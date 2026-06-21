@@ -1,0 +1,198 @@
+整体方案
+
+  这个项目就按“一个仓库，前后端分离”设计最合适：
+
+  - web：Next.js 静态前端，部署到 Cloudflare Pages
+  - api：Cloudflare Worker，负责鉴权、站点管理、可选状态聚合
+  - db：Cloudflare D1，存作品站点配置
+  - monitor：你现有的 UptimeFlare，继续独立运行
+
+  前端只负责展示和管理界面，不承担任何敏感逻辑。
+  后台密码、登录态校验、增删改查，都放在 Worker。
+
+  仓库结构
+
+  建议直接在当前仓库上扩展，不拆仓：
+
+  /
+  ├─ app/
+  │  ├─ page.tsx
+  │  ├─ admin/page.tsx
+  │  ├─ _components/
+  │  ├─ _lib/
+  │  └─ globals.css
+  ├─ shared/
+  │  ├─ types.ts
+  │  └─ contracts.ts
+  ├─ worker/
+  │  ├─ src/index.ts
+  │  ├─ migrations/0001_init.sql
+  │  ├─ package.json
+  │  └─ wrangler.toml
+  ├─ package.json
+  ├─ next.config.ts
+  └─ .github/workflows/
+     ├─ deploy-pages.yml
+     └─ deploy-worker.yml
+
+  当前 Next 项目保留在根目录最省事。worker/ 单独维护后端。
+
+  前端边界
+
+  前端保留两个核心页面：
+
+  - /：公开作品集首页
+  - /admin：管理员登录页 + 管理界面
+
+  前端做的事：
+
+  - 获取站点列表
+  - 拉 UptimeFlare 状态
+  - 渲染 Bento Grid
+  - 渲染 iframe 活体网页
+  - 登录后调用 Worker API 管理站点
+
+  前端不要做：
+
+  - 密码校验
+  - cookie 签发
+  - 站点数据持久化
+  - 敏感配置存储
+
+  后端边界
+
+  Worker 提供这些接口就够了：
+
+  - POST /auth/login
+  - POST /auth/logout
+  - GET /auth/me
+  - GET /sites
+  - POST /sites
+  - PUT /sites/:id
+  - DELETE /sites/:id
+
+  可选二期：
+
+  - GET /status
+
+  如果一期先求稳，我建议首页直接请求：
+
+  - Worker 的 /sites
+  - UptimeFlare 的 /api/data
+
+  不要一开始就让 Worker 代理 UptimeFlare，能少一层就少一层。
+
+  登录方案
+
+  你的“单管理员 + 环境变量密码”需求，正确做法是：
+
+  - ADMIN_PASSWORD 放在 Worker secret
+  - SESSION_SECRET 放在 Worker secret
+  - 前端 /admin 提交密码到 POST /auth/login
+  - Worker 校验成功后写 HttpOnly cookie
+  - 后续后台接口全靠 cookie 校验
+
+  不要把管理员密码放在 Pages 前端环境变量里判断，那样等于公开。
+
+  登录态不需要数据库，直接用签名 cookie 就够了。
+  单管理员场景没必要做 users 表、JWT 刷新、OAuth。
+
+  D1 表结构
+
+  一期一张表够用：
+
+  CREATE TABLE sites (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    slug TEXT NOT NULL UNIQUE,
+    url TEXT NOT NULL,
+    monitor_key TEXT,
+    category TEXT NOT NULL DEFAULT 'web',
+    description TEXT DEFAULT '',
+    cover_mode TEXT NOT NULL DEFAULT 'iframe',
+    sort_order INTEGER NOT NULL DEFAULT 0,
+    is_visible INTEGER NOT NULL DEFAULT 1,
+    allow_interaction INTEGER NOT NULL DEFAULT 0,
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
+  );
+
+  这里不要写 monitor_id，更建议叫 monitor_key。
+  因为你当前 UptimeFlare demo 是按 data.monitors["wyy.331106.xyz"] 这种 key 取值。
+
+  环境变量
+
+  Pages 公开变量：
+
+  - NEXT_PUBLIC_API_BASE_URL
+  - NEXT_PUBLIC_UPTIMEFLARE_API_URL
+
+  Worker secrets：
+
+  - ADMIN_PASSWORD
+  - SESSION_SECRET
+
+  Worker 普通配置或 secret：
+
+  - CORS_ORIGIN
+  - UPTIMEFLARE_API_URL（仅当你后面做 /status 聚合时需要）
+
+  部署方式
+
+  你既然明确要 GitHub Actions，就统一走 Actions：
+
+  deploy-pages.yml
+
+  1. npm ci
+  2. npm run build
+  3. 确保 next.config.ts 使用 output: 'export'
+  4. 部署 out/ 到 Cloudflare Pages
+
+  deploy-worker.yml
+
+  1. 进入 worker/
+  2. 安装依赖
+  3. wrangler d1 migrations apply（可手动触发更稳）
+  4. wrangler deploy
+
+  需要的 GitHub Secrets：
+
+  - CLOUDFLARE_API_TOKEN
+  - CLOUDFLARE_ACCOUNT_ID
+
+  如果 Pages 也用 wrangler pages deploy，这个仓库就能完全复刻你 UptimeFlare 那种“push 即自动部署”的体验。
+
+  域名建议
+
+  推荐这样配：
+
+  - 前端：portfolio.example.com
+  - 后端：api.portfolio.example.com
+
+  这样最清晰。
+  如果分子域，Worker 记得只放行你的前端域名，不要直接 *。
+
+  必须提前处理的事
+
+  所有被展示的外部网站，必须允许 iframe 嵌套。
+
+  至少检查：
+
+  - Content-Security-Policy: frame-ancestors ...
+  - X-Frame-Options
+
+  否则你的作品卡片会空白，不是前端代码问题，是目标站拒绝被嵌套。
+
+  建议的实施顺序
+
+  1. 先把 Next 前端改成静态导出可部署到 Pages。
+  2. 新建 worker/，先做密码登录和 /sites CRUD。
+  3. 接 D1，把站点配置从硬编码改成数据库读取。
+  4. 前端接 Worker 站点列表，继续直连 UptimeFlare。
+  5. 做 /admin 管理页。
+  6. 最后再做状态聚合、缓存、排序、分类和更复杂展示。
+
+  下一步如果继续，我建议我直接给你产出两样东西：
+
+  1. 这套架构对应的详细文件清单
+  2. 第一版 D1 schema + Worker API contract + 前端页面拆分方案

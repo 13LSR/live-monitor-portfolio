@@ -1,0 +1,8 @@
+name = "live-monitor-portfolio-api"
+main = "src/index.ts"
+compatibility_date = "2026-06-20"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "live-monitor-portfolio"
+database_id = "4c0a7d76-f263-4dca-a948-f234ca375bdd"
