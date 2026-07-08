@@ -112,12 +112,12 @@ BLOCKER-01 已关闭：通过真实 Worker auth/CRUD 创建并编辑了一条 Ph
 
 REVIEW-04 又发现一个 Worker 边界缺口：外部 create/update payload 缺少 Phase 4 字段时会绕过校验并在归一化阶段变成 500。FOLLOWUP-05 已修复这个问题，缺失 `summary`、`tags`、`techStack`、`isFeatured`、`repoUrl`、`fallbackUrl` 现在都会在 Worker 校验层返回稳定错误；`npm run test:admin` 26/26 通过，`worker npm run typecheck` 通过。
 
-REVIEW-05 继续挑出三处收尾问题：loading 状态下访问按钮没有优先使用 `fallbackUrl`，非字符串 `repoUrl`/`fallbackUrl` 仍可能穿过 Worker 校验，以及本交接文档还残留已关闭的 E2E 阻塞描述。FOLLOWUP-06 已让访问按钮在 iframe loading/offline 时优先打开备用链接，同时 iframe 仍加载主站点；FOLLOWUP-07 已让非字符串源码/备用链接返回稳定校验错误；FOLLOWUP-08 则把这份 handoff 调回当前状态。现在只剩 `REVIEW-06` 做最终独立复审。
+REVIEW-05 继续挑出三处收尾问题：loading 状态下访问按钮没有优先使用 `fallbackUrl`，非字符串 `repoUrl`/`fallbackUrl` 仍可能穿过 Worker 校验，以及本交接文档还残留已关闭的 E2E 阻塞描述。FOLLOWUP-06 已让访问按钮在 iframe loading/offline 时优先打开备用链接，同时 iframe 仍加载主站点；FOLLOWUP-07 已让非字符串源码/备用链接返回稳定校验错误；FOLLOWUP-08 则把这份 handoff 调回当前状态。REVIEW-06 和 REVIEW-07 后续只发现 handoff 自身的状态指针残留，FOLLOWUP-09/FOLLOWUP-10 已把这些指针清到当前状态。现在只剩 `REVIEW-08` 做最终独立复审。
 
 **还剩什么**
 
-- 跑 `REVIEW-06`，确认 FOLLOWUP-06、FOLLOWUP-07、FOLLOWUP-08 已经关闭 REVIEW-05 的三个 gap。
-- 如果 REVIEW-06 没有新的可执行 gap，就把 Phase 4 关闭为最终通过；如果还有 gap，继续追加下一轮 follow-up。
+- 跑 `REVIEW-08`，确认 FOLLOWUP-10 已把 handoff 的最终复审指针调到当前状态。
+- 如果 REVIEW-08 没有新的可执行 gap，就把 Phase 4 关闭为最终通过；如果还有 gap，继续追加下一轮 follow-up。
 
 **阻塞/配置**
 

@@ -173,3 +173,8 @@
 - Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer.
 - Decision debt: recorded npm/build/typecheck/browser evidence was treated as committed evidence, not freshly reproduced by reviewer.
 - Human-required blockers: none.
+
+## FOLLOWUP-10
+- Fixed: The handoff lower status and remaining-work section now records REVIEW-06/REVIEW-07 as historical follow-up reviews and points the current final gate to REVIEW-08.
+- Evidence: current-state `REVIEW-06` pointer checks are clean except for historical references, and the remaining-work bullets now name REVIEW-08.
+- Remaining gate: REVIEW-08 final independent review.
