@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "dev:all": "node scripts/dev-all.mjs",
     "build": "next build",
     "start": "next start",
     "test:admin": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/admin-production-path.test.mjs",

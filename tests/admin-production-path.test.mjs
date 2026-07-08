@@ -1233,6 +1233,19 @@ describe("admin production API path", () => {
     assert.match(table, /确认删除/);
     assert.match(table, /取消删除/);
   });
+
+  it("offers one command to run the frontend and Worker locally", () => {
+    const packageJson = JSON.parse(
+      readFileSync(join(root, "package.json"), "utf8")
+    );
+    const script = readFileSync(join(root, "scripts/dev-all.mjs"), "utf8");
+
+    assert.equal(packageJson.scripts["dev:all"], "node scripts/dev-all.mjs");
+    assert.match(script, /NEXT_PUBLIC_API_BASE_URL/);
+    assert.match(script, /http:\/\/localhost:8787/);
+    assert.match(script, /cwd: workerDir/);
+    assert.match(script, /cwd: root/);
+  });
 });
 
 function makeSite({ id, category, isOnline, isFeatured = false }) {
