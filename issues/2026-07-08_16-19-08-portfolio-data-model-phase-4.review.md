@@ -64,3 +64,11 @@
 - Mobile 390x844 evidence: 3 real cards, 3 iframes, 3 visit buttons, no page-level horizontal overflow; scaled iframe nodes remain clipped by preview containers.
 - Claim update: CLAIM-029 is now covered. Current claim coverage is 28/34 covered, 5 limited.
 - Remaining blocker: local public data still lacks tags/techStack/repoUrl/isFeatured/fallbackUrl, and `/auth/me` is not authenticated, so homepage metadata/source/admin real E2E claims remain limited.
+
+## BLOCKER-01 Closure
+- Local validation data was created through the real Worker auth/CRUD path with UTF-8 summary, tags, techStack, featured, repoUrl, and fallbackUrl values.
+- Homepage desktop evidence: 4 public cards rendered; the Phase 4 validation card showed summary, tags, techStack, 查看源码, 访问网站, and iframe with no horizontal overflow.
+- Homepage mobile evidence: the same validation metadata/source controls rendered at mobile width with no page-level horizontal overflow.
+- Admin evidence: browser login succeeded, the Phase 4 edit form opened in the single editor panel, 作品信息 fields/chips/source/fallback/featured controls were populated, UI added 浏览器验收 and E2E UI, and 更新站点 saved successfully.
+- Claim update: CLAIM-019, CLAIM-022, CLAIM-023, CLAIM-024, and CLAIM-027 are now covered. CLAIM-034 remains out_of_scope by design. Current accounting is 33/34 covered plus 1/34 out_of_scope, 34/34 accounted, 0 limited.
+- Remaining gate: REVIEW-04 final independent review must confirm vision_met before the Phase 4 CSV is fully closed.

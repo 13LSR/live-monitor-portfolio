@@ -3,13 +3,15 @@
   "csv": "2026-07-08_16-19-08-portfolio-data-model-phase-4.csv",
   "execution_scope": "Phase 4 portfolio data model extension only: D1 fields, Worker/API contracts, admin structured editing, homepage lightweight metadata display, and visible animal-island-ui usage beyond login.",
   "claim_coverage": {
-    "covered": 28,
+    "covered": 33,
     "total": 34,
-    "status": "gaps",
-    "limited": 5,
-    "updated_by": "BLOCKER-01 retry",
-    "review_result": "limited_review",
-    "review_state": "BLOCKER-01 partially reduced after local D1 migration; metadata/admin claims still limited"
+    "status": "complete",
+    "limited": 0,
+    "updated_by": "BLOCKER-01 closure",
+    "review_result": "pending REVIEW-04",
+    "review_state": "33 covered + 1 out_of_scope accounted; awaiting final independent review",
+    "out_of_scope": 1,
+    "accounted": 34
   },
   "claims": [
     {
@@ -237,9 +239,8 @@
         "ISSUE-06"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "BLOCKER-01 retry: browser logged into http://localhost:3000/admin with local dev session, opened Phase 4 验收作品 edit form, and observed the single editor panel with 作品信息 section, summary, tags, techStack, repoUrl, fallbackUrl, featured and public controls populated."
     },
     {
       "claim_id": "CLAIM-020",
@@ -274,9 +275,8 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "BLOCKER-01 retry: real homepage rendered Phase 4 验收作品 card with animal-island-ui-backed metadata/source controls; admin page also rendered animal-island-ui portfolio information section beyond login."
     },
     {
       "claim_id": "CLAIM-023",
@@ -288,9 +288,8 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "BLOCKER-01 retry: authenticated admin UI showed 作品信息 section in edit mode with Card/Button/Input-style controls, populated tags/techStack chips, source/fallback fields, featured/public toggles, and successful update flow."
     },
     {
       "claim_id": "CLAIM-024",
@@ -302,9 +301,8 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "BLOCKER-01 retry: homepage after local D1 migration and validation data rendered 4 public cards; Phase 4 验收作品 displayed summary, tags Phase 4/作品集/验收/浏览器验收, techStack Next.js/Cloudflare D1/Worker/E2E UI, 查看源码 button, 访问网站 button, and iframe stayed intact."
     },
     {
       "claim_id": "CLAIM-025",
@@ -337,9 +335,8 @@
         "ISSUE-07"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "BLOCKER-01 retry: Phase 4 验收作品 public card rendered 查看源码 button from repoUrl alongside 访问网站; sourceButtonTextCount=1 and validationArticle buttonTexts included 查看源码."
     },
     {
       "claim_id": "CLAIM-028",

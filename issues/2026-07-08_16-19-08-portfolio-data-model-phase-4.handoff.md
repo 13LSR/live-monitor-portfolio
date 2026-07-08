@@ -108,6 +108,8 @@ REVIEW-03 已完成强独立复审，结论为 `limited_review`：代码缺口�
 
 BLOCKER-01 复查更新：本地 D1 已应用 `0002_portfolio_fields.sql`，公开 `/sites` 从 500 恢复为 200，并返回 3 条可见站点。桌面和移动浏览器都已看到真实 public cards、iframe 和访问按钮，移动端无页面级横向溢出，所以 `CLAIM-029` 已从 `limited` 调整为 `covered`。当前 claim ledger 为 `28/34 covered`、`5 limited`。剩余限制集中在本地数据缺少 tags/techStack/repoUrl/isFeatured/fallbackUrl，以及没有 admin session。
 
+BLOCKER-01 已关闭：通过真实 Worker auth/CRUD 创建并编辑了一条 Phase 4 本地验收站点，首页桌面/移动都已渲染 summary、tags、techStack、源码按钮、访问按钮和 iframe；admin 页面也完成登录、编辑表单打开、作品信息区展示、chip 添加和更新保存。`CLAIM-019`、`CLAIM-022`、`CLAIM-023`、`CLAIM-024`、`CLAIM-027` 已补证为 `covered`。当前 claim ledger 为 `33/34 covered`、`1/34 out_of_scope`、`34/34 accounted`、`0 limited`，还剩 `REVIEW-04` 做最终独立复审。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。
