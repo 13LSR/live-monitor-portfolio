@@ -1,0 +1,28 @@
+## REVIEW-01
+- Source doc: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md
+- Review agent: main-session-fallback
+- Review independence: weak
+- Scope checked: Phase 5 public-good Worker proxy, 5-item notice UI, homepage placement and island visual language, admin island-office visual pass, attribution, automated verification, browser evidence, non-goal boundaries, and claim/evidence alignment.
+- Evidence checked: commit 5f5fabe50b88a51acfed010d7017b4edaa46acb9, issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.csv, issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.claims.json, npm run test:admin 33/33, npm run lint, npm run build, worker npm run typecheck, in-app browser desktop/mobile homepage checks, unauthenticated admin gate check, source inspection of app/shared/worker/test changes.
+- Claim coverage: unknown
+- Claim/evidence alignment: limited
+- Limited validation honestly reported: yes
+- Result: limited_review
+- Gaps:
+  - source_ref: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:170
+    evidence_ref: external codex exec review attempt rejected by safety policy before upload; no strong independent Phase 5 review completed
+    why_it_matters: mission review rules do not allow a weak self-review to close the Phase 5 vision as met
+    suggested_followup_issue: REVIEW-02 rerun strongest independent Phase 5 vision review after explicit Phase 5 upload authorization or an available non-external independent reviewer
+  - source_ref: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:163
+    evidence_ref: browser validation covered homepage desktop/mobile and unauthenticated admin gate, but authenticated admin visual state was not exercised because no local ADMIN_PASSWORD/session was available to the agent
+    why_it_matters: Phase 5 asks for logged-in admin island-office visual validation, so current evidence for that part is static/build/test plus unauthenticated browser isolation only
+    suggested_followup_issue: REVIEW-02 must treat authenticated admin browser validation as limited unless credentials/session are provided
+- Follow-up issues added: REVIEW-02
+- Assumptions:
+  - The committed Phase 5 code path is the authoritative implementation state for this review.
+  - Existing unrelated dirty files outside the Phase 5 commit are not part of the reviewed delivery.
+- Decision debt:
+  - External independent review requires explicit approval for Phase 5 repository/spec/CSV/diff upload or a safer local independent reviewer.
+- Human-required blockers:
+  - Explicit authorization is required before uploading Phase 5 uncommitted/committed project materials to external codex review.
+  - Authenticated admin browser validation requires a local admin password/session or an equivalent user-provided test path.
