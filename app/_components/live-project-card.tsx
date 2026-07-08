@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Tag } from "animal-island-ui";
 import { StatusPill } from "@/app/_components/status-pill";
 import {
   IFRAME_BASE_HEIGHT,
@@ -119,26 +120,39 @@ export function LiveProjectCard({
         ) : null}
       </div>
       <div className="flex flex-col gap-4 border-t border-[var(--line)] bg-[var(--paper-raised)] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="space-y-2">
+        <div className="min-w-0 space-y-2">
           <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
             {summary}
           </p>
           {visibleTags.length > 0 ? (
             <div className="flex flex-wrap gap-1.5">
               {visibleTags.map((tag) => (
-                <span
+                <Tag
                   key={tag}
-                  className="border border-[var(--line)] bg-[#fffaf0] px-2 py-1 text-[11px] font-semibold text-[var(--ink)]"
+                  color="app-yellow"
+                  variant="outlined"
+                  size="small"
+                  className="max-w-full break-words"
                 >
                   {tag}
-                </span>
+                </Tag>
               ))}
             </div>
           ) : null}
           {visibleTechStack.length > 0 ? (
-            <p className="font-mono text-[11px] uppercase text-[var(--muted)]">
-              {visibleTechStack.join(" / ")}
-            </p>
+            <div className="flex flex-wrap gap-1.5">
+              {visibleTechStack.map((tech) => (
+                <Tag
+                  key={tech}
+                  color="app-teal"
+                  variant="dashed"
+                  size="small"
+                  className="max-w-full break-words font-mono uppercase"
+                >
+                  {tech}
+                </Tag>
+              ))}
+            </div>
           ) : null}
           {hasUnknownState || isNotConnected ? (
             <p className="font-mono text-[11px] uppercase text-[var(--muted)]">
@@ -148,15 +162,17 @@ export function LiveProjectCard({
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {repoUrl ? (
-            <button
-              type="button"
+            <Button
+              htmlType="button"
+              type="default"
+              size="small"
               onClick={() =>
                 window.open(repoUrl, "_blank", "noopener,noreferrer")
               }
-              className="border border-[var(--line)] bg-[#fffaf0] px-3 py-2 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
+              className="shrink-0 whitespace-nowrap"
             >
               查看源码
-            </button>
+            </Button>
           ) : null}
           {canToggleInteraction ? (
             <button

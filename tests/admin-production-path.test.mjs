@@ -131,6 +131,26 @@ describe("admin production API path", () => {
     assert.match(card, /src=\{frameUrl\}/);
   });
 
+  it("uses animal-island-ui for homepage metadata without taking over live card logic", () => {
+    const card = readFileSync(
+      join(root, "app/_components/live-project-card.tsx"),
+      "utf8"
+    );
+
+    assert.match(card, /from "animal-island-ui"/);
+    assert.match(card, /\bButton\b/);
+    assert.match(card, /\bTag\b/);
+    assert.match(card, /visibleTags\.map\([\s\S]*<Tag/);
+    assert.match(card, /visibleTechStack\.map\([\s\S]*<Tag/);
+    assert.match(card, /<Button[\s\S]*查看源码[\s\S]*<\/Button>/);
+    assert.match(card, /flex-wrap/);
+    assert.match(card, /<iframe/);
+    assert.match(card, /StatusPill/);
+    assert.match(card, /window\.open\(site\.url/);
+    assert.match(card, /src=\{frameUrl\}/);
+    assert.doesNotMatch(card, /worker\/|D1|listSites|handleGetSites/);
+  });
+
   it("keeps live project cards as real iframe windows with safe interaction states", () => {
     const card = readFileSync(
       join(root, "app/_components/live-project-card.tsx"),
