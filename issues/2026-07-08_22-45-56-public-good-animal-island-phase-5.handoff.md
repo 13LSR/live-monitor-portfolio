@@ -1,12 +1,12 @@
 # Phase 5 施工交工单：公益公告和小岛化体验
 
-WARNING: external review completed; final review is pending after the admin validation fix
+Final review completed: Phase 5 is verified against the approved design.
 
-独立性: strong for source/artifact review；登录后后台视觉验收已补齐，等待最后一轮总体验收。
+独立性: strong for source/artifact review；登录后后台视觉验收已补齐，最终复审结论为完整达成。
 
 ## 总结
 
-本轮执行的是 `docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md`。核心实现已经进仓：首页现在有公益公告模块，数据通过 Worker 的 `/public-good` 代理进入前端；首页和后台也从原来的监控/demo 面板感，往“作品小岛”和“岛务管理所”的方向推进了一步。外部独立 review 已经补跑，结论是核心实现路径成立；它指出的登录后后台浏览器证据缺口也已补齐，并顺手修掉了移动端站点表格需要横向滑动的问题。
+本轮执行的是 `docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md`。核心实现已经进仓：首页现在有公益公告模块，数据通过 Worker 的 `/public-good` 代理进入前端；首页和后台也从原来的监控/demo 面板感，往“作品小岛”和“岛务管理所”的方向推进了一步。外部独立 review 已经跑完，登录后后台浏览器证据缺口也已补齐，并顺手修掉了移动端站点表格需要横向滑动的问题。最终复审没有留下新的 Phase 5 缺口。
 
 ## spec 目标逐条对账
 
@@ -72,9 +72,7 @@ README 新增了 animal-island-ui attribution，明确当前按 CC-BY-NC-4.0 非
 
 ## 后续可操作
 
-还剩一件事：
-
-1. 再跑一轮最终 review，确认 Phase 5 可以关闭为“完整达成”，或继续追加具体修复项。
+本阶段没有剩余必须动作。后续如果继续扩展，可以考虑把公益公告做成可运营内容、增加曝光统计，或把后台从单管理员扩展为多用户，但这些都不属于本轮 Phase 5。
 
 你可以自己验证：
 

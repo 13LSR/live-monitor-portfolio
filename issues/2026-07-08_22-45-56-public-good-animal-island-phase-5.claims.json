@@ -5,7 +5,7 @@
   "claim_coverage": {
     "covered": 34,
     "total": 34,
-    "status": "gaps",
+    "status": "complete",
     "out_of_scope": 0
   },
   "claims": [
@@ -14,306 +14,386 @@
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:12",
       "promise": "Public-good rendering uses a custom project UI rather than the third-party iframe/widget/JS embed as the default implementation.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04"],
+      "covered_by": [
+        "ISSUE-04"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-002",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "Homepage adds the public-good notice after the first viewport and before the portfolio list.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-05"],
+      "covered_by": [
+        "ISSUE-05"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-003",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "Public-good data is integrated through a Worker proxy instead of direct browser dependence on third-party CORS/stability.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02"],
+      "covered_by": [
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-004",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "Each cache cycle displays a group of 5 public-good records rather than a single record.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02", "ISSUE-04"],
+      "covered_by": [
+        "ISSUE-02",
+        "ISSUE-04"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-005",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "The public-good module uses five avatars plus one detail notice-board interaction.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04"],
+      "covered_by": [
+        "ISSUE-04"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-006",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "Homepage and admin receive page-level Animal Island visual strengthening, not only local component imports.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-06", "ISSUE-07"],
+      "covered_by": [
+        "ISSUE-06",
+        "ISSUE-07"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-007",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:15",
       "promise": "Cloudflare Pages static export, Worker API, D1 model, live iframe display, and UptimeFlare status merge remain preserved.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-10"],
+      "covered_by": [
+        "ISSUE-10"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-008",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:17",
       "promise": "Phase 5 does not add public-good CMS configuration, exposure stats, third-party widget defaulting, auth/CRUD/model rewrites, iframe removal, monitoring-first UI, or multi-user admin.",
       "production_path_required": false,
-      "covered_by": ["ISSUE-10"],
+      "covered_by": [
+        "ISSUE-10"
+      ],
       "evidence_required": "static",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-009",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:21",
       "promise": "Execution scope includes public-good module, homepage visual strengthening, and admin visual strengthening together.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-05", "ISSUE-07"],
+      "covered_by": [
+        "ISSUE-05",
+        "ISSUE-07"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-010",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:27",
       "promise": "Visual language presents homepage as a portfolio island, public good as a public notice board, and admin as an island office while keeping project-owned layout and logic.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-06"],
+      "covered_by": [
+        "ISSUE-06"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-011",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:50",
       "promise": "Worker returns a stable PublicGoodBatch DTO with the documented person, contacts, source, cache, fallback, and message fields.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-01"],
+      "covered_by": [
+        "ISSUE-01"
+      ],
       "evidence_required": "contract",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-012",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:31",
       "promise": "Worker filters fields, validates structure and URLs, clips text, handles fallback, and frontend consumes only the project DTO.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-01"],
+      "covered_by": [
+        "ISSUE-01"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-013",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:30",
       "promise": "Frontend requests a public read-only Worker endpoint such as `/public-good`, and Worker requests `https://api.isoyu.com/gy/api.php`.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02"],
+      "covered_by": [
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-014",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:41",
       "promise": "Public-good data rotates by cache cycle, defaults to 6 hours, remains stable within the cycle, and avoids forced third-party calls on every refresh.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02"],
+      "covered_by": [
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-015",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:86",
       "promise": "Cache refresh requests the third-party API at most 8 times, dedupes by id, stops at 5 valid items, and fills shortages from previous cache or fallback.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02"],
+      "covered_by": [
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-016",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:93",
       "promise": "Worker accepts only https childPic/detailUrl values, trims and clips text fields, does not pass raw third-party JSON, exposes no secrets, and follows existing CORS policy.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-01", "ISSUE-02"],
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-017",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:148",
       "promise": "Frontend displays local fallback public-good notice when the Worker request fails.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-03"],
+      "covered_by": [
+        "ISSUE-03"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-018",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:106",
       "promise": "Public-good module title uses 公益公告 or equivalent Chinese and keeps copy to source explanation and detail entry without extra slogan.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04"],
+      "covered_by": [
+        "ISSUE-04"
+      ],
       "evidence_required": "static",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-019",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:109",
       "promise": "Desktop public-good UI shows 5 circular avatar entries, selected Animal Island styling, selected detail board, photo, and animal-island-ui or same-style detail button.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04"],
+      "covered_by": [
+        "ISSUE-04"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-020",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:112",
       "promise": "Mobile public-good UI uses horizontal scroll or wrapping avatars, shows detail below avatars, does not rely on hover, and prevents text/photo/button overlap.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04", "ISSUE-09"],
+      "covered_by": [
+        "ISSUE-04",
+        "ISSUE-09"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-021",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:100",
       "promise": "Homepage information architecture keeps brand first, public-good notice after hero, portfolio list after public-good notice, and status summary as lightweight island information rather than dashboard metrics.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-06"],
+      "covered_by": [
+        "ISSUE-06"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-022",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:34",
       "promise": "Public-good notice is visible, does not steal the hero, and is not mixed into the portfolio grid where it would resemble an ad card.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-05"],
+      "covered_by": [
+        "ISSUE-05"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-023",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:114",
       "promise": "Project cards remain live iframe-centered while shifting visually away from monitoring windows; iframe lazy loading, interaction switch, offline/unknown fallback, and visit entry remain.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-06"],
+      "covered_by": [
+        "ISSUE-06"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-024",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:120",
       "promise": "Admin remains single-admin, unauthenticated password-only, authenticated site list/editor/open/delete/save/error workflow, and existing Worker CRUD.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-07"],
+      "covered_by": [
+        "ISSUE-07"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-025",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:123",
       "promise": "Admin is visually strengthened as an island office using animal-island-ui or same-style Card/Input/Button/Select/Switch/Tag/Modal/Table equivalents and Chinese form errors.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-07"],
+      "covered_by": [
+        "ISSUE-07"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-026",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:125",
       "promise": "Admin visual strengthening does not hide critical fields or reduce edit/save/cancel/delete reachability, and mobile admin has no compressed buttons, text overflow, or form overlap.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-07", "ISSUE-09"],
+      "covered_by": [
+        "ISSUE-07",
+        "ISSUE-09"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-027",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:143",
       "promise": "Root `animal-island-ui/style` import remains and README or page footer keeps suitable attribution and non-commercial/CC-BY-NC-4.0 note.",
       "production_path_required": false,
-      "covered_by": ["ISSUE-08"],
+      "covered_by": [
+        "ISSUE-08"
+      ],
       "evidence_required": "static",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-028",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:148",
       "promise": "Public-good errors handle third-party failure, invalid structure, image load failure, invalid detail link, fewer than 5 records, and frontend Worker failure without blanking the UI.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02", "ISSUE-04"],
+      "covered_by": [
+        "ISSUE-02",
+        "ISSUE-04"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-029",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:150",
       "promise": "Site-list failure does not block public-good fallback; public-good failure does not block portfolio list; Animal Island components do not break iframe/status/Worker/D1 paths.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-03", "ISSUE-05", "ISSUE-10"],
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-05",
+        "ISSUE-10"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-030",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:154",
       "promise": "Verification runs npm run test:admin, npm run lint, npm run build, and Worker related typecheck or tests according to change scope.",
       "production_path_required": false,
-      "covered_by": ["ISSUE-10"],
+      "covered_by": [
+        "ISSUE-10"
+      ],
       "evidence_required": "static",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-031",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:163",
       "promise": "Browser validation checks desktop and mobile homepage/admin/public-good visual behavior, placement, 5 avatars, detail switching, readability, no overflow, no overlap, readable buttons, and no new console errors.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-09"],
+      "covered_by": [
+        "ISSUE-09"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-032",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:170",
       "promise": "Users can perceive Animal Island in the overall UI without reading source, public-good is natural public notice, real API uses 5-item batch, API/image/link failures do not break homepage, and core portfolio/admin capabilities do not regress.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-09", "ISSUE-10"],
+      "covered_by": [
+        "ISSUE-09",
+        "ISSUE-10"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-033",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:170",
       "promise": "Public-good module is not presented as an ad slot and naturally integrates as a public notice.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-04", "ISSUE-05", "ISSUE-09"],
+      "covered_by": [
+        "ISSUE-04",
+        "ISSUE-05",
+        "ISSUE-09"
+      ],
       "evidence_required": "real_e2e",
-      "status": "pending"
+      "status": "complete"
     },
     {
       "claim_id": "CLAIM-034",
       "source_ref": "docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:9",
       "promise": "Public-good module uses the 姬长信 API公益中国 endpoint as the real source for 宝贝回家/公益寻亲 information.",
       "production_path_required": true,
-      "covered_by": ["ISSUE-02"],
+      "covered_by": [
+        "ISSUE-02"
+      ],
       "evidence_required": "integration",
-      "status": "pending"
+      "status": "complete"
     }
   ]
 }
