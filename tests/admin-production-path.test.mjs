@@ -19,6 +19,9 @@ import {
 import {
   getSiteMutationErrorMessage,
   getSitePayloadValidationError,
+  mapSiteRowToSiteRecord,
+  normalizeSitePayloadForStorage,
+  parsePortfolioStringArray,
 } from "../worker/src/site-validation.ts";
 
 const root = process.cwd();
@@ -385,6 +388,112 @@ describe("admin production API path", () => {
       ),
       "Duplicate slug"
     );
+  });
+
+  it("normalizes and validates Phase 4 portfolio fields at the Worker boundary", () => {
+    const validPayload = {
+      name: " Demo ",
+      slug: " demo ",
+      url: " https://example.com ",
+      monitorKey: " example-monitor ",
+      category: "web",
+      description: " Description ",
+      summary: " Portfolio summary ",
+      tags: [" React ", "", "Next", "React"],
+      techStack: [" TypeScript ", "Next", "TypeScript"],
+      isFeatured: true,
+      repoUrl: " https://github.com/example/demo ",
+      fallbackUrl: "",
+      coverMode: "iframe",
+      sortOrder: 0,
+      isVisible: true,
+      allowInteraction: false,
+    };
+
+    assert.deepEqual(normalizeSitePayloadForStorage(validPayload), {
+      name: "Demo",
+      slug: "demo",
+      url: "https://example.com",
+      monitorKey: "example-monitor",
+      category: "web",
+      description: "Description",
+      summary: "Portfolio summary",
+      tagsJson: "[\"React\",\"Next\"]",
+      techStackJson: "[\"TypeScript\",\"Next\"]",
+      isFeaturedValue: 1,
+      repoUrl: "https://github.com/example/demo",
+      fallbackUrl: null,
+      coverMode: "iframe",
+      sortOrder: 0,
+      isVisibleValue: 1,
+      allowInteractionValue: 0,
+    });
+    assert.deepEqual(parsePortfolioStringArray("[\"A\",\"\",\"A\",\" B \"]"), [
+      "A",
+      "B",
+    ]);
+    assert.deepEqual(parsePortfolioStringArray("{bad json"), []);
+    assert.deepEqual(parsePortfolioStringArray("[1,2]"), []);
+
+    assert.equal(
+      getSitePayloadValidationError({
+        ...validPayload,
+        summary: "x".repeat(121),
+      }),
+      "Summary must be 120 characters or fewer"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, tags: "React" }),
+      "Tags must be an array"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, techStack: "Next" }),
+      "Tech stack must be an array"
+    );
+    assert.equal(
+      getSitePayloadValidationError({
+        ...validPayload,
+        repoUrl: "http://github.com/example/demo",
+      }),
+      "Repo URL must start with https://"
+    );
+    assert.equal(
+      getSitePayloadValidationError({
+        ...validPayload,
+        fallbackUrl: "not-a-url",
+      }),
+      "Fallback URL must be a valid absolute URL"
+    );
+  });
+
+  it("maps corrupt stored portfolio JSON to safe arrays for Worker list responses", () => {
+    const mapped = mapSiteRowToSiteRecord({
+      id: 1,
+      name: "Demo",
+      slug: "demo",
+      url: "https://example.com",
+      monitor_key: null,
+      category: "web",
+      description: "",
+      summary: "A short summary",
+      tags: "{bad json",
+      tech_stack: "[\"React\",\" React \"]",
+      is_featured: 1,
+      repo_url: "",
+      fallback_url: "https://fallback.example.com",
+      cover_mode: "iframe",
+      sort_order: 0,
+      is_visible: 1,
+      allow_interaction: 0,
+      created_at: "2026-07-08T00:00:00.000Z",
+      updated_at: "2026-07-08T00:00:00.000Z",
+    });
+
+    assert.deepEqual(mapped.tags, []);
+    assert.deepEqual(mapped.techStack, ["React"]);
+    assert.equal(mapped.isFeatured, true);
+    assert.equal(mapped.repoUrl, null);
+    assert.equal(mapped.fallbackUrl, "https://fallback.example.com");
   });
 
   it("maps Worker and network failures to friendly Chinese messages", () => {

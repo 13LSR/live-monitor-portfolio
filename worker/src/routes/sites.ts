@@ -10,6 +10,7 @@ import {
 import {
   getSiteMutationErrorMessage,
   getSitePayloadValidationError,
+  mapSiteRowToSiteRecord,
 } from "../site-validation";
 import type { SitePayload } from "../../../shared/contracts";
 
@@ -21,21 +22,7 @@ export async function handleGetSites(request: Request, env: Env) {
     : false;
   const rows = await listSites(env, includeHidden && authenticated);
 
-  const sites = rows.map((row) => ({
-    id: row.id,
-    name: row.name,
-    slug: row.slug,
-    url: row.url,
-    monitorKey: row.monitor_key,
-    category: row.category,
-    description: row.description,
-    coverMode: row.cover_mode,
-    sortOrder: row.sort_order,
-    isVisible: row.is_visible === 1,
-    allowInteraction: row.allow_interaction === 1,
-    createdAt: row.created_at,
-    updatedAt: row.updated_at,
-  }));
+  const sites = rows.map(mapSiteRowToSiteRecord);
 
   return Response.json({ sites });
 }
