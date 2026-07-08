@@ -104,6 +104,8 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 
 当前审查结果保持 `gaps_found`。claim ledger 现为 `27/34 covered`、`6 limited`、`claim_coverage_status:gaps`，CSV、review log 和本 handoff 已统一到同一表述。`FOLLOWUP-01`、`FOLLOWUP-02`、`FOLLOWUP-03`、`FOLLOWUP-04` 关闭后，还需要 `REVIEW-03` 再跑一次最强可用独立审查，才能决定是否把 Phase 4 标记为 `vision_met`。
 
+REVIEW-03 已完成强独立复审，结论为 `limited_review`：代码缺口已修复，未发现新的可执行实现缺口；剩余 6 个 real E2E claim 只能等待真实 public `/sites` 数据和 admin session 后补证。CSV 已追加 `BLOCKER-01` 记录这个 human-required blocker。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。

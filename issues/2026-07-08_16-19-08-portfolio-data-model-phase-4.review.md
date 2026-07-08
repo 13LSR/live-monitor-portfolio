@@ -40,3 +40,19 @@
 - Closed follow-ups: FOLLOWUP-01 fixed fallbackUrl access target; FOLLOWUP-02 rejects non-string tags/techStack items; FOLLOWUP-03 downgraded unavailable real E2E claims to limited.
 - Remaining review gate: REVIEW-03 must rerun the strongest available independent review before Phase 4 can be marked vision_met or fully closed.
 - Artifacts aligned: claim ledger summary, CSV REVIEW-02/FOLLOWUP rows, this review log, and handoff now use the same current result/status language.
+
+## REVIEW-03
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: REVIEW-02 follow-up fixes, claim ledger, CSV state, review log, handoff, committed diff range b1574f7..778d870, latest recorded verification evidence, secret/out-of-scope boundaries.
+- Evidence checked: app/_components/live-project-card.tsx; worker/src/site-validation.ts; tests/admin-production-path.test.mjs; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; latest npm run test:admin/lint/build and worker typecheck outputs recorded by main session.
+- Claim coverage: gaps
+- Claim/evidence alignment: limited
+- Limited validation honestly reported: yes
+- Result: limited_review
+- Gaps: none actionable in committed code found by REVIEW-03. Six rendered real E2E claims remain limited because localhost /sites failed and no authenticated admin session/credentials were available.
+- Follow-up issues added: BLOCKER-01
+- Assumptions: Latest verification command outputs from the main session are accepted as recorded evidence; reviewer did not rerun commands.
+- Decision debt: Phase 4 cannot be marked vision_met until public sites data/API and admin session make rendered E2E evidence collectible, or the project explicitly accepts limited closure.
+- Human-required blockers: Provide a working public /sites data path with at least one visible portfolio site and an admin session/credentials for browser interaction checks.
