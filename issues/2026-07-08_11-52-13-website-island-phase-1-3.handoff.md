@@ -14,6 +14,8 @@
 
 后续浏览器检查发现首页会被慢速 UptimeFlare 请求卡成空列表；已修复为先展示公开站点、再异步增强监控状态，并给监控请求加 4 秒超时。修复后浏览器验证看到首页 `Total 3`、3 个 lazy iframe、访问入口存在，且没有横向溢出。未登录 `/admin` 只显示一个密码输入表单，没有站点列表或管理数据泄露。
 
+用户提供 `ADMIN_PASSWORD=noonadmin` 后，`npm run verify:local` 已补齐认证 CRUD：login、create、includeHidden list、update、delete、logout 全部返回 HTTP 200。监控超时日志也已改成无 AbortError 栈的降级提示。
+
 你自己运行完整项目时，需要两个终端：
 
 ```powershell
@@ -35,5 +37,4 @@ npm run verify:local
 ```
 
 仍需人工确认：
-- `/admin` 登录后 create/update/delete/logout/list refresh 的浏览器流程。
 - 强独立 review 需要你明确授权把本仓库相关 spec/CSV/diff 内容交给外部 Codex CLI review。

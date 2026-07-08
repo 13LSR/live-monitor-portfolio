@@ -21,3 +21,11 @@
 - Evidence checked: `npm run test:admin`, `npm run lint`, `npm run build`, `cd worker; npm run typecheck`, and in-app browser verification on the already-running `http://localhost:3000/`.
 - Result: fixed
 - Remaining: Authenticated CRUD still requires `ADMIN_PASSWORD`; strong independent review still requires explicit user approval.
+
+## FOLLOWUP-02
+- Source doc: docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md
+- Trigger: User reported the monitor timeout still appeared in the browser as an AbortError stack.
+- Fix: Monitor fallback no longer logs the caught Error object. Timeout/failure remains a degraded unknown-status path with a short, stack-free warning.
+- Evidence checked: `npm run test:admin`, `npm run lint`, `npm run build`, `cd worker; npm run typecheck`, `$env:ADMIN_PASSWORD='noonadmin'; npm run verify:local`, and in-app browser verification on the already-running homepage.
+- Result: fixed
+- Remaining: Strong independent review still requires explicit user approval.

@@ -71,8 +71,8 @@ export function PortfolioGridClient() {
           );
           setIsLoading(false);
         }
-      } catch (error) {
-        console.warn("无法获取监控数据", error);
+      } catch {
+        console.warn("监控数据暂时不可用，已使用未知状态。");
 
         if (!ignore) {
           setSites(

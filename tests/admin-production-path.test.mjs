@@ -108,6 +108,10 @@ describe("admin production API path", () => {
       /setSites\(\s*mergeSitesWithStatuses\(resolvedSites, \{\}\)\s*\);\s*setIsLoading\(false\);\s*}\s*try \{\s*const monitorMap = await fetchMonitorMap\(\);/s
     );
     assert.doesNotMatch(portfolio, /setSites\(\[\]\);\s*setIsLoading\(false\);\s*}\s*catch \(error\) \{\s*console\.error\("无法获取监控数据"/s);
+    assert.doesNotMatch(
+      portfolio,
+      /console\.warn\("监控数据暂时不可用，已使用未知状态。",\s*error\)/
+    );
     assert.match(bentoGrid, /<LiveProjectCard/);
   });
 
