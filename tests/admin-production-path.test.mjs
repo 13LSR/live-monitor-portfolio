@@ -642,6 +642,30 @@ describe("admin production API path", () => {
       }),
       "Fallback URL must be a valid absolute URL"
     );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, summary: undefined }),
+      "Summary is required"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, tags: undefined }),
+      "Tags must be an array"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, techStack: undefined }),
+      "Tech stack must be an array"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, isFeatured: undefined }),
+      "Featured flag is required"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, repoUrl: undefined }),
+      "Repo URL field is required"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, fallbackUrl: undefined }),
+      "Fallback URL field is required"
+    );
   });
 
   it("maps corrupt stored portfolio JSON to safe arrays for Worker list responses", () => {

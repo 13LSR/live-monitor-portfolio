@@ -72,3 +72,27 @@
 - Admin evidence: browser login succeeded, the Phase 4 edit form opened in the single editor panel, 作品信息 fields/chips/source/fallback/featured controls were populated, UI added 浏览器验收 and E2E UI, and 更新站点 saved successfully.
 - Claim update: CLAIM-019, CLAIM-022, CLAIM-023, CLAIM-024, and CLAIM-027 are now covered. CLAIM-034 remains out_of_scope by design. Current accounting is 33/34 covered plus 1/34 out_of_scope, 34/34 accounted, 0 limited.
 - Remaining gate: REVIEW-04 final independent review must confirm vision_met before the Phase 4 CSV is fully closed.
+
+## REVIEW-04
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed Phase 4 artifacts through 2101f85, BLOCKER-01 real E2E evidence, claim ledger accounting, Worker validation, homepage/admin behavior, secret and out-of-scope boundaries.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; worker/src/site-validation.ts; app/_components/live-project-card.tsx; tests/admin-production-path.test.mjs; committed verification and browser evidence.
+- Claim coverage: gaps
+- Claim/evidence alignment: mismatches found
+- Limited validation honestly reported: yes
+- Result: gaps_found
+- Gaps:
+  - CLAIM-017/CLAIM-030 mismatch: Worker validation rejects non-array and non-string array items, but missing Phase 4 payload fields can still bypass validation and fail later during normalization with a generic 500.
+- Follow-up issues added: FOLLOWUP-05, REVIEW-05
+- Assumptions: Reviewer treated recorded test/build/browser evidence as evidence and did not rerun commands.
+- Decision debt: none; the gap is directly actionable in Worker validation and tests.
+- Human-required blockers: none.
+
+## FOLLOWUP-05
+- Fixed: Worker validation now rejects missing Phase 4 payload fields before normalizeSitePayloadForStorage runs.
+- Fields covered: summary, tags, techStack, isFeatured, repoUrl, fallbackUrl.
+- Evidence: TDD red run `npm run test:admin` failed 25/26 because missing summary returned null; green run passed 26/26 after validation change.
+- Regression: `worker npm run typecheck` passed; existing valid empty summary, empty arrays, false isFeatured, and null repo/fallback URLs remain accepted.
+- Remaining gate: REVIEW-05 final independent review.

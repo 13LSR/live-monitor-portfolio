@@ -110,6 +110,8 @@ BLOCKER-01 复查更新：本地 D1 已应用 `0002_portfolio_fields.sql`，公�
 
 BLOCKER-01 已关闭：通过真实 Worker auth/CRUD 创建并编辑了一条 Phase 4 本地验收站点，首页桌面/移动都已渲染 summary、tags、techStack、源码按钮、访问按钮和 iframe；admin 页面也完成登录、编辑表单打开、作品信息区展示、chip 添加和更新保存。`CLAIM-019`、`CLAIM-022`、`CLAIM-023`、`CLAIM-024`、`CLAIM-027` 已补证为 `covered`。当前 claim ledger 为 `33/34 covered`、`1/34 out_of_scope`、`34/34 accounted`、`0 limited`，还剩 `REVIEW-04` 做最终独立复审。
 
+REVIEW-04 又发现一个 Worker 边界缺口：外部 create/update payload 缺少 Phase 4 字段时会绕过校验并在归一化阶段变成 500。FOLLOWUP-05 已修复这个问题，缺失 `summary`、`tags`、`techStack`、`isFeatured`、`repoUrl`、`fallbackUrl` 现在都会在 Worker 校验层返回稳定错误；`npm run test:admin` 26/26 通过，`worker npm run typecheck` 通过。还剩 `REVIEW-05` 做最终独立复审。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。

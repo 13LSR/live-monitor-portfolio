@@ -66,29 +66,39 @@ export function getSitePayloadValidationError(
     return "Site URL must be a valid absolute URL";
   }
 
-  if (
-    typeof payload.summary === "string" &&
-    payload.summary.trim().length > 120
-  ) {
-    return "Summary must be 120 characters or fewer";
+  if (typeof payload.summary !== "string") {
+    return "Summary is required";
   }
 
-  if (payload.tags !== undefined && !Array.isArray(payload.tags)) {
+  if (!Array.isArray(payload.tags)) {
     return "Tags must be an array";
   }
 
-  if (payload.tags !== undefined && !hasOnlyStringItems(payload.tags)) {
-    return "Tags must contain only strings";
-  }
-
-  if (payload.techStack !== undefined && !Array.isArray(payload.techStack)) {
+  if (!Array.isArray(payload.techStack)) {
     return "Tech stack must be an array";
   }
 
-  if (
-    payload.techStack !== undefined &&
-    !hasOnlyStringItems(payload.techStack)
-  ) {
+  if (typeof payload.isFeatured !== "boolean") {
+    return "Featured flag is required";
+  }
+
+  if (payload.repoUrl === undefined) {
+    return "Repo URL field is required";
+  }
+
+  if (payload.fallbackUrl === undefined) {
+    return "Fallback URL field is required";
+  }
+
+  if (payload.summary.trim().length > 120) {
+    return "Summary must be 120 characters or fewer";
+  }
+
+  if (!hasOnlyStringItems(payload.tags)) {
+    return "Tags must contain only strings";
+  }
+
+  if (!hasOnlyStringItems(payload.techStack)) {
     return "Tech stack must contain only strings";
   }
 

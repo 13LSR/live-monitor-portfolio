@@ -7,9 +7,9 @@
     "total": 34,
     "status": "complete",
     "limited": 0,
-    "updated_by": "BLOCKER-01 closure",
-    "review_result": "pending REVIEW-04",
-    "review_state": "33 covered + 1 out_of_scope accounted; awaiting final independent review",
+    "updated_by": "FOLLOWUP-05",
+    "review_result": "pending REVIEW-05",
+    "review_state": "FOLLOWUP-05 fixed missing payload validation; awaiting final independent review",
     "out_of_scope": 1,
     "accounted": 34
   },
@@ -216,7 +216,8 @@
         "ISSUE-03"
       ],
       "evidence_required": "unit",
-      "status": "covered"
+      "status": "covered",
+      "evidence_observed": "FOLLOWUP-05: Worker validation now rejects missing summary/tags/techStack/isFeatured/repoUrl/fallbackUrl fields before normalization; npm run test:admin passed 26/26 and worker npm run typecheck passed."
     },
     {
       "claim_id": "CLAIM-018",
@@ -372,7 +373,8 @@
         "ISSUE-05"
       ],
       "evidence_required": "integration",
-      "status": "covered"
+      "status": "covered",
+      "evidence_observed": "FOLLOWUP-05: external malformed payloads missing Phase 4 fields now receive stable validation errors instead of reaching normalizeStringArray/summary.trim and falling into generic 500; npm run test:admin passed 26/26 and worker npm run typecheck passed."
     },
     {
       "claim_id": "CLAIM-031",
