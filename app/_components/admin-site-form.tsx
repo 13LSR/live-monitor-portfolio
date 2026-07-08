@@ -1,9 +1,11 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useState } from "react";
 import {
+  addUniqueListValue,
   buildSitePayloadForSubmit,
   getNextSlugValue,
+  removeListValue,
   validateAdminSitePayload,
 } from "@/app/_lib/site-form-utils";
 import type { SitePayload } from "@/shared/contracts";
@@ -50,6 +52,8 @@ export function AdminSiteForm({
   const [slugEditedManually, setSlugEditedManually] = useState(
     Boolean(initialSite)
   );
+  const [tagInput, setTagInput] = useState("");
+  const [techStackInput, setTechStackInput] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -96,6 +100,37 @@ export function AdminSiteForm({
       });
       return { ...current, url, slug: nextSlug };
     });
+  }
+
+  function addListItem(field: "tags" | "techStack", value: string) {
+    setLocalError(null);
+    setForm((current) => ({
+      ...current,
+      [field]: addUniqueListValue(current[field], value),
+    }));
+  }
+
+  function removeListItem(field: "tags" | "techStack", value: string) {
+    setLocalError(null);
+    setForm((current) => ({
+      ...current,
+      [field]: removeListValue(current[field], value),
+    }));
+  }
+
+  function handleListKeyDown(
+    event: KeyboardEvent<HTMLInputElement>,
+    field: "tags" | "techStack",
+    value: string,
+    clearValue: () => void
+  ) {
+    if (event.key !== "Enter") {
+      return;
+    }
+
+    event.preventDefault();
+    addListItem(field, value);
+    clearValue();
   }
 
   return (
@@ -238,6 +273,124 @@ export function AdminSiteForm({
         />
       </Field>
 
+      <section className="space-y-5 border border-[var(--line)] bg-[#fffdf7] p-4">
+        <div className="border-b border-[var(--line)] pb-3">
+          <h3 className="text-base font-semibold text-[var(--ink)]">
+            作品信息
+          </h3>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+            用更结构化的方式补充首页作品卡会展示的轻量元信息。
+          </p>
+        </div>
+
+        <Field label="作品简介" hint="最多 120 字，会优先显示在首页卡片摘要里">
+          <textarea
+            value={form.summary}
+            onChange={(event) => {
+              setLocalError(null);
+              setForm((current) => ({
+                ...current,
+                summary: event.target.value,
+              }));
+            }}
+            rows={3}
+            maxLength={120}
+            className="admin-input min-h-24 resize-y"
+            placeholder="一句话说明这个作品解决了什么问题。"
+            disabled={pending}
+          />
+        </Field>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <ChipInput
+            label="标签"
+            hint="按 Enter 或点击添加；会自动去重、忽略空值"
+            values={form.tags}
+            inputValue={tagInput}
+            placeholder="作品集"
+            pending={pending}
+            onInputChange={setTagInput}
+            onAdd={() => {
+              addListItem("tags", tagInput);
+              setTagInput("");
+            }}
+            onKeyDown={(event) =>
+              handleListKeyDown(event, "tags", tagInput, () => setTagInput(""))
+            }
+            onRemove={(value) => removeListItem("tags", value)}
+          />
+          <ChipInput
+            label="技术栈"
+            hint="按展示顺序添加，首页最多显示前几项"
+            values={form.techStack}
+            inputValue={techStackInput}
+            placeholder="Next.js"
+            pending={pending}
+            onInputChange={setTechStackInput}
+            onAdd={() => {
+              addListItem("techStack", techStackInput);
+              setTechStackInput("");
+            }}
+            onKeyDown={(event) =>
+              handleListKeyDown(event, "techStack", techStackInput, () =>
+                setTechStackInput("")
+              )
+            }
+            onRemove={(value) => removeListItem("techStack", value)}
+          />
+        </div>
+
+        <div className="grid gap-5 md:grid-cols-2">
+          <Field label="源码链接" hint="可选，必须以 https:// 开头">
+            <input
+              value={form.repoUrl ?? ""}
+              onChange={(event) => {
+                setLocalError(null);
+                setForm((current) => ({
+                  ...current,
+                  repoUrl: event.target.value,
+                }));
+              }}
+              className="admin-input"
+              placeholder="https://github.com/..."
+              disabled={pending}
+            />
+          </Field>
+          <Field label="备用访问链接" hint="可选，用于 iframe 加载失败时备用访问">
+            <input
+              value={form.fallbackUrl ?? ""}
+              onChange={(event) => {
+                setLocalError(null);
+                setForm((current) => ({
+                  ...current,
+                  fallbackUrl: event.target.value,
+                }));
+              }}
+              className="admin-input"
+              placeholder="https://..."
+              disabled={pending}
+            />
+          </Field>
+        </div>
+
+        <ToggleCard
+          title="首页精选"
+          description="允许多个精选记录；首页会从排序后的精选记录里选第一个。"
+        >
+          <input
+            type="checkbox"
+            checked={form.isFeatured}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                isFeatured: event.target.checked,
+              }))
+            }
+            disabled={pending}
+          />
+        </ToggleCard>
+      </section>
+
       <Field label="展示模式" hint="当前真实活体网页展示请选择 iframe">
         <select
           value={form.coverMode}
@@ -305,6 +458,74 @@ export function AdminSiteForm({
         {pending ? "保存中..." : mode === "create" ? "创建站点" : "更新站点"}
       </button>
     </form>
+  );
+}
+
+function ChipInput({
+  label,
+  hint,
+  values,
+  inputValue,
+  placeholder,
+  pending,
+  onInputChange,
+  onAdd,
+  onKeyDown,
+  onRemove,
+}: {
+  label: string;
+  hint: string;
+  values: string[];
+  inputValue: string;
+  placeholder: string;
+  pending: boolean;
+  onInputChange: (value: string) => void;
+  onAdd: () => void;
+  onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
+  onRemove: (value: string) => void;
+}) {
+  return (
+    <div className="min-w-0 space-y-2 text-sm text-[var(--ink)]">
+      <div>
+        <span className="block font-semibold text-[var(--ink)]">{label}</span>
+        <span className="mt-2 block text-xs leading-5 text-[var(--muted)]">
+          {hint}
+        </span>
+      </div>
+      <div className="flex min-w-0 gap-2">
+        <input
+          value={inputValue}
+          onChange={(event) => onInputChange(event.target.value)}
+          onKeyDown={onKeyDown}
+          className="admin-input min-w-0 flex-1"
+          placeholder={placeholder}
+          disabled={pending}
+        />
+        <button
+          type="button"
+          onClick={onAdd}
+          disabled={pending || !inputValue.trim()}
+          className="border border-[var(--line)] bg-[#e7eadf] px-3 py-2 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#f7d879] disabled:cursor-not-allowed disabled:opacity-50"
+        >
+          添加
+        </button>
+      </div>
+      {values.length ? (
+        <div className="flex flex-wrap gap-2">
+          {values.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => onRemove(value)}
+              disabled={pending}
+              className="border border-[var(--line)] bg-[#f7d879] px-2.5 py-1 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {value} x
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
   );
 }
 

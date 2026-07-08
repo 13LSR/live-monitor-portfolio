@@ -7,9 +7,11 @@ import { DatabaseSync } from "node:sqlite";
 import { getFriendlyApiErrorMessage } from "../app/_lib/api-errors.ts";
 import { demoSites } from "../app/_data/demo-sites.ts";
 import {
+  addUniqueListValue,
   buildSitePayloadForSubmit,
   createSlugFromSiteInput,
   getNextSlugValue,
+  removeListValue,
   validateAdminSitePayload,
 } from "../app/_lib/site-form-utils.ts";
 import {
@@ -371,7 +373,75 @@ describe("admin production API path", () => {
       url: "https://example.com",
       monitorKey: null,
       description: "",
+      summary: "",
+      tags: [],
+      techStack: [],
+      repoUrl: null,
+      fallbackUrl: null,
     });
+    assert.deepEqual(
+      buildSitePayloadForSubmit({
+        ...validPayload,
+        summary: "  Short  ",
+        tags: [" React ", "", "Next", "React"],
+        techStack: [" TypeScript ", "Next", "TypeScript"],
+        repoUrl: " https://github.com/example/demo ",
+        fallbackUrl: "",
+      }),
+      {
+        ...validPayload,
+        monitorKey: null,
+        summary: "Short",
+        tags: ["React", "Next"],
+        techStack: ["TypeScript", "Next"],
+        repoUrl: "https://github.com/example/demo",
+        fallbackUrl: null,
+      }
+    );
+    assert.equal(
+      validateAdminSitePayload({
+        ...validPayload,
+        repoUrl: "http://github.com/example/demo",
+      }),
+      "源码链接必须以 https:// 开头。"
+    );
+    assert.equal(
+      validateAdminSitePayload({ ...validPayload, fallbackUrl: "not-a-url" }),
+      "请输入有效的 https:// 备用访问链接。"
+    );
+    assert.deepEqual(addUniqueListValue(["React"], " React "), ["React"]);
+    assert.deepEqual(addUniqueListValue(["React"], " Next "), [
+      "React",
+      "Next",
+    ]);
+    assert.deepEqual(removeListValue(["React", "Next"], "React"), ["Next"]);
+  });
+
+  it("renders Phase 4 portfolio fields in the single admin editor panel", () => {
+    const form = readFileSync(
+      join(root, "app/_components/admin-site-form.tsx"),
+      "utf8"
+    );
+
+    for (const label of [
+      "作品信息",
+      "作品简介",
+      "标签",
+      "技术栈",
+      "源码链接",
+      "备用访问链接",
+      "首页精选",
+    ]) {
+      assert.match(form, new RegExp(label));
+    }
+    assert.match(form, /form\.summary/);
+    assert.match(form, /form\.tags/);
+    assert.match(form, /form\.techStack/);
+    assert.match(form, /form\.repoUrl/);
+    assert.match(form, /form\.fallbackUrl/);
+    assert.match(form, /form\.isFeatured/);
+    assert.match(form, /多个精选/);
+    assert.doesNotMatch(form, /drag|auto recommendation|global tag/i);
   });
 
   it("keeps Worker site validation specific enough for the admin UI", () => {
