@@ -156,3 +156,20 @@
 - Current handoff state: those limitations are labeled historical and superseded by BLOCKER-01 closure; the remaining gate is REVIEW-07.
 - Evidence: stale current-state phrases about missing public data, missing admin session, and unverified browser metadata were removed or rewritten as closed historical limitations.
 - Remaining gate: REVIEW-07 final independent review.
+
+## REVIEW-07
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed HEAD bafbfd6, FOLLOWUP-09 handoff cleanup, prior fallbackUrl and Worker URL validation fixes, claim ledger accounting, CLAIM-034 out-of-scope boundary, frontend secret boundary, and Phase 5 scope boundary.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; app/_components/live-project-card.tsx; worker/src/site-validation.ts; tests/admin-production-path.test.mjs; git diff 0635056..bafbfd6.
+- Claim coverage: complete
+- Claim/evidence alignment: matched
+- Limited validation honestly reported: yes
+- Result: gaps_found
+- Gaps:
+  - P3 handoff: lower remaining-work section still says REVIEW-06 is the current final review gate instead of REVIEW-07.
+- Follow-up issues added: FOLLOWUP-10, REVIEW-08
+- Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer.
+- Decision debt: recorded npm/build/typecheck/browser evidence was treated as committed evidence, not freshly reproduced by reviewer.
+- Human-required blockers: none.
