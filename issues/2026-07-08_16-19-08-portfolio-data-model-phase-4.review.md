@@ -178,3 +178,20 @@
 - Fixed: The handoff lower status and remaining-work section now records REVIEW-06/REVIEW-07 as historical follow-up reviews and points the current final gate to REVIEW-08.
 - Evidence: current-state `REVIEW-06` pointer checks are clean except for historical references, and the remaining-work bullets now name REVIEW-08.
 - Remaining gate: REVIEW-08 final independent review.
+
+## REVIEW-08
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed HEAD b439f34, FOLLOWUP-10 handoff pointer cleanup, prior fallbackUrl and Worker validation fixes, claim ledger accounting, CLAIM-034 out-of-scope boundary, frontend secret boundary, and Phase 5 scope boundary.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; app/_components/live-project-card.tsx; worker/src/site-validation.ts; tests/admin-production-path.test.mjs; git diff a2c4c94..b439f34.
+- Claim coverage: complete
+- Claim/evidence alignment: matched
+- Limited validation honestly reported: not_applicable
+- Result: gaps_found
+- Gaps:
+  - P3 handoff: top summary still says REVIEW-07 is the current final review gate, while the lower handoff section, CSV, review log, and claim ledger point to REVIEW-08.
+- Follow-up issues added: FOLLOWUP-11, REVIEW-09
+- Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer.
+- Decision debt: recorded npm/build/typecheck/browser evidence was treated as committed evidence, not freshly reproduced by reviewer.
+- Human-required blockers: none.
