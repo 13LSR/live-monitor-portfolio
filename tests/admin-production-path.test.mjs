@@ -617,8 +617,16 @@ describe("admin production API path", () => {
       "Tags must be an array"
     );
     assert.equal(
+      getSitePayloadValidationError({ ...validPayload, tags: [1] }),
+      "Tags must contain only strings"
+    );
+    assert.equal(
       getSitePayloadValidationError({ ...validPayload, techStack: "Next" }),
       "Tech stack must be an array"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, techStack: [{}] }),
+      "Tech stack must contain only strings"
     );
     assert.equal(
       getSitePayloadValidationError({

@@ -77,8 +77,19 @@ export function getSitePayloadValidationError(
     return "Tags must be an array";
   }
 
+  if (payload.tags !== undefined && !hasOnlyStringItems(payload.tags)) {
+    return "Tags must contain only strings";
+  }
+
   if (payload.techStack !== undefined && !Array.isArray(payload.techStack)) {
     return "Tech stack must be an array";
+  }
+
+  if (
+    payload.techStack !== undefined &&
+    !hasOnlyStringItems(payload.techStack)
+  ) {
+    return "Tech stack must contain only strings";
   }
 
   const repoUrlError = getOptionalHttpsUrlError(payload.repoUrl, "Repo");
@@ -212,6 +223,10 @@ function getOptionalHttpsUrlError(
 function normalizeOptionalUrl(value: string | null) {
   const trimmed = value?.trim() ?? "";
   return trimmed ? trimmed : null;
+}
+
+function hasOnlyStringItems(values: string[]) {
+  return values.every((value) => typeof value === "string");
 }
 
 function normalizeStringArray(values: string[]) {
