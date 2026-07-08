@@ -3,9 +3,11 @@
   "csv": "2026-07-08_16-19-08-portfolio-data-model-phase-4.csv",
   "execution_scope": "Phase 4 portfolio data model extension only: D1 fields, Worker/API contracts, admin structured editing, homepage lightweight metadata display, and visible animal-island-ui usage beyond login.",
   "claim_coverage": {
-    "covered": 33,
+    "covered": 27,
     "total": 34,
-    "status": "pending"
+    "status": "gaps",
+    "limited": 6,
+    "updated_by": "FOLLOWUP-03"
   },
   "claims": [
     {
@@ -233,7 +235,9 @@
         "ISSUE-06"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-020",
@@ -268,7 +272,9 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-023",
@@ -280,7 +286,9 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-024",
@@ -292,7 +300,9 @@
         "ISSUE-08"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-025",
@@ -325,7 +335,9 @@
         "ISSUE-07"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-028",
@@ -348,7 +360,9 @@
         "ISSUE-09"
       ],
       "evidence_required": "real_e2e",
-      "status": "covered"
+      "status": "limited",
+      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
+      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
     },
     {
       "claim_id": "CLAIM-030",

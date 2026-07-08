@@ -90,6 +90,16 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 
 ## 后续可操作
 
+## FOLLOWUP-03 证据更新
+
+已在不启动新服务的前提下，用内置浏览器访问用户已有的 `http://localhost:3000/`。
+
+- 桌面默认视口：页面标题为 `小茄的网站集合`，`articleCount=1`，`iframeCount=0`，`查看源码=0`，`访问网站=0`，无横向溢出。
+- 移动 `390x844`：`articleCount=1`，`iframeCount=0`，`查看源码=0`，`访问网站=0`，`scrollWidth=390`，未发现溢出元素。
+- 移动检查期间控制台记录 `/sites` 拉取失败：`无法获取站点列表 TypeError: Failed to fetch`。
+
+因此，admin UI、首页真实作品元信息、源码按钮、animal-island-ui 首页可见性和移动端真实卡片布局仍不能按 real E2E 级别记为 covered。`CLAIM-019`、`CLAIM-022`、`CLAIM-023`、`CLAIM-024`、`CLAIM-027`、`CLAIM-029` 已在 claim ledger 中降为 `limited`。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。
