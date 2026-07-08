@@ -7,7 +7,7 @@ WARNING: self-review only, NOT independently verified
 
 ## 总结
 
-本轮执行的是 `小茄的网站小岛 Phase 4 作品集数据模型设计`。设计里要求把现有站点记录升级成作品集作品：能保存一句话简介、标签、技术栈、精选状态、源码地址和 iframe 备用地址；后台能编辑这些字段；首页能轻量展示它们；`animal-island-ui` 不再只停留在登录页。代码层面这些能力已经接通，并通过测试、构建、Worker typecheck 和 migration 验证。降级点有两个：本地浏览器没有可用公开站点数据，所以真实首页卡片的元信息视觉只能做受限验证；本交工单来自主会话自审，不是独立 reviewer 结论。
+本轮执行的是 `小茄的网站小岛 Phase 4 作品集数据模型设计`。设计里要求把现有站点记录升级成作品集作品：能保存一句话简介、标签、技术栈、精选状态、源码地址和 iframe 备用地址；后台能编辑这些字段；首页能轻量展示它们；`animal-island-ui` 不再只停留在登录页。代码层面这些能力已经接通，并通过测试、构建、Worker typecheck、migration、真实公开卡片和后台编辑链路验收。早期缺少公开数据和 admin session 的限制已在 BLOCKER-01 关闭时补证；当前只剩 REVIEW-07 做最终独立复审。
 
 ## spec 目标逐条对账
 
@@ -16,9 +16,9 @@ WARNING: self-review only, NOT independently verified
 | 新增 D1 migration，为 `sites` 表增加作品字段 | 完成 | 旧站点行升级后会获得空简介、空标签数组、空技术栈数组、非精选、空源码和空备用地址。 | migration 只做 `ALTER TABLE ADD COLUMN`，不回填推断数据。 |
 | 扩展 Worker 数据读取、写入、校验和 API 映射 | 完成 | 创建、更新和公开列表都能流通新作品字段；损坏的标签 JSON 不会拖垮列表。 | Worker 仍是最终校验边界。 |
 | 扩展 `shared/types.ts` 与 `shared/contracts.ts` 契约 | 完成 | 前端和 Worker 共享 camelCase 字段：`summary`、`tags`、`techStack`、`isFeatured`、`repoUrl`、`fallbackUrl`。 | D1 snake_case 没暴露给 React 组件。 |
-| 扩展后台单一编辑面板，加入结构化作品信息编辑区 | 完成 | 管理员仍在同一个编辑面板里维护站点，同时可以编辑作品简介、标签、技术栈、源码、备用地址和精选开关。 | 已有浏览器检查停在登录门禁，未用真实管理员会话做交互录屏。 |
-| 扩展首页作品卡，轻量展示作品元信息和精选逻辑 | 部分完成 | 代码会选择当前筛选范围内排序最靠前的精选作品，卡片会展示简介、标签、技术栈和源码入口。 | 本地 `localhost:3000` 没有可渲染的公开站点数据，真实卡片浏览器证据待补。 |
-| 在新增作品信息 UI 中显著运用或贴近 `animal-island-ui` | 部分完成 | 后台作品信息区和首页元信息区都使用了 `animal-island-ui` 的卡片、标签或按钮语言。 | `ui-ux-pro-max` skill 和 `screenpipe` 工具当前不可用；视觉验收以源码、构建和有限浏览器检查替代。 |
+| 扩展后台单一编辑面板，加入结构化作品信息编辑区 | 完成 | 管理员仍在同一个编辑面板里维护站点，同时可以编辑作品简介、标签、技术栈、源码、备用地址和精选开关。 | BLOCKER-01 已用真实 admin 登录、编辑、chip 添加和保存链路补证。 |
+| 扩展首页作品卡，轻量展示作品元信息和精选逻辑 | 完成 | 代码会选择当前筛选范围内排序最靠前的精选作品，卡片会展示简介、标签、技术栈、源码入口和备用访问入口。 | BLOCKER-01 已用真实公开数据补齐桌面和移动浏览器证据。 |
+| 在新增作品信息 UI 中显著运用或贴近 `animal-island-ui` | 完成 | 后台作品信息区和首页元信息区都使用了 `animal-island-ui` 的卡片、标签或按钮语言。 | `ui-ux-pro-max` skill 和 `screenpipe` 工具不可用是历史过程限制，不再影响当前 claim 覆盖。 |
 | 保持静态导出、Worker 认证边界、live iframe 和 out-of-scope 边界 | 完成 | Next build 继续导出 `/` 和 `/admin`；前端没有引用 Worker secrets；未新增详情页、公益模块、社区功能、监控代理或强制截图/代理渲染。 | 真实部署环境仍需按项目部署流程复测。 |
 
 ## 施工细节
@@ -66,7 +66,7 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 
 `app/_lib/portfolio-summary.ts` 增加精选拆分逻辑：当前过滤列表里先找 `isFeatured`，找不到就回退第一项，并从普通列表排除 featured。`app/_components/live-project-card.tsx` 继续保留 iframe、状态胶囊和访问按钮，只把元信息层升级成简介、标签、技术栈和源码入口。
 
-`fallbackUrl` 只影响 iframe 离线/备用场景，访问网站按钮仍打开主 `site.url`。这避免把 Phase 4 做成复杂代理或截图兜底。
+`fallbackUrl` 只影响访问按钮的 loading/offline 备用入口，iframe 本身仍加载主 `site.url`。这避免把 Phase 4 做成复杂代理或截图兜底，同时让用户在加载或离线时有可点的备用地址。
 
 ### 视觉语言
 
@@ -82,11 +82,11 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 - `worker` 目录下 `npm run typecheck`：通过。
 - SQLite/D1 等效 migration：旧行升级后新字段默认值为 `summary=""`、`tags="[]"`、`tech_stack="[]"`、`is_featured=0`、`repo_url=null`、`fallback_url=null`。
 
-未完整验证的部分：
+历史上曾受限、现在已补证的部分：
 
-- 真实首页公开卡片上的 tags、techStack、源码按钮移动端视觉，因为当前 `localhost:3000` 无法取得公开站点数据。
-- 后台作品信息区的登录后浏览器交互，因为没有管理员凭证或现成 session。
-- 独立愿景 review，因为外部 `codex exec` 审查会传输私有工作区内容，未获明确授权时被拒绝。
+- 真实首页公开卡片上的 tags、techStack、源码按钮和移动端视觉，已在 BLOCKER-01 通过真实公开数据补证。
+- 后台作品信息区的登录后浏览器交互，已在 BLOCKER-01 通过真实 admin 会话补证。
+- 外部 `codex exec` 审查因私有仓库传输风险被审批层拒绝；后续独立愿景 review 改用当前 Codex 内的 direct-spawn-agent。
 
 ## 后续可操作
 

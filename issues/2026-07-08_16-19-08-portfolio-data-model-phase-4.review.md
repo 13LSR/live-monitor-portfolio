@@ -150,3 +150,9 @@
 - Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer.
 - Decision debt: recorded npm/build/typecheck evidence was inspected as committed review evidence, not freshly reproduced by reviewer.
 - Human-required blockers: none.
+
+## FOLLOWUP-09
+- Fixed: The handoff summary, spec-accounting table, homepage section, and validation section no longer present public-card/admin E2E as current blockers.
+- Current handoff state: those limitations are labeled historical and superseded by BLOCKER-01 closure; the remaining gate is REVIEW-07.
+- Evidence: stale current-state phrases about missing public data, missing admin session, and unverified browser metadata were removed or rewritten as closed historical limitations.
+- Remaining gate: REVIEW-07 final independent review.
