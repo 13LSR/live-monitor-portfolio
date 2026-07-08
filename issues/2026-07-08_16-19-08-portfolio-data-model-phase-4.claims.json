@@ -3,13 +3,13 @@
   "csv": "2026-07-08_16-19-08-portfolio-data-model-phase-4.csv",
   "execution_scope": "Phase 4 portfolio data model extension only: D1 fields, Worker/API contracts, admin structured editing, homepage lightweight metadata display, and visible animal-island-ui usage beyond login.",
   "claim_coverage": {
-    "covered": 27,
+    "covered": 28,
     "total": 34,
     "status": "gaps",
-    "limited": 6,
-    "updated_by": "FOLLOWUP-04",
-    "review_result": "gaps_found",
-    "review_state": "REVIEW-03 pending after follow-ups"
+    "limited": 5,
+    "updated_by": "BLOCKER-01 retry",
+    "review_result": "limited_review",
+    "review_state": "BLOCKER-01 partially reduced after local D1 migration; metadata/admin claims still limited"
   },
   "claims": [
     {
@@ -362,9 +362,8 @@
         "ISSUE-09"
       ],
       "evidence_required": "real_e2e",
-      "status": "limited",
-      "validation_limited": "Rendered real_e2e evidence could not be completed because localhost:3000 failed to fetch public /sites data and no authenticated admin session/credentials were available; source tests and static checks remain supporting evidence only.",
-      "evidence_observed": "FOLLOWUP-03 2026-07-08: in-app browser Playwright checked http://localhost:3000 without starting a server. Desktop: title=小茄的网站集合, articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=1, iframeCount=0, sourceButtonTextCount=0, visitButtonTextCount=0, hasHorizontalOverflow=false, overflowing=[]; console logged /sites fetch failure. Real public-card/admin interaction evidence remains unavailable."
+      "status": "covered",
+      "evidence_observed": "2026-07-08 after applying local D1 migration 0002: in-app browser Playwright checked real public cards from local Worker /sites. Desktop after client hydration: articleCount=3, iframeCount=3, visitButtonTextCount=3, sourceButtonTextCount=0, hasHorizontalOverflow=false. Mobile 390x844: articleCount=3, iframeCount=3, visitButtonTextCount=3, hasHorizontalOverflow=false, card widths 343px inside 375px viewport; visit buttons remained visible. The only geometrically overflowing elements detected were scaled iframe nodes inside overflow-hidden preview containers, not page-level horizontal overflow."
     },
     {
       "claim_id": "CLAIM-030",

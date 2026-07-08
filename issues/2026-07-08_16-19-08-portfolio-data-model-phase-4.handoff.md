@@ -106,6 +106,8 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 
 REVIEW-03 已完成强独立复审，结论为 `limited_review`：代码缺口已修复，未发现新的可执行实现缺口；剩余 6 个 real E2E claim 只能等待真实 public `/sites` 数据和 admin session 后补证。CSV 已追加 `BLOCKER-01` 记录这个 human-required blocker。
 
+BLOCKER-01 复查更新：本地 D1 已应用 `0002_portfolio_fields.sql`，公开 `/sites` 从 500 恢复为 200，并返回 3 条可见站点。桌面和移动浏览器都已看到真实 public cards、iframe 和访问按钮，移动端无页面级横向溢出，所以 `CLAIM-029` 已从 `limited` 调整为 `covered`。当前 claim ledger 为 `28/34 covered`、`5 limited`。剩余限制集中在本地数据缺少 tags/techStack/repoUrl/isFeatured/fallbackUrl，以及没有 admin session。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。

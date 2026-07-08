@@ -56,3 +56,11 @@
 - Assumptions: Latest verification command outputs from the main session are accepted as recorded evidence; reviewer did not rerun commands.
 - Decision debt: Phase 4 cannot be marked vision_met until public sites data/API and admin session make rendered E2E evidence collectible, or the project explicitly accepts limited closure.
 - Human-required blockers: Provide a working public /sites data path with at least one visible portfolio site and an admin session/credentials for browser interaction checks.
+
+## BLOCKER-01 Retry
+- Local D1 migration 0002_portfolio_fields.sql was applied with `wrangler d1 migrations apply --local`.
+- Configured local Worker `/sites` recovered from 500 (`no such column: summary`) to 200 with 3 visible sites.
+- Desktop browser evidence after hydration: 3 public cards, 3 iframes, 3 visit buttons, no horizontal overflow.
+- Mobile 390x844 evidence: 3 real cards, 3 iframes, 3 visit buttons, no page-level horizontal overflow; scaled iframe nodes remain clipped by preview containers.
+- Claim update: CLAIM-029 is now covered. Current claim coverage is 28/34 covered, 5 limited.
+- Remaining blocker: local public data still lacks tags/techStack/repoUrl/isFeatured/fallbackUrl, and `/auth/me` is not authenticated, so homepage metadata/source/admin real E2E claims remain limited.
