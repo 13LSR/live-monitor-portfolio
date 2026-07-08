@@ -1,17 +1,17 @@
-import type { Env } from "../auth";
-import { isAuthenticated } from "../auth";
+import type { Env } from "../auth.ts";
+import { isAuthenticated } from "../auth.ts";
 import {
   deleteSiteById,
   insertSite,
   listSites,
   seedDefaultSite,
   updateSiteById,
-} from "../db";
+} from "../db.ts";
 import {
   getSiteMutationErrorMessage,
   getSitePayloadValidationError,
   mapSiteRowToSiteRecord,
-} from "../site-validation";
+} from "../site-validation.ts";
 import type { SitePayload } from "../../../shared/contracts";
 
 export async function handleGetSites(request: Request, env: Env) {

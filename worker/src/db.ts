@@ -1,5 +1,6 @@
 import type { Env } from "./auth";
 import type { SitePayload } from "../../shared/contracts";
+import { normalizeSitePayloadForStorage } from "./site-validation.ts";
 
 export interface SiteRow {
   id: number;
@@ -9,6 +10,12 @@ export interface SiteRow {
   monitor_key: string | null;
   category: string;
   description: string;
+  summary: string;
+  tags: string;
+  tech_stack: string;
+  is_featured: number;
+  repo_url: string | null;
+  fallback_url: string | null;
   cover_mode: string;
   sort_order: number;
   is_visible: number;
@@ -20,10 +27,10 @@ export interface SiteRow {
 export async function listSites(env: Env, includeHidden = false) {
   const statement = env.DB.prepare(
     includeHidden
-      ? `SELECT id, name, slug, url, monitor_key, category, description, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
+      ? `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
          FROM sites
          ORDER BY sort_order ASC, id ASC`
-      : `SELECT id, name, slug, url, monitor_key, category, description, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
+      : `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
          FROM sites
          WHERE is_visible = 1
          ORDER BY sort_order ASC, id ASC`
@@ -34,24 +41,32 @@ export async function listSites(env: Env, includeHidden = false) {
 
 export async function insertSite(env: Env, payload: SitePayload) {
   const now = new Date().toISOString();
+  const normalized = normalizeSitePayloadForStorage(payload);
 
   return env.DB.prepare(
     `INSERT INTO sites (
-      name, slug, url, monitor_key, category, description, cover_mode,
-      sort_order, is_visible, allow_interaction, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      name, slug, url, monitor_key, category, description, summary, tags,
+      tech_stack, is_featured, repo_url, fallback_url, cover_mode, sort_order,
+      is_visible, allow_interaction, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
-      payload.name,
-      payload.slug,
-      payload.url,
-      payload.monitorKey,
-      payload.category,
-      payload.description,
-      payload.coverMode,
-      payload.sortOrder,
-      payload.isVisible ? 1 : 0,
-      payload.allowInteraction ? 1 : 0,
+      normalized.name,
+      normalized.slug,
+      normalized.url,
+      normalized.monitorKey,
+      normalized.category,
+      normalized.description,
+      normalized.summary,
+      normalized.tagsJson,
+      normalized.techStackJson,
+      normalized.isFeaturedValue,
+      normalized.repoUrl,
+      normalized.fallbackUrl,
+      normalized.coverMode,
+      normalized.sortOrder,
+      normalized.isVisibleValue,
+      normalized.allowInteractionValue,
       now,
       now
     )
@@ -64,24 +79,33 @@ export async function updateSiteById(
   payload: SitePayload
 ) {
   const now = new Date().toISOString();
+  const normalized = normalizeSitePayloadForStorage(payload);
 
   return env.DB.prepare(
     `UPDATE sites
      SET name = ?, slug = ?, url = ?, monitor_key = ?, category = ?, description = ?,
-         cover_mode = ?, sort_order = ?, is_visible = ?, allow_interaction = ?, updated_at = ?
+         summary = ?, tags = ?, tech_stack = ?, is_featured = ?, repo_url = ?,
+         fallback_url = ?, cover_mode = ?, sort_order = ?, is_visible = ?,
+         allow_interaction = ?, updated_at = ?
      WHERE id = ?`
   )
     .bind(
-      payload.name,
-      payload.slug,
-      payload.url,
-      payload.monitorKey,
-      payload.category,
-      payload.description,
-      payload.coverMode,
-      payload.sortOrder,
-      payload.isVisible ? 1 : 0,
-      payload.allowInteraction ? 1 : 0,
+      normalized.name,
+      normalized.slug,
+      normalized.url,
+      normalized.monitorKey,
+      normalized.category,
+      normalized.description,
+      normalized.summary,
+      normalized.tagsJson,
+      normalized.techStackJson,
+      normalized.isFeaturedValue,
+      normalized.repoUrl,
+      normalized.fallbackUrl,
+      normalized.coverMode,
+      normalized.sortOrder,
+      normalized.isVisibleValue,
+      normalized.allowInteractionValue,
       now,
       id
     )
@@ -111,9 +135,10 @@ export async function seedDefaultSite(env: Env) {
 
   await env.DB.prepare(
     `INSERT INTO sites (
-      name, slug, url, monitor_key, category, description, cover_mode,
-      sort_order, is_visible, allow_interaction, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+      name, slug, url, monitor_key, category, description, summary, tags,
+      tech_stack, is_featured, repo_url, fallback_url, cover_mode, sort_order,
+      is_visible, allow_interaction, created_at, updated_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       "网易云音乐 Demo",
@@ -122,6 +147,12 @@ export async function seedDefaultSite(env: Env) {
       "wyy.331106.xyz",
       "web",
       "已部署在线站点，作为活体 iframe 监控卡片的首个演示目标。",
+      "",
+      "[]",
+      "[]",
+      0,
+      null,
+      null,
       "iframe",
       10,
       1,

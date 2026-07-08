@@ -1,4 +1,8 @@
-import { createSessionCookie, verifySessionCookie, readCookie } from "./cookies";
+import {
+  createSessionCookie,
+  readCookie,
+  verifySessionCookie,
+} from "./cookies.ts";
 
 export interface Env {
   ADMIN_PASSWORD: string;

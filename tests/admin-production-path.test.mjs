@@ -23,6 +23,8 @@ import {
   normalizeSitePayloadForStorage,
   parsePortfolioStringArray,
 } from "../worker/src/site-validation.ts";
+import { insertSite, listSites, updateSiteById } from "../worker/src/db.ts";
+import { handleGetSites } from "../worker/src/routes/sites.ts";
 
 const root = process.cwd();
 
@@ -496,6 +498,145 @@ describe("admin production API path", () => {
     assert.equal(mapped.fallbackUrl, "https://fallback.example.com");
   });
 
+  it("persists Phase 4 portfolio fields through Worker DB helpers", async () => {
+    const db = new DatabaseSync(":memory:");
+    db.exec(readFileSync(join(root, "worker/migrations/0001_init.sql"), "utf8"));
+    db.exec(
+      readFileSync(
+        join(root, "worker/migrations/0002_portfolio_fields.sql"),
+        "utf8"
+      )
+    );
+    const env = createSqliteD1Env(db);
+    const payload = {
+      name: " Demo ",
+      slug: "demo",
+      url: "https://example.com",
+      monitorKey: null,
+      category: "web",
+      description: "",
+      summary: " First summary ",
+      tags: ["React", "Next", "React"],
+      techStack: ["TypeScript"],
+      isFeatured: true,
+      repoUrl: "https://github.com/example/demo",
+      fallbackUrl: "https://fallback.example.com",
+      coverMode: "iframe",
+      sortOrder: 1,
+      isVisible: true,
+      allowInteraction: false,
+    };
+
+    await insertSite(env, payload);
+
+    let rows = await listSites(env);
+    assert.equal(rows.length, 1);
+    assert.equal(rows[0].summary, "First summary");
+    assert.equal(rows[0].tags, "[\"React\",\"Next\"]");
+    assert.equal(rows[0].tech_stack, "[\"TypeScript\"]");
+    assert.equal(rows[0].is_featured, 1);
+    assert.equal(rows[0].repo_url, "https://github.com/example/demo");
+    assert.equal(rows[0].fallback_url, "https://fallback.example.com");
+    assert.deepEqual(mapSiteRowToSiteRecord(rows[0]).tags, ["React", "Next"]);
+
+    await updateSiteById(env, rows[0].id, {
+      ...payload,
+      summary: " Updated ",
+      tags: ["Design"],
+      techStack: ["Cloudflare", "D1"],
+      isFeatured: false,
+      repoUrl: "",
+      fallbackUrl: null,
+    });
+
+    rows = await listSites(env, true);
+    assert.equal(rows[0].summary, "Updated");
+    assert.equal(rows[0].tags, "[\"Design\"]");
+    assert.equal(rows[0].tech_stack, "[\"Cloudflare\",\"D1\"]");
+    assert.equal(rows[0].is_featured, 0);
+    assert.equal(rows[0].repo_url, null);
+    assert.equal(rows[0].fallback_url, null);
+    db.close();
+  });
+
+  it("returns portfolio fields through the public Worker sites route", async () => {
+    const db = new DatabaseSync(":memory:");
+    db.exec(readFileSync(join(root, "worker/migrations/0001_init.sql"), "utf8"));
+    db.exec(
+      readFileSync(
+        join(root, "worker/migrations/0002_portfolio_fields.sql"),
+        "utf8"
+      )
+    );
+    const env = createSqliteD1Env(db);
+
+    await insertSite(env, {
+      name: "Visible",
+      slug: "visible",
+      url: "https://visible.example.com",
+      monitorKey: null,
+      category: "web",
+      description: "",
+      summary: "Visible summary",
+      tags: ["Live", "Portfolio"],
+      techStack: ["D1"],
+      isFeatured: true,
+      repoUrl: "https://github.com/example/visible",
+      fallbackUrl: null,
+      coverMode: "iframe",
+      sortOrder: 1,
+      isVisible: true,
+      allowInteraction: false,
+    });
+    await insertSite(env, {
+      name: "Hidden",
+      slug: "hidden",
+      url: "https://hidden.example.com",
+      monitorKey: null,
+      category: "web",
+      description: "",
+      summary: "Hidden summary",
+      tags: ["Secret"],
+      techStack: ["D1"],
+      isFeatured: false,
+      repoUrl: null,
+      fallbackUrl: null,
+      coverMode: "iframe",
+      sortOrder: 2,
+      isVisible: false,
+      allowInteraction: false,
+    });
+
+    const publicResponse = await handleGetSites(
+      new Request("https://worker.test/sites"),
+      env
+    );
+    const publicBody = await publicResponse.json();
+    assert.deepEqual(
+      publicBody.sites.map((site) => site.slug),
+      ["visible"]
+    );
+    assert.deepEqual(publicBody.sites[0].tags, ["Live", "Portfolio"]);
+    assert.deepEqual(publicBody.sites[0].techStack, ["D1"]);
+    assert.equal(publicBody.sites[0].isFeatured, true);
+    assert.equal(
+      publicBody.sites[0].repoUrl,
+      "https://github.com/example/visible"
+    );
+
+    const unauthenticatedHiddenResponse = await handleGetSites(
+      new Request("https://worker.test/sites?includeHidden=1"),
+      env
+    );
+    const unauthenticatedHiddenBody =
+      await unauthenticatedHiddenResponse.json();
+    assert.deepEqual(
+      unauthenticatedHiddenBody.sites.map((site) => site.slug),
+      ["visible"]
+    );
+    db.close();
+  });
+
   it("maps Worker and network failures to friendly Chinese messages", () => {
     assert.equal(
       getFriendlyApiErrorMessage(new Error("Unauthorized"), "保存失败。"),
@@ -632,4 +773,48 @@ function makeSite({ id, category, isOnline }) {
       monitorMatched: false,
     },
   };
+}
+
+function createSqliteD1Env(db) {
+  return {
+    ADMIN_PASSWORD: "test-password",
+    SESSION_SECRET: "test-secret",
+    DB: {
+      prepare(sql) {
+        return new SqliteD1Statement(db, sql);
+      },
+    },
+  };
+}
+
+class SqliteD1Statement {
+  constructor(db, sql) {
+    this.db = db;
+    this.sql = sql;
+    this.params = [];
+  }
+
+  bind(...params) {
+    this.params = params;
+    return this;
+  }
+
+  async run() {
+    this.db.prepare(this.sql).run(...this.params);
+    return { success: true };
+  }
+
+  async all() {
+    return {
+      results: this.db
+        .prepare(this.sql)
+        .all(...this.params)
+        .map((row) => Object.fromEntries(Object.entries(row))),
+    };
+  }
+
+  async first() {
+    const row = this.db.prepare(this.sql).get(...this.params);
+    return row ? Object.fromEntries(Object.entries(row)) : null;
+  }
 }
