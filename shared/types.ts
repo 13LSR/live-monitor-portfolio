@@ -10,6 +10,12 @@ export interface SiteRecord {
   monitorKey: string | null;
   category: SiteCategory;
   description: string;
+  summary: string;
+  tags: string[];
+  techStack: string[];
+  isFeatured: boolean;
+  repoUrl: string | null;
+  fallbackUrl: string | null;
   coverMode: CoverMode;
   sortOrder: number;
   isVisible: boolean;

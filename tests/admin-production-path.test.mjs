@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { getFriendlyApiErrorMessage } from "../app/_lib/api-errors.ts";
+import { demoSites } from "../app/_data/demo-sites.ts";
 import {
   buildSitePayloadForSubmit,
   createSlugFromSiteInput,
@@ -241,6 +242,49 @@ describe("admin production API path", () => {
     db.close();
   });
 
+  it("keeps Phase 4 portfolio fields in the shared camelCase contract", () => {
+    const sharedTypes = readFileSync(join(root, "shared/types.ts"), "utf8");
+    const sharedContracts = readFileSync(
+      join(root, "shared/contracts.ts"),
+      "utf8"
+    );
+
+    for (const field of [
+      "summary",
+      "tags",
+      "techStack",
+      "isFeatured",
+      "repoUrl",
+      "fallbackUrl",
+    ]) {
+      assert.match(sharedTypes, new RegExp(`\\b${field}\\b`));
+      assert.match(sharedContracts, new RegExp(`\\b${field}\\b`));
+    }
+    assert.doesNotMatch(
+      sharedTypes,
+      /tech_stack|is_featured|repo_url|fallback_url/
+    );
+    assert.doesNotMatch(
+      sharedContracts,
+      /tech_stack|is_featured|repo_url|fallback_url/
+    );
+
+    for (const site of demoSites) {
+      assert.equal(typeof site.summary, "string");
+      assert.equal(Array.isArray(site.tags), true);
+      assert.equal(Array.isArray(site.techStack), true);
+      assert.equal(typeof site.isFeatured, "boolean");
+      assert.equal(
+        site.repoUrl === null || typeof site.repoUrl === "string",
+        true
+      );
+      assert.equal(
+        site.fallbackUrl === null || typeof site.fallbackUrl === "string",
+        true
+      );
+    }
+  });
+
   it("provides a local verifier without starting frontend or Worker services", () => {
     const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
     const verifier = readFileSync(
@@ -290,6 +334,12 @@ describe("admin production API path", () => {
       monitorKey: "",
       category: "web",
       description: "",
+      summary: "",
+      tags: [],
+      techStack: [],
+      isFeatured: false,
+      repoUrl: null,
+      fallbackUrl: null,
       coverMode: "iframe",
       sortOrder: 0,
       isVisible: true,
@@ -453,6 +503,12 @@ function makeSite({ id, category, isOnline }) {
     monitorKey: null,
     category,
     description: "",
+    summary: "",
+    tags: [],
+    techStack: [],
+    isFeatured: false,
+    repoUrl: null,
+    fallbackUrl: null,
     coverMode: "iframe",
     sortOrder: id,
     isVisible: true,

@@ -11,6 +11,12 @@ export interface SitePayload {
   monitorKey: string | null;
   category: "web" | "landing" | "tool" | "other";
   description: string;
+  summary: string;
+  tags: string[];
+  techStack: string[];
+  isFeatured: boolean;
+  repoUrl: string | null;
+  fallbackUrl: string | null;
   coverMode: "iframe" | "text" | "gallery";
   sortOrder: number;
   isVisible: boolean;
