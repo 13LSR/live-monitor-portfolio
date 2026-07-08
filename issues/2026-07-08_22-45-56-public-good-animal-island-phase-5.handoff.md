@@ -1,12 +1,12 @@
 # Phase 5 施工交工单：公益公告和小岛化体验
 
-WARNING: self-review only, NOT independently verified
+WARNING: external review completed, but authenticated admin browser validation is still missing
 
-独立性: weak，自审记录，尚未完成外部独立 review。
+独立性: strong for source/artifact review；登录后后台视觉验收仍缺真实浏览器会话。
 
 ## 总结
 
-本轮执行的是 `docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md`。核心实现已经进仓：首页现在有公益公告模块，数据通过 Worker 的 `/public-good` 代理进入前端；首页和后台也从原来的监控/demo 面板感，往“作品小岛”和“岛务管理所”的方向推进了一步。降级点有两个：外部独立 review 被安全策略拦截，没有得到强独立结论；登录后的后台页面没有真实浏览器会话验证，只完成了静态验证和未登录隔离检查。
+本轮执行的是 `docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md`。核心实现已经进仓：首页现在有公益公告模块，数据通过 Worker 的 `/public-good` 代理进入前端；首页和后台也从原来的监控/demo 面板感，往“作品小岛”和“岛务管理所”的方向推进了一步。外部独立 review 已经补跑，结论是核心实现路径成立，但还不能关闭为完全达成：登录后的后台页面没有真实浏览器会话验证，只完成了静态验证和未登录隔离检查。
 
 ## spec 目标逐条对账
 
@@ -65,7 +65,7 @@ README 新增了 animal-island-ui attribution，明确当前按 CC-BY-NC-4.0 非
 
 降级说明：
 
-- 外部 `codex exec review` 被安全策略拒绝，原因是会上传 Phase 5 项目材料到外部 review 服务；因此本轮没有强独立 review。
+- 外部 `codex exec` 独立 review 已完成，结果保存在 `issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.external-review-02.codex.md`；它没有发现核心实现缺口，但把登录后 admin 浏览器验收列为未完成证据。
 - 登录后的 admin 视觉没有真实浏览器验收，因为当前会话没有本地 ADMIN_PASSWORD/session。
 - 浏览器 console 中看到的 error 来自 live iframe 内的外部站点 `https://hjm.331106.xyz`，不是当前首页脚本。
 
@@ -73,8 +73,8 @@ README 新增了 animal-island-ui attribution，明确当前按 CC-BY-NC-4.0 非
 
 还剩两件事：
 
-1. 重新跑 Phase 5 独立愿景 review。解除条件是用户明确授权上传 Phase 5 spec、CSV、claim ledger、review/handoff、代码 diff、测试证据和相关源码给外部 `codex exec review`，或提供一个不会外传仓库内容的独立 reviewer。
-2. 做登录后 admin 浏览器验收。解除条件是提供本地 admin 登录方式，或你自己在浏览器中登录后让 agent 继续检查。
+1. 做登录后 admin 浏览器验收。解除条件是提供本地 admin 登录方式，或你自己在浏览器中登录后让 agent 继续检查。
+2. 登录后验收补齐后，再跑一轮最终 review，确认 Phase 5 可以关闭为“完整达成”，或继续追加具体修复项。
 
 你可以自己验证：
 

@@ -26,3 +26,27 @@
 - Human-required blockers:
   - Explicit authorization is required before uploading Phase 5 uncommitted/committed project materials to external codex review.
   - Authenticated admin browser validation requires a local admin password/session or an equivalent user-provided test path.
+
+## REVIEW-02
+- Source doc: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md
+- Review agent: codex-exec-independent
+- Review independence: strong
+- Scope checked: Phase 5 public-good Worker proxy, sanitized cached 5-item batch, frontend fallback and failure isolation, homepage placement, five-avatar notice interaction, homepage/admin Animal Island evidence, attribution, tests/build evidence, claim ledger, CSV notes, review log, handoff, and declaration/evidence alignment.
+- Evidence checked: issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.external-review-02.codex.md; docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md; issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.csv; issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.claims.json; issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.handoff.md; git diff/log for a88c1dc..0ceb189; worker/app/shared/test/package source paths listed in the external review.
+- Claim coverage: gaps
+- Claim/evidence alignment: limited
+- Limited validation honestly reported: yes
+- Result: limited_review
+- Gaps:
+  - source_ref: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:163
+    evidence_ref: issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.review.md:17; issues/2026-07-08_22-45-56-public-good-animal-island-phase-5.handoff.md:69
+    why_it_matters: approved Phase 5 requires logged-in admin desktop/mobile browser validation for the island-office experience; committed evidence covers source/static tests and unauthenticated admin browser isolation only.
+    suggested_followup_issue: FOLLOWUP-01 run authenticated /admin browser validation with a local admin session, covering desktop/mobile layout, CRUD reachability, no overflow, and no new console errors.
+- Follow-up issues added: FOLLOWUP-01, REVIEW-03
+- Assumptions:
+  - Commits a88c1dc..0ceb189 are the Phase 5 delivery under review.
+  - The external reviewer did not rerun tests or browser checks; it inspected committed source and recorded artifacts in a read-only session.
+- Decision debt:
+  - Runtime validation of authenticated admin state remains the only material evidence gap identified by the external reviewer.
+- Human-required blockers:
+  - Authenticated admin browser validation requires a local ADMIN_PASSWORD/session or an already-authenticated browser state.

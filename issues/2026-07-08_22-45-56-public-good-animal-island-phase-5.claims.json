@@ -5,7 +5,7 @@
   "claim_coverage": {
     "covered": 34,
     "total": 34,
-    "status": "pending",
+    "status": "gaps",
     "out_of_scope": 0
   },
   "claims": [
