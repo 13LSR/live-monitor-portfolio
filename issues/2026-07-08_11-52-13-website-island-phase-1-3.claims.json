@@ -1,0 +1,240 @@
+{
+  "source_doc": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md",
+  "csv": "2026-07-08_11-52-13-website-island-phase-1-3.csv",
+  "execution_scope": "Phase 1 animal-island-ui compatibility spike, Phase 2 public homepage island redesign, and Phase 3 admin workspace redesign only.",
+  "claim_coverage": {
+    "covered": 18,
+    "total": 19,
+    "status": "pending"
+  },
+  "claims": [
+    {
+      "claim_id": "CLAIM-001",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:14",
+      "promise": "Execution scope is limited to Phase 1 animal-island-ui spike, Phase 2 homepage island redesign, and Phase 3 admin workspace redesign.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-02",
+        "ISSUE-03",
+        "ISSUE-04",
+        "ISSUE-05",
+        "ISSUE-06",
+        "ISSUE-07",
+        "ISSUE-08",
+        "ISSUE-09",
+        "ISSUE-10"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-002",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:24",
+      "promise": "Next.js 16 App Router must continue to support output: export static export.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-10"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-003",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:25",
+      "promise": "Cloudflare Worker must continue to own admin auth, site CRUD, and sensitive logic.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-09"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-004",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:26",
+      "promise": "This phase must not add a D1 migration or require existing record migration.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-10"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-005",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:29",
+      "promise": "Unauthenticated /admin must show only the password input and must not leak site list, site count, or dashboard copy.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-06",
+        "ISSUE-09"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-006",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:36",
+      "promise": "animal-island-ui spike is limited to root style import and AdminLoginForm compatibility verification.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-01"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-007",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:38",
+      "promise": "If dependency integration causes build, hydration, style pollution, license, or other blockers, Phase 2/3 must fall back to local Tailwind/CSS visual-reference implementation.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-008",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:42",
+      "promise": "Homepage first viewport must present the brand 小茄的网站小岛 and use the first sorted site featured live iframe card as the main visual anchor.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-02",
+        "ISSUE-05"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-009",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:46",
+      "promise": "PortfolioGridClient must derive collection summary and all/web/landing/tool/other category filtering on the client without adding a Worker API.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-05"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-010",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:52",
+      "promise": "LiveProjectCard must keep real iframe loading, lazy loading, pointer-events disabled by default, and interaction enabled only when allowInteraction and user toggle are both active.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-04",
+        "ISSUE-05"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-011",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:54",
+      "promise": "Iframe loading, offline, unknown, and not-connected states must be friendly supporting signals, and the Visit Website path must remain available.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-04",
+        "ISSUE-05"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-012",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:60",
+      "promise": "Admin must use a workspace with top bar, site list, and a single current editor panel.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-06",
+        "ISSUE-09"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-013",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:64",
+      "promise": "Admin site list must show key site fields and provide edit, open site, and delete actions with delete confirmation.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07",
+        "ISSUE-09"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-014",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:68",
+      "promise": "Admin form must validate required fields and https:// URL, auto-generate slug from name or URL, and stop overwriting slug after manual edits.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-08",
+        "ISSUE-09"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-015",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:70",
+      "promise": "Duplicate slug, invalid URL, unauthorized, network failure, and generic save failure must map to friendly Chinese messages; repeated save/delete operations must be disabled while pending.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-08",
+        "ISSUE-09"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-016",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:94",
+      "promise": "UptimeFlare fetch failure must not fail the whole homepage; site list remains visible with unknown or unloaded monitor state.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-05"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-017",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:108",
+      "promise": "Before completion, npm run build must pass.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-10"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-018",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:137",
+      "promise": "After implementation, run an independent or strongest available review against the approved vision and evidence.",
+      "production_path_required": false,
+      "covered_by": [
+        "REVIEW-01"
+      ],
+      "evidence_required": "manual",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-019",
+      "source_ref": "docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md:147",
+      "promise": "D1 portfolio field extension, public-good real data source, UptimeFlare proxy/history charts, multi-user/community features, and Cloudflare account-level changes are out of scope.",
+      "production_path_required": false,
+      "covered_by": [],
+      "evidence_required": "static",
+      "status": "out_of_scope"
+    }
+  ]
+}

@@ -7,6 +7,10 @@ import {
   seedDefaultSite,
   updateSiteById,
 } from "../db";
+import {
+  getSiteMutationErrorMessage,
+  getSitePayloadValidationError,
+} from "../site-validation";
 import type { SitePayload } from "../../../shared/contracts";
 
 export async function handleGetSites(request: Request, env: Env) {
@@ -59,28 +63,6 @@ export async function handleSeedSites(request: Request, env: Env) {
   }
 }
 
-function validateSitePayload(payload: Partial<SitePayload>) {
-  if (!payload.name?.trim()) {
-    return "Site name is required";
-  }
-
-  if (!payload.slug?.trim()) {
-    return "Site slug is required";
-  }
-
-  if (!payload.url?.trim()) {
-    return "Site URL is required";
-  }
-
-  try {
-    new URL(payload.url);
-  } catch {
-    return "Site URL must be a valid absolute URL";
-  }
-
-  return null;
-}
-
 function normalizeSitePayload(payload: SitePayload): SitePayload {
   return {
     ...payload,
@@ -99,12 +81,14 @@ export async function handleCreateSite(request: Request, env: Env) {
     return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = normalizeSitePayload((await request.json()) as SitePayload);
-  const validationError = validateSitePayload(payload);
+  const rawPayload = (await request.json()) as Partial<SitePayload>;
+  const validationError = getSitePayloadValidationError(rawPayload);
 
   if (validationError) {
     return Response.json({ ok: false, error: validationError }, { status: 400 });
   }
+
+  const payload = normalizeSitePayload(rawPayload as SitePayload);
 
   try {
     await insertSite(env, payload);
@@ -112,7 +96,10 @@ export async function handleCreateSite(request: Request, env: Env) {
   } catch (error) {
     console.error(error);
     return Response.json(
-      { ok: false, error: "Failed to create site" },
+      {
+        ok: false,
+        error: getSiteMutationErrorMessage(error, "Failed to create site"),
+      },
       { status: 500 }
     );
   }
@@ -129,12 +116,14 @@ export async function handleUpdateSite(
     return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const payload = normalizeSitePayload((await request.json()) as SitePayload);
-  const validationError = validateSitePayload(payload);
+  const rawPayload = (await request.json()) as Partial<SitePayload>;
+  const validationError = getSitePayloadValidationError(rawPayload);
 
   if (validationError) {
     return Response.json({ ok: false, error: validationError }, { status: 400 });
   }
+
+  const payload = normalizeSitePayload(rawPayload as SitePayload);
 
   try {
     const result = await updateSiteById(env, id, payload);
@@ -150,7 +139,10 @@ export async function handleUpdateSite(
   } catch (error) {
     console.error(error);
     return Response.json(
-      { ok: false, error: "Failed to update site" },
+      {
+        ok: false,
+        error: getSiteMutationErrorMessage(error, "Failed to update site"),
+      },
       { status: 500 }
     );
   }

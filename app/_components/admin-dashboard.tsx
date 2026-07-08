@@ -10,6 +10,7 @@ import {
   logout,
   updateSite,
 } from "@/app/_lib/api-client";
+import { getFriendlyApiErrorMessage } from "@/app/_lib/api-errors";
 import { AdminLoginForm } from "@/app/_components/admin-login-form";
 import { AdminSiteForm } from "@/app/_components/admin-site-form";
 import { AdminSiteTable } from "@/app/_components/admin-site-table";
@@ -43,7 +44,7 @@ export function AdminDashboard() {
         }
       } catch (error) {
         console.error(error);
-        setMessage("管理入口暂时不可用，请稍后再试。");
+        setMessage(getErrorMessage(error, "管理入口暂时不可用，请稍后再试。"));
       } finally {
         setCheckingAuth(false);
       }
@@ -59,7 +60,7 @@ export function AdminDashboard() {
 
   async function handleLogin(password: string) {
     if (!hasApiBaseUrl) {
-      throw new Error("管理入口暂时不可用。");
+      throw new Error("管理入口暂时不可用，请稍后再试。");
     }
 
     await login({ password });
@@ -175,29 +176,18 @@ export function AdminDashboard() {
         onEdit={setEditingSite}
         onDelete={handleDelete}
       />
-      <div className="grid gap-6 xl:grid-cols-2">
-        <AdminSiteForm
-          mode="create"
-          pending={saving}
-          onSubmit={handleCreate}
-        />
-        <AdminSiteForm
-          key={editingSite?.id ?? "edit-empty"}
-          mode="edit"
-          initialSite={editingSite}
-          pending={saving}
-          onSubmit={handleUpdate}
-          onCancel={() => setEditingSite(null)}
-        />
-      </div>
+      <AdminSiteForm
+        key={editingSite?.id ?? "create"}
+        mode={editingSite ? "edit" : "create"}
+        initialSite={editingSite}
+        pending={saving}
+        onSubmit={editingSite ? handleUpdate : handleCreate}
+        onCancel={editingSite ? () => setEditingSite(null) : undefined}
+      />
     </div>
   );
 }
 
 function getErrorMessage(error: unknown, fallback: string) {
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return fallback;
+  return getFriendlyApiErrorMessage(error, fallback);
 }

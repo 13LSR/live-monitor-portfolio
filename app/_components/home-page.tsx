@@ -13,10 +13,10 @@ export function HomePage() {
               suppressHydrationWarning
               className="max-w-3xl text-5xl font-semibold leading-none text-[var(--ink)] md:text-7xl"
             >
-              小茄的网站集合
+              小茄的网站小岛
             </h1>
             <p className="mt-5 max-w-2xl text-base leading-7 text-[var(--muted)] md:text-lg">
-              这里收录我部署在云平台上的网站作品。每张卡片都不是截图，而是正在运行的真实页面。
+              这里收录正在运行的网站作品。每张卡片都不是截图，而是一扇通向真实页面的小窗。
             </p>
           </div>
           <div className="border border-[var(--line)] bg-[var(--paper-raised)] p-4 shadow-[8px_8px_0_var(--ink)]">

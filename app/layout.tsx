@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import "animal-island-ui/style";
 import "./globals.css";
 
 export const metadata: Metadata = {

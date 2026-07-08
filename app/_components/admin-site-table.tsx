@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { SiteRecord } from "@/shared/types";
 
 interface AdminSiteTableProps {
@@ -15,6 +16,15 @@ export function AdminSiteTable({
   onEdit,
   onDelete,
 }: AdminSiteTableProps) {
+  const [confirmingDeleteId, setConfirmingDeleteId] = useState<number | null>(
+    null
+  );
+
+  async function handleConfirmDelete(site: SiteRecord) {
+    await onDelete(site);
+    setConfirmingDeleteId(null);
+  }
+
   return (
     <div className="overflow-hidden border border-[var(--line)] bg-[var(--paper-raised)] shadow-[8px_8px_0_rgba(31,37,35,0.16)]">
       <div className="border-b border-[var(--line)] px-5 py-4">
@@ -32,49 +42,87 @@ export function AdminSiteTable({
             </tr>
           </thead>
           <tbody>
-            {sites.map((site) => (
-              <tr key={site.id} className="border-t border-[var(--line)]">
-                <td className="px-4 py-4">
-                  <div className="font-semibold text-[var(--ink)]">
-                    {site.name}
-                  </div>
-                  <div className="font-mono text-xs text-[var(--muted)]">
-                    {site.slug}
-                  </div>
-                </td>
-                <td className="px-4 py-4 font-mono text-xs text-[var(--muted)]">
-                  {site.monitorKey ?? "—"}
-                </td>
-                <td className="px-4 py-4 font-mono text-xs uppercase text-[var(--muted)]">
-                  {site.coverMode}
-                </td>
-                <td className="px-4 py-4">
-                  {site.isVisible ? "是" : "否"}
-                </td>
-                <td className="px-4 py-4">
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => onEdit(site)}
-                      className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
-                    >
-                      编辑
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(site)}
-                      disabled={deletingId === site.id}
-                      className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--red)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
-                    >
-                      {deletingId === site.id ? "删除中..." : "删除"}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
+            {sites.map((site) => {
+              const isConfirming = confirmingDeleteId === site.id;
+              const isDeleting = deletingId === site.id;
+
+              return (
+                <tr key={site.id} className="border-t border-[var(--line)]">
+                  <td className="px-4 py-4">
+                    <div className="font-semibold text-[var(--ink)]">
+                      {site.name}
+                    </div>
+                    <div className="font-mono text-xs text-[var(--muted)]">
+                      {site.slug}
+                    </div>
+                  </td>
+                  <td className="px-4 py-4 font-mono text-xs text-[var(--muted)]">
+                    {site.monitorKey ?? "-"}
+                  </td>
+                  <td className="px-4 py-4 font-mono text-xs uppercase text-[var(--muted)]">
+                    {site.coverMode}
+                  </td>
+                  <td className="px-4 py-4">
+                    {site.isVisible ? "是" : "否"}
+                  </td>
+                  <td className="px-4 py-4">
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="button"
+                        onClick={() => onEdit(site)}
+                        disabled={isDeleting}
+                        className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        编辑
+                      </button>
+                      <a
+                        href={site.url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
+                      >
+                        打开站点
+                      </a>
+                      {isConfirming ? (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => void handleConfirmDelete(site)}
+                            disabled={isDeleting}
+                            className="border border-[var(--line)] bg-[#f6ded7] px-3 py-1.5 text-xs font-semibold text-[var(--red)] transition hover:bg-[#f2c2b8] disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            {isDeleting ? "删除中..." : "确认删除"}
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setConfirmingDeleteId(null)}
+                            disabled={isDeleting}
+                            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
+                          >
+                            取消删除
+                          </button>
+                        </>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={() => setConfirmingDeleteId(site.id)}
+                          disabled={isDeleting}
+                          className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--red)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          删除
+                        </button>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              );
+            })}
             {sites.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-[var(--muted)]">
+                <td
+                  colSpan={5}
+                  className="px-4 py-6 text-center text-[var(--muted)]"
+                >
                   暂无站点数据
                 </td>
               </tr>

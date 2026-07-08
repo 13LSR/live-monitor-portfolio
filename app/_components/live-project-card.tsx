@@ -1,8 +1,12 @@
 "use client";
 
 import { useState } from "react";
-import { IFRAME_BASE_HEIGHT, IFRAME_BASE_WIDTH, IFRAME_SCALE } from "@/app/_lib/constants";
 import { StatusPill } from "@/app/_components/status-pill";
+import {
+  IFRAME_BASE_HEIGHT,
+  IFRAME_BASE_WIDTH,
+  IFRAME_SCALE,
+} from "@/app/_lib/constants";
 import type { SiteWithStatus } from "@/app/_lib/site-mappers";
 
 interface LiveProjectCardProps {
@@ -10,7 +14,10 @@ interface LiveProjectCardProps {
   featured?: boolean;
 }
 
-export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps) {
+export function LiveProjectCard({
+  site,
+  featured = false,
+}: LiveProjectCardProps) {
   const [loadedFrameUrl, setLoadedFrameUrl] = useState<string | null>(null);
   const [interactionState, setInteractionState] = useState({
     enabled: false,
@@ -24,12 +31,15 @@ export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps
     interactionState.enabled &&
     interactionState.siteKey === interactionSiteKey;
   const isOffline = site.status.isOnline === false;
+  const hasUnknownState =
+    site.status.isOnline === null && site.status.hasMonitorKey;
+  const isNotConnected = !site.status.hasMonitorKey;
   const canToggleInteraction = site.allowInteraction;
 
   return (
     <article
       className={`group flex overflow-hidden border border-[var(--line)] bg-[var(--paper-raised)] shadow-[8px_8px_0_rgba(31,37,35,0.2)] transition duration-200 hover:-translate-y-1 hover:shadow-[10px_10px_0_rgba(31,37,35,0.24)] ${
-        featured ? "min-h-[560px] flex-col" : "min-h-[430px] flex-col"
+        featured ? "min-h-[520px] flex-col" : "min-h-[390px] flex-col"
       }`}
     >
       <div className="flex min-h-14 items-center justify-between gap-3 border-b border-[var(--line)] bg-[#f7d879] px-3 py-2">
@@ -57,15 +67,15 @@ export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps
         />
       </div>
       <div
-        className={`relative flex flex-1 items-center justify-center overflow-hidden bg-[#dfe7dd] ${
-          featured ? "min-h-[390px]" : "min-h-[280px]"
+        className={`relative flex flex-1 items-center justify-center overflow-hidden bg-[#dfe7dd] p-3 ${
+          featured ? "min-h-[320px] md:min-h-[390px]" : "min-h-[250px]"
         }`}
       >
         <div
-          className="relative overflow-hidden border border-[var(--line)] bg-white shadow-[6px_6px_0_rgba(31,37,35,0.18)] transition duration-300 group-hover:shadow-[8px_8px_0_rgba(31,37,35,0.24)]"
+          className="relative aspect-[16/9] w-full max-w-[680px] overflow-hidden border border-[var(--line)] bg-white shadow-[6px_6px_0_rgba(31,37,35,0.18)] transition duration-300 group-hover:shadow-[8px_8px_0_rgba(31,37,35,0.24)]"
           style={{
             width: `${IFRAME_BASE_WIDTH * frameScale}px`,
-            height: `${IFRAME_BASE_HEIGHT * frameScale}px`,
+            maxWidth: "100%",
           }}
         >
           <iframe
@@ -85,7 +95,7 @@ export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps
         </div>
         <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(135deg,rgba(255,250,240,0.12),transparent_45%,rgba(31,37,35,0.1))]" />
         {!frameLoaded ? (
-          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#fffaf0]/72 backdrop-blur-sm">
+          <div className="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-[#fffaf0]/72 p-4 backdrop-blur-sm">
             <div className="flex items-center gap-3 border border-[var(--line)] bg-[var(--paper-raised)] px-4 py-2 font-mono text-xs uppercase text-[var(--ink)] shadow-[5px_5px_0_rgba(31,37,35,0.2)]">
               <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--green)]" />
               加载网站中
@@ -98,15 +108,22 @@ export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps
               暂时无法访问
             </div>
             <p className="max-w-sm text-sm leading-6">
-              这个网站当前访问异常，稍后可以再试。
+              这个网站当前访问异常，入口仍保留，可以稍后再试。
             </p>
           </div>
         ) : null}
       </div>
       <div className="flex flex-col gap-4 border-t border-[var(--line)] bg-[var(--paper-raised)] p-4 sm:flex-row sm:items-center sm:justify-between">
-        <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
-          {site.description}
-        </p>
+        <div className="space-y-2">
+          <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
+            {site.description}
+          </p>
+          {hasUnknownState || isNotConnected ? (
+            <p className="font-mono text-[11px] uppercase text-[var(--muted)]">
+              {isNotConnected ? "状态未接入" : "状态未知"}，作品入口仍可访问。
+            </p>
+          ) : null}
+        </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
           {canToggleInteraction ? (
             <button
@@ -132,7 +149,9 @@ export function LiveProjectCard({ site, featured = false }: LiveProjectCardProps
           ) : null}
           <button
             type="button"
-            onClick={() => window.open(site.url, "_blank", "noopener,noreferrer")}
+            onClick={() =>
+              window.open(site.url, "_blank", "noopener,noreferrer")
+            }
             className="border border-[var(--line)] bg-[var(--ink)] px-3 py-2 text-xs font-semibold text-[#fffaf0] transition hover:bg-[var(--green)]"
           >
             访问网站

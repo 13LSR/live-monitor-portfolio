@@ -1,6 +1,11 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import {
+  buildSitePayloadForSubmit,
+  getNextSlugValue,
+  validateAdminSitePayload,
+} from "@/app/_lib/site-form-utils";
 import type { SitePayload } from "@/shared/contracts";
 import type { SiteRecord } from "@/shared/types";
 
@@ -36,18 +41,55 @@ export function AdminSiteForm({
   const [form, setForm] = useState<SitePayload>(() =>
     getFormState(initialSite)
   );
+  const [slugEditedManually, setSlugEditedManually] = useState(
+    Boolean(initialSite)
+  );
+  const [localError, setLocalError] = useState<string | null>(null);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const succeeded = await onSubmit({
-      ...form,
-      monitorKey: form.monitorKey?.trim() ? form.monitorKey.trim() : null,
-    });
+    const payload = buildSitePayloadForSubmit(form);
+    const validationError = validateAdminSitePayload(payload);
+
+    if (validationError) {
+      setLocalError(validationError);
+      return;
+    }
+
+    setLocalError(null);
+    const succeeded = await onSubmit(payload);
 
     if (mode === "create" && succeeded) {
       setForm(emptyForm);
+      setSlugEditedManually(false);
     }
+  }
+
+  function updateName(name: string) {
+    setLocalError(null);
+    setForm((current) => {
+      const nextSlug = getNextSlugValue({
+        currentSlug: current.slug,
+        name,
+        url: current.url,
+        slugEditedManually,
+      });
+      return { ...current, name, slug: nextSlug };
+    });
+  }
+
+  function updateUrl(url: string) {
+    setLocalError(null);
+    setForm((current) => {
+      const nextSlug = getNextSlugValue({
+        currentSlug: current.slug,
+        name: current.name,
+        url,
+        slugEditedManually,
+      });
+      return { ...current, url, slug: nextSlug };
+    });
   }
 
   return (
@@ -56,82 +98,91 @@ export function AdminSiteForm({
       className="space-y-6 border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.16)]"
     >
       <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] pb-4">
-        <h2 className="text-lg font-semibold text-[var(--ink)]">
-          {mode === "create" ? "新增站点" : "编辑站点"}
-        </h2>
+        <div>
+          <h2 className="text-lg font-semibold text-[var(--ink)]">
+            {mode === "create" ? "新建站点" : "编辑站点"}
+          </h2>
+          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
+            {mode === "create"
+              ? "录入一个真实运行的网站窗口。"
+              : "修改当前选中的网站资料。"}
+          </p>
+        </div>
         {mode === "edit" && onCancel ? (
           <button
             type="button"
             onClick={onCancel}
-            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
+            disabled={pending}
+            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
           >
             取消
           </button>
         ) : null}
       </div>
+
+      {localError ? (
+        <div className="border border-[var(--line)] bg-[#f6ded7] p-3 text-sm font-semibold text-[var(--red)]">
+          {localError}
+        </div>
+      ) : null}
+
       <div className="grid gap-5 md:grid-cols-2">
-        <Field
-          label="名称"
-          hint="前台卡片标题，例如：网易云音乐 Demo"
-        >
+        <Field label="名称" hint="前台卡片标题，例如：网易云音乐 Demo">
           <input
             value={form.name}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, name: event.target.value }))
-            }
+            onChange={(event) => updateName(event.target.value)}
             className="admin-input"
             placeholder="网易云音乐 Demo"
-            required
+            disabled={pending}
           />
         </Field>
         <Field
           label="Slug"
-          hint="用于后台识别和稳定键值，建议使用小写英文和连字符"
+          hint="默认从名称或 URL 生成；手动修改后不会再自动覆盖"
         >
           <input
             value={form.slug}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, slug: event.target.value }))
-            }
+            onChange={(event) => {
+              setSlugEditedManually(true);
+              setLocalError(null);
+              setForm((current) => ({
+                ...current,
+                slug: event.target.value,
+              }));
+            }}
             className="admin-input"
             placeholder="wyy-331106-xyz"
-            required
+            disabled={pending}
           />
         </Field>
-        <Field
-          label="URL"
-          hint="网站真实可访问地址，必须带 https://"
-        >
+        <Field label="URL" hint="网站真实可访问地址，必须以 https:// 开头">
           <input
             value={form.url}
-            onChange={(event) =>
-              setForm((current) => ({ ...current, url: event.target.value }))
-            }
-            className="admin-input md:col-span-2"
+            onChange={(event) => updateUrl(event.target.value)}
+            className="admin-input"
             placeholder="https://wyy.331106.xyz"
-            required
+            disabled={pending}
           />
         </Field>
         <Field
           label="Monitor Key"
-          hint="对应 UptimeFlare monitors 对象里的 key，通常就是域名"
+          hint="对应 UptimeFlare monitors 对象里的 key，通常是域名"
         >
           <input
             value={form.monitorKey ?? ""}
-            onChange={(event) =>
+            onChange={(event) => {
+              setLocalError(null);
               setForm((current) => ({
                 ...current,
                 monitorKey: event.target.value,
-              }))
-            }
+              }));
+            }}
             className="admin-input"
             placeholder="wyy.331106.xyz"
+            disabled={pending}
           />
         </Field>
-        <Field
-          label="排序"
-          hint="数字越小越靠前，首页卡片按这个值排序"
-        >
+        <Field label="排序" hint="数字越小越靠前，首页卡片按这个值排序">
           <input
             type="number"
             value={form.sortOrder}
@@ -142,13 +193,30 @@ export function AdminSiteForm({
               }))
             }
             className="admin-input"
+            disabled={pending}
           />
         </Field>
+        <Field label="分类" hint="用于首页分类过滤">
+          <select
+            value={form.category}
+            onChange={(event) =>
+              setForm((current) => ({
+                ...current,
+                category: event.target.value as SitePayload["category"],
+              }))
+            }
+            className="admin-input"
+            disabled={pending}
+          >
+            <option value="web">web</option>
+            <option value="landing">landing</option>
+            <option value="tool">tool</option>
+            <option value="other">other</option>
+          </select>
+        </Field>
       </div>
-      <Field
-        label="描述"
-        hint="展示在卡片底部，简短说明这个网站是什么"
-      >
+
+      <Field label="描述" hint="简短说明这个网站是什么">
         <textarea
           value={form.description}
           onChange={(event) =>
@@ -160,53 +228,32 @@ export function AdminSiteForm({
           rows={4}
           className="admin-input min-h-28 resize-y"
           placeholder="已部署在线站点，展示真实网页运行状态。"
+          disabled={pending}
         />
       </Field>
-      <div className="grid gap-5 md:grid-cols-2">
-        <Field
-          label="分类"
-          hint="仅用于后台管理和后续过滤，普通网站先选 web"
+
+      <Field label="展示模式" hint="当前真实活体网页展示请选择 iframe">
+        <select
+          value={form.coverMode}
+          onChange={(event) =>
+            setForm((current) => ({
+              ...current,
+              coverMode: event.target.value as SitePayload["coverMode"],
+            }))
+          }
+          className="admin-input"
+          disabled={pending}
         >
-          <select
-            value={form.category}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                category: event.target.value as SitePayload["category"],
-              }))
-            }
-            className="admin-input"
-          >
-            <option value="web">web</option>
-            <option value="landing">landing</option>
-            <option value="tool">tool</option>
-            <option value="other">other</option>
-          </select>
-        </Field>
-        <Field
-          label="展示模式"
-          hint="当前真实活体网页展示请选择 iframe"
-        >
-          <select
-            value={form.coverMode}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                coverMode: event.target.value as SitePayload["coverMode"],
-              }))
-            }
-            className="admin-input"
-          >
-            <option value="iframe">iframe</option>
-            <option value="text">text</option>
-            <option value="gallery">gallery</option>
-          </select>
-        </Field>
-      </div>
+          <option value="iframe">iframe</option>
+          <option value="text">text</option>
+          <option value="gallery">gallery</option>
+        </select>
+      </Field>
+
       <div className="grid gap-4 md:grid-cols-2">
         <ToggleCard
           title="公开展示"
-          description="开启后，这个站点会出现在首页作品集里；关闭后只在后台保留。"
+          description="开启后，这个站点会出现在首页作品集里。"
         >
           <input
             type="checkbox"
@@ -217,11 +264,12 @@ export function AdminSiteForm({
                 isVisible: event.target.checked,
               }))
             }
+            disabled={pending}
           />
         </ToggleCard>
         <ToggleCard
           title="允许交互模式"
-          description="开启后，后续可以在前台给这张卡片提供可点击交互模式；关闭时默认只预览，不响应鼠标。"
+          description="开启后，前台卡片可以进入可点击的 iframe 交互状态。"
         >
           <input
             type="checkbox"
@@ -232,23 +280,17 @@ export function AdminSiteForm({
                 allowInteraction: event.target.checked,
               }))
             }
+            disabled={pending}
           />
         </ToggleCard>
       </div>
-      <div className="border border-[var(--line)] bg-[#e7eadf] p-4 text-sm leading-6 text-[var(--muted)]">
-        推荐填写规则：
-        <br />
-        - 普通在线网站：分类选 `web`
-        <br />
-        - 活体展示：展示模式选 `iframe`
-        <br />
-        - UptimeFlare 监控：`Monitor Key` 填该网站在 monitors 里的键名
-      </div>
+
       {isEditModeWithoutSelection ? (
         <div className="border border-[var(--line)] bg-[#f7d879] p-4 text-sm leading-6 text-[var(--ink)]">
-          先在上方站点列表里点击“编辑”，再修改并提交当前站点。
+          先在站点列表里点击“编辑”，再修改并提交当前站点。
         </div>
       ) : null}
+
       <button
         type="submit"
         disabled={pending || isEditModeWithoutSelection}

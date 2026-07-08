@@ -1,6 +1,8 @@
 "use client";
 
 import { FormEvent, useState } from "react";
+import { Button, Card, Input } from "animal-island-ui";
+import { getFriendlyApiErrorMessage } from "@/app/_lib/api-errors";
 
 interface AdminLoginFormProps {
   message: string;
@@ -38,47 +40,47 @@ export function AdminLoginForm({
 
   return (
     <div className="flex min-h-[70vh] items-center justify-center">
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-sm border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.2)]"
+      <Card
+        color="warm-peach-pink"
+        pattern="warm-peach-pink"
+        className="w-full max-w-sm"
       >
-        <label
-          htmlFor="admin-password"
-          className="block text-sm font-semibold text-[var(--ink)]"
-        >
-          管理员密码
-        </label>
-        <input
-          id="admin-password"
-          type="password"
-          value={password}
-          onChange={(event) => setPassword(event.target.value)}
-          className="admin-input mt-3"
-          placeholder="请输入密码"
-        />
-        <button
-          type="submit"
-          disabled={submitting}
-          className="mt-4 w-full border border-[var(--line)] bg-[var(--ink)] px-4 py-3 text-sm font-semibold text-[#fffaf0] transition hover:bg-[var(--green)] disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {submitting ? "校验中..." : "进入管理"}
-        </button>
-        <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
-          {localMessage}
-        </p>
-      </form>
+        <form onSubmit={handleSubmit} className="p-5">
+          <label
+            htmlFor="admin-password"
+            className="block text-sm font-semibold text-[var(--ink)]"
+          >
+            管理员密码
+          </label>
+          <Input
+            id="admin-password"
+            type="password"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+            className="mt-3 w-full"
+            placeholder="请输入密码"
+            shadow
+          />
+          <Button
+            htmlType="submit"
+            type="primary"
+            size="large"
+            block
+            loading={submitting}
+            disabled={submitting}
+            className="mt-4"
+          >
+            {submitting ? "校验中..." : "进入管理"}
+          </Button>
+          <p className="mt-4 text-sm leading-6 text-[var(--muted)]">
+            {localMessage}
+          </p>
+        </form>
+      </Card>
     </div>
   );
 }
 
 function getLoginErrorMessage(error: unknown) {
-  if (error instanceof Error && error.message === "Invalid password") {
-    return "密码不正确。";
-  }
-
-  if (error instanceof Error && error.message) {
-    return error.message;
-  }
-
-  return "管理员登录失败。";
+  return getFriendlyApiErrorMessage(error, "管理员登录失败。");
 }
