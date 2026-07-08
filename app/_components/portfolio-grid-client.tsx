@@ -103,33 +103,19 @@ export function PortfolioGridClient() {
           正在加载网站...
         </p>
       ) : null}
-      <section className="mb-6 flex flex-col gap-4 border-y border-[var(--line)] py-4 md:flex-row md:items-center md:justify-between">
-        <dl className="grid grid-cols-3 gap-4 text-sm">
-          <div>
-            <dt className="font-mono text-xs uppercase text-[var(--muted)]">
-              Total
-            </dt>
-            <dd className="mt-1 text-2xl font-semibold text-[var(--ink)]">
-              {summary.total}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-mono text-xs uppercase text-[var(--muted)]">
-              Online
-            </dt>
-            <dd className="mt-1 text-2xl font-semibold text-[var(--green)]">
-              {summary.online}
-            </dd>
-          </div>
-          <div>
-            <dt className="font-mono text-xs uppercase text-[var(--muted)]">
-              Unknown
-            </dt>
-            <dd className="mt-1 text-2xl font-semibold text-[var(--amber)]">
-              {summary.unknown}
-            </dd>
-          </div>
-        </dl>
+      <section className="mb-6 flex flex-col gap-4 rounded-[1.5rem] border border-[var(--line)] bg-[#fff7df] px-4 py-4 shadow-[5px_5px_0_rgba(31,37,35,0.12)] md:flex-row md:items-center md:justify-between">
+        <p className="max-w-xl text-sm leading-6 text-[var(--muted)]">
+          岛上现在有{" "}
+          <span className="font-semibold text-[var(--ink)]">
+            {summary.total}
+          </span>{" "}
+          间网站小屋，其中{" "}
+          <span className="font-semibold text-[var(--green)]">
+            {summary.online}
+          </span>{" "}
+          座小屋亮着灯
+          {summary.unknown > 0 ? `，${summary.unknown} 座还在等巡岛信号` : "。"}
+        </p>
         <div className="flex flex-wrap gap-2">
           {portfolioCategoryFilters.map((category) => (
             <button

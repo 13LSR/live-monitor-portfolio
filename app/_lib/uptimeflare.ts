@@ -1,9 +1,33 @@
 import { DEFAULT_MONITOR_API_URL } from "@/app/_lib/constants";
 import type { MonitorMap, UptimeFlareResponse } from "@/shared/types";
 
-const monitorApiUrl =
-  process.env.NEXT_PUBLIC_UPTIMEFLARE_API_URL || DEFAULT_MONITOR_API_URL;
-const MONITOR_FETCH_TIMEOUT_MS = 4_000;
+export const MONITOR_FETCH_TIMEOUT_MS = 15_000;
+
+export function resolveMonitorApiUrl(
+  configuredUrl = process.env.NEXT_PUBLIC_UPTIMEFLARE_API_URL
+) {
+  const rawUrl = configuredUrl?.trim() || DEFAULT_MONITOR_API_URL;
+
+  try {
+    const url = new URL(rawUrl);
+    const pathname = url.pathname.replace(/\/+$/, "");
+
+    if (!pathname || pathname === "") {
+      url.pathname = "/api/data";
+      return url.toString();
+    }
+
+    if (!pathname.endsWith("/api/data")) {
+      url.pathname = `${pathname}/api/data`;
+    }
+
+    return url.toString();
+  } catch {
+    return rawUrl;
+  }
+}
+
+const monitorApiUrl = resolveMonitorApiUrl();
 
 export async function fetchMonitorMap(): Promise<MonitorMap> {
   const controller = new AbortController();

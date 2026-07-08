@@ -1,6 +1,6 @@
-import type { Env } from "../auth";
-import { buildClearCookie, buildSetCookie } from "../cookies";
-import { isAuthenticated, issueSession } from "../auth";
+import type { Env } from "../auth.ts";
+import { buildClearCookie, buildSetCookie } from "../cookies.ts";
+import { isAuthenticated, issueSession } from "../auth.ts";
 
 interface LoginBody {
   password?: string;

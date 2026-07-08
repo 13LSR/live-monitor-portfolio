@@ -1,6 +1,6 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { readdirSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
@@ -28,6 +28,7 @@ import {
 } from "../worker/src/site-validation.ts";
 import { insertSite, listSites, updateSiteById } from "../worker/src/db.ts";
 import { handleGetSites } from "../worker/src/routes/sites.ts";
+import worker from "../worker/src/index.ts";
 
 const root = process.cwd();
 
@@ -215,17 +216,290 @@ describe("admin production API path", () => {
     assert.match(bentoGrid, /<LiveProjectCard/);
   });
 
+  it("serves a sanitized five-person public-good batch through the Worker route and cache", async () => {
+    const originalFetch = globalThis.fetch;
+    const thirdPartyItems = [
+      makePublicGoodApiResponse({
+        id: "448061",
+        name: `  ${"李".repeat(45)}  `,
+        child_pic: "http://assets.example.com/not-https.jpg",
+        url: "http://detail.example.com/not-https",
+        lost_place: `湖北省${"荆州市".repeat(60)}`,
+        child_feature: "穿黄色外套，".repeat(40),
+      }),
+      makePublicGoodApiResponse({
+        id: "448061",
+        name: "重复数据",
+      }),
+      makePublicGoodApiResponse({ id: "448062", name: "王小明" }),
+      makePublicGoodApiResponse({ id: "448063", name: "陈小花" }),
+      makePublicGoodApiResponse({ id: "448064", name: "赵小安" }),
+      makePublicGoodApiResponse({ id: "448065", name: "周小宁" }),
+    ];
+    const requestedUrls = [];
+
+    globalThis.fetch = async (url) => {
+      requestedUrls.push(String(url));
+      return Response.json(thirdPartyItems[requestedUrls.length - 1]);
+    };
+
+    try {
+      const firstResponse = await worker.fetch(
+        new Request("https://worker.example/public-good"),
+        createPublicGoodEnv()
+      );
+      const firstBody = await firstResponse.json();
+
+      assert.equal(firstResponse.status, 200);
+      assert.equal(firstBody.success, true);
+      assert.equal(firstBody.items.length, 5);
+      assert.equal(firstBody.sourceName, "姬长信API");
+      assert.equal(firstBody.sourceApi, "https://api.isoyu.com/gy/api.php");
+      assert.equal(firstBody.cacheTtlSeconds, 21600);
+      assert.equal(firstBody.isFallback, false);
+      assert.deepEqual(firstBody.contacts, {
+        consultMail: "baobeihuijia@yeah.net",
+        tel: "0435-3338090",
+      });
+      assert.equal(requestedUrls.length, 6);
+      assert.ok(
+        requestedUrls.every(
+          (url) => url === "https://api.isoyu.com/gy/api.php"
+        )
+      );
+      assert.deepEqual(
+        firstBody.items.map((item) => item.id),
+        ["448061", "448062", "448063", "448064", "448065"]
+      );
+      assert.equal(firstBody.items[0].name.length, 40);
+      assert.equal(firstBody.items[0].name.startsWith(" "), false);
+      assert.equal(firstBody.items[0].childPic, null);
+      assert.equal(firstBody.items[0].detailUrl, null);
+      assert.equal(firstBody.items[0].lostPlace.length, 120);
+      assert.equal(firstBody.items[0].childFeature.length, 240);
+      assert.equal("data" in firstBody, false);
+      assert.equal("child_pic" in firstBody.items[0], false);
+      assert.equal("url" in firstBody.items[0], false);
+
+      const cachedResponse = await worker.fetch(
+        new Request("https://worker.example/public-good"),
+        createPublicGoodEnv()
+      );
+      const cachedBody = await cachedResponse.json();
+
+      assert.equal(cachedResponse.status, 200);
+      assert.equal(requestedUrls.length, 6);
+      assert.deepEqual(cachedBody, firstBody);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("filters invalid public-good API structures and falls back after eight refresh attempts", async () => {
+    const originalFetch = globalThis.fetch;
+    const { getPublicGoodBatch } = await import(
+      `../worker/src/public-good.ts?invalid-${Date.now()}`
+    );
+    const requestedUrls = [];
+
+    globalThis.fetch = async (url) => {
+      requestedUrls.push(String(url));
+      return Response.json(
+        {
+          ...makePublicGoodApiResponse({
+            id: "should-not-render",
+            name: "不应展示",
+          }),
+          success: false,
+        }
+      );
+    };
+
+    try {
+      const batch = await getPublicGoodBatch(createPublicGoodEnv());
+
+      assert.equal(requestedUrls.length, 8);
+      assert.equal(batch.success, true);
+      assert.equal(batch.items.length, 5);
+      assert.equal(batch.isFallback, true);
+      assert.match(batch.message, /备用数据/);
+      assert.equal(
+        batch.items.some((item) => item.id === "should-not-render"),
+        false
+      );
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("fetches public-good data through the frontend API client with local fallback", async () => {
+    const originalFetch = globalThis.fetch;
+    const originalApiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
+    const apiClientSource = readFileSync(
+      join(root, "app/_lib/api-client.ts"),
+      "utf8"
+    );
+    const requestedUrls = [];
+
+    process.env.NEXT_PUBLIC_API_BASE_URL = "https://worker.example";
+    globalThis.fetch = async (url) => {
+      requestedUrls.push(String(url));
+      throw new Error("Worker unavailable");
+    };
+
+    try {
+      const apiClient = await import(
+        `../app/_lib/api-client.ts?public-good-${Date.now()}`
+      );
+
+      assert.equal(typeof apiClient.getPublicGood, "function");
+
+      const batch = await apiClient.getPublicGood();
+
+      assert.deepEqual(requestedUrls, [
+        "https://worker.example/public-good",
+      ]);
+      assert.equal(batch.success, true);
+      assert.equal(batch.items.length, 5);
+      assert.equal(batch.isFallback, true);
+      assert.match(batch.message, /本地备用/);
+      assert.equal(apiClientSource.includes("api.isoyu.com"), false);
+    } finally {
+      globalThis.fetch = originalFetch;
+
+      if (originalApiBase === undefined) {
+        delete process.env.NEXT_PUBLIC_API_BASE_URL;
+      } else {
+        process.env.NEXT_PUBLIC_API_BASE_URL = originalApiBase;
+      }
+    }
+  });
+
+  it("wires the public-good notice into the homepage before the portfolio list", () => {
+    const homePage = readFileSync(
+      join(root, "app/_components/home-page.tsx"),
+      "utf8"
+    );
+    const noticePath = join(root, "app/_components/public-good-notice.tsx");
+
+    assert.match(homePage, /PublicGoodNotice/);
+    assert.match(homePage, /<PublicGoodNotice[\s\S]*<PortfolioGridClient/);
+    assert.equal(existsSync(noticePath), true);
+
+    const notice = readFileSync(noticePath, "utf8");
+
+    assert.match(notice, /"use client"/);
+    assert.match(notice, /getPublicGood/);
+    assert.match(notice, /getPublicGoodFallbackBatch/);
+    assert.match(notice, /公益公告/);
+    assert.match(notice, /batch\.items\.slice\(0,\s*5\)/);
+    assert.match(notice, /onMouseEnter/);
+    assert.match(notice, /onClick/);
+    assert.match(notice, /selectedPerson/);
+    assert.match(notice, /childPic/);
+    assert.match(notice, /PublicGoodPhoto/);
+    assert.match(notice, /暂无照片/);
+    assert.match(notice, /detailUrl/);
+    assert.match(notice, /查看详情/);
+    assert.match(notice, /from "animal-island-ui"/);
+  });
+
+  it("strengthens the homepage as an Animal Island surface without making status a dashboard", () => {
+    const homePage = readFileSync(
+      join(root, "app/_components/home-page.tsx"),
+      "utf8"
+    );
+    const card = readFileSync(
+      join(root, "app/_components/live-project-card.tsx"),
+      "utf8"
+    );
+    const portfolio = readFileSync(
+      join(root, "app/_components/portfolio-grid-client.tsx"),
+      "utf8"
+    );
+
+    assert.match(homePage, /island-hero/);
+    assert.match(homePage, /作品小岛/);
+    assert.match(homePage, /岛上公告/);
+    assert.match(homePage, /aria-label="小岛状态说明"/);
+    assert.doesNotMatch(homePage, /Total|Online|Unknown/);
+    assert.doesNotMatch(portfolio, />\s*Total\s*</);
+    assert.doesNotMatch(portfolio, />\s*Online\s*</);
+    assert.doesNotMatch(portfolio, />\s*Unknown\s*</);
+    assert.match(portfolio, /岛上现在有/);
+    assert.match(portfolio, /座小屋亮着灯/);
+    assert.match(card, /island-project-card/);
+    assert.match(card, /rounded-\[1\.5rem\]/);
+    assert.match(card, /bg-\[#fff7df\]/);
+    assert.match(card, /shadow-\[0_18px_0/);
+    assert.match(card, /StatusPill/);
+    assert.match(card, /<iframe/);
+    assert.match(card, /loading="lazy"/);
+  });
+
+  it("presents the authenticated admin as an island office without hiding CRUD controls", () => {
+    const dashboard = readFileSync(
+      join(root, "app/_components/admin-dashboard.tsx"),
+      "utf8"
+    );
+    const table = readFileSync(
+      join(root, "app/_components/admin-site-table.tsx"),
+      "utf8"
+    );
+
+    assert.match(dashboard, /from "animal-island-ui"/);
+    assert.match(dashboard, /岛务管理所/);
+    assert.match(dashboard, /管理岛上的网站小屋/);
+    assert.match(dashboard, /<Card/);
+    assert.match(dashboard, /<Button/);
+    assert.match(dashboard, /<Tag/);
+    assert.match(dashboard, /onClick=\{\(\) => void handleLogout\(\)\}/);
+    assert.match(table, /from "animal-island-ui"/);
+    assert.match(table, /岛上站点/);
+    assert.match(table, /<Card/);
+    assert.match(table, /<Button/);
+    assert.match(table, /编辑/);
+    assert.match(table, /打开站点/);
+    assert.match(table, /确认删除/);
+    assert.match(table, /取消删除/);
+  });
+
+  it("keeps animal-island-ui root style import and durable non-commercial attribution", () => {
+    const layout = readFileSync(join(root, "app/layout.tsx"), "utf8");
+    const readme = readFileSync(join(root, "README.md"), "utf8");
+    const styleImportMatches =
+      layout.match(/import "animal-island-ui\/style"/g) ?? [];
+
+    assert.equal(styleImportMatches.length, 1);
+    assert.match(readme, /animal-island-ui/);
+    assert.match(readme, /CC-BY-NC-4\.0/);
+    assert.match(readme, /非商业/);
+    assert.match(readme, /商业化/);
+  });
+
   it("keeps monitor fetching bounded so public sites are not hidden by a slow status source", () => {
     const uptimeflare = readFileSync(
       join(root, "app/_lib/uptimeflare.ts"),
       "utf8"
     );
 
-    assert.match(uptimeflare, /MONITOR_FETCH_TIMEOUT_MS = 4_000/);
+    assert.match(uptimeflare, /MONITOR_FETCH_TIMEOUT_MS = 15_000/);
     assert.match(uptimeflare, /new AbortController\(\)/);
     assert.match(uptimeflare, /signal: controller\.signal/);
     assert.match(uptimeflare, /finally \{\s*clearTimeout\(timeoutId\);\s*}/s);
     assert.match(uptimeflare, /clearTimeout\(timeoutId\)/);
+  });
+
+  it("accepts either a UptimeFlare origin or the full /api/data endpoint", () => {
+    const uptimeflare = readFileSync(
+      join(root, "app/_lib/uptimeflare.ts"),
+      "utf8"
+    );
+
+    assert.match(uptimeflare, /export function resolveMonitorApiUrl/);
+    assert.match(uptimeflare, /url\.pathname = "\/api\/data"/);
+    assert.match(uptimeflare, /!pathname\.endsWith\("\/api\/data"\)/);
+    assert.match(uptimeflare, /url\.pathname = `\$\{pathname\}\/api\/data`/);
   });
 
   it("keeps animal-island-ui spike scoped to root style and admin login", () => {
@@ -998,6 +1272,40 @@ function createSqliteD1Env(db) {
         return new SqliteD1Statement(db, sql);
       },
     },
+  };
+}
+
+function createPublicGoodEnv() {
+  return {
+    ADMIN_PASSWORD: "test-password",
+    SESSION_SECRET: "test-secret",
+    DB: null,
+  };
+}
+
+function makePublicGoodApiResponse(overrides = {}) {
+  const data = {
+    id: "448061",
+    name: "李瑾怡",
+    sex: "女",
+    birth_time: "2004年02月17日",
+    lost_time: "2020年01月01日",
+    child_pic: "https://assets.example.com/child.jpg",
+    lost_place: "湖北省荆州市监利县容城镇",
+    url: "https://example.com/detail",
+    child_feature: "圆脸，短发，走失时穿黄色外套。",
+    ...overrides,
+  };
+
+  return {
+    success: true,
+    data,
+    contacts: {
+      consult_mail: "baobeihuijia@yeah.net",
+      tel: "0435-3338090",
+    },
+    name: "姬长信API",
+    api: "https://api.isoyu.com/",
   };
 }
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Button, Card, Tag } from "animal-island-ui";
 import {
   createSite,
   deleteSite,
@@ -150,26 +151,38 @@ export function AdminDashboard() {
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-wrap items-center justify-between gap-4 border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.18)]">
-        <div>
-          <p className="font-mono text-xs uppercase text-[var(--muted)]">
-            Admin workspace
-          </p>
-          <h1 className="mt-1 text-2xl font-semibold text-[var(--ink)]">
-            小茄的网站集合管理
-          </h1>
-          <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
-            {message}
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => void handleLogout()}
-          className="border border-[var(--line)] bg-[#fffaf0] px-4 py-2 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
-        >
-          退出登录
-        </button>
-      </section>
+      <Card
+        color="warm-peach-pink"
+        pattern="warm-peach-pink"
+        className="border border-[var(--line)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.16)]"
+      >
+        <section className="flex flex-wrap items-center justify-between gap-4">
+          <div>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-mono text-xs uppercase text-[var(--muted)]">
+                Island office
+              </p>
+              <Tag color="app-teal" variant="outlined" size="small">
+                岛务管理所
+              </Tag>
+            </div>
+            <h1 className="mt-2 text-2xl font-semibold text-[var(--ink)]">
+              管理岛上的网站小屋
+            </h1>
+            <p className="mt-2 text-sm leading-6 text-[var(--muted)]">
+              {message}
+            </p>
+          </div>
+          <Button
+            htmlType="button"
+            type="default"
+            size="small"
+            onClick={() => void handleLogout()}
+          >
+            退出登录
+          </Button>
+        </section>
+      </Card>
       <AdminSiteTable
         sites={sites}
         deletingId={deletingId}

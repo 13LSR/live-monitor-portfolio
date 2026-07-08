@@ -1,12 +1,13 @@
 import type { Env } from "./auth";
-import { handleAuthMe, handleLogin, handleLogout } from "./routes/auth";
+import { handlePublicGood } from "./public-good.ts";
+import { handleAuthMe, handleLogin, handleLogout } from "./routes/auth.ts";
 import {
   handleCreateSite,
   handleDeleteSite,
   handleGetSites,
   handleSeedSites,
   handleUpdateSite,
-} from "./routes/sites";
+} from "./routes/sites.ts";
 
 function withCors(response: Response, origin: string | null = "*") {
   const headers = new Headers(response.headers);
@@ -49,6 +50,10 @@ const worker = {
 
     if (url.pathname === "/sites" && request.method === "GET") {
       return withCors(await handleGetSites(request, env), origin);
+    }
+
+    if (url.pathname === "/public-good" && request.method === "GET") {
+      return withCors(await handlePublicGood(request, env), origin);
     }
 
     if (url.pathname === "/sites" && request.method === "POST") {

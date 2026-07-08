@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Button, Card, Tag } from "animal-island-ui";
 import type { SiteRecord } from "@/shared/types";
 
 interface AdminSiteTableProps {
@@ -26,9 +27,16 @@ export function AdminSiteTable({
   }
 
   return (
-    <div className="overflow-hidden border border-[var(--line)] bg-[var(--paper-raised)] shadow-[8px_8px_0_rgba(31,37,35,0.16)]">
-      <div className="border-b border-[var(--line)] px-5 py-4">
-        <h2 className="text-lg font-semibold text-[var(--ink)]">站点列表</h2>
+    <Card
+      color="app-yellow"
+      pattern="app-yellow"
+      className="overflow-hidden border border-[var(--line)] shadow-[8px_8px_0_rgba(31,37,35,0.16)]"
+    >
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[var(--line)] px-5 py-4">
+        <h2 className="text-lg font-semibold text-[var(--ink)]">岛上站点</h2>
+        <Tag color="app-teal" variant="outlined" size="small">
+          {sites.length} 个小屋
+        </Tag>
       </div>
       <div className="overflow-x-auto">
         <table className="min-w-full text-left text-sm text-[var(--ink)]">
@@ -67,14 +75,15 @@ export function AdminSiteTable({
                   </td>
                   <td className="px-4 py-4">
                     <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
+                      <Button
+                        htmlType="button"
+                        type="default"
+                        size="small"
                         onClick={() => onEdit(site)}
                         disabled={isDeleting}
-                        className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
                       >
                         编辑
-                      </button>
+                      </Button>
                       <a
                         href={site.url}
                         target="_blank"
@@ -85,32 +94,35 @@ export function AdminSiteTable({
                       </a>
                       {isConfirming ? (
                         <>
-                          <button
-                            type="button"
+                          <Button
+                            htmlType="button"
+                            type="default"
+                            size="small"
                             onClick={() => void handleConfirmDelete(site)}
                             disabled={isDeleting}
-                            className="border border-[var(--line)] bg-[#f6ded7] px-3 py-1.5 text-xs font-semibold text-[var(--red)] transition hover:bg-[#f2c2b8] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             {isDeleting ? "删除中..." : "确认删除"}
-                          </button>
-                          <button
-                            type="button"
+                          </Button>
+                          <Button
+                            htmlType="button"
+                            type="default"
+                            size="small"
                             onClick={() => setConfirmingDeleteId(null)}
                             disabled={isDeleting}
-                            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
                           >
                             取消删除
-                          </button>
+                          </Button>
                         </>
                       ) : (
-                        <button
-                          type="button"
+                        <Button
+                          htmlType="button"
+                          type="default"
+                          size="small"
                           onClick={() => setConfirmingDeleteId(site.id)}
                           disabled={isDeleting}
-                          className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-xs font-semibold text-[var(--red)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
                         >
                           删除
-                        </button>
+                        </Button>
                       )}
                     </div>
                   </td>
@@ -130,6 +142,6 @@ export function AdminSiteTable({
           </tbody>
         </table>
       </div>
-    </div>
+    </Card>
   );
 }

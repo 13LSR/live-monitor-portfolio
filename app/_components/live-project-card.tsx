@@ -48,7 +48,7 @@ export function LiveProjectCard({
 
   return (
     <article
-      className={`group flex overflow-hidden border border-[var(--line)] bg-[var(--paper-raised)] shadow-[8px_8px_0_rgba(31,37,35,0.2)] transition duration-200 hover:-translate-y-1 hover:shadow-[10px_10px_0_rgba(31,37,35,0.24)] ${
+      className={`island-project-card group flex overflow-hidden rounded-[1.5rem] border border-[var(--line)] bg-[#fff7df] shadow-[0_18px_0_rgba(31,37,35,0.16)] transition duration-200 hover:-translate-y-1 hover:shadow-[0_22px_0_rgba(31,37,35,0.2)] ${
         featured ? "min-h-[520px] flex-col" : "min-h-[390px] flex-col"
       }`}
     >

@@ -4,6 +4,35 @@ export interface PublicSitesResponse {
   sites: SiteRecord[];
 }
 
+export interface PublicGoodPerson {
+  id: string;
+  name: string;
+  sex: string;
+  birthTime: string;
+  lostTime: string;
+  childPic: string | null;
+  lostPlace: string;
+  childFeature: string;
+  detailUrl: string | null;
+}
+
+export interface PublicGoodContacts {
+  consultMail: string;
+  tel: string;
+}
+
+export interface PublicGoodBatch {
+  success: boolean;
+  items: PublicGoodPerson[];
+  contacts: PublicGoodContacts | null;
+  sourceName: string;
+  sourceApi: string;
+  cachedAt: string;
+  cacheTtlSeconds: number;
+  isFallback: boolean;
+  message?: string;
+}
+
 export interface SitePayload {
   name: string;
   slug: string;
