@@ -119,7 +119,7 @@
 ## FOLLOWUP-06
 - Fixed: LiveProjectCard now keeps the iframe on `site.url` while making the access button prefer `fallbackUrl` when the iframe is still loading or the site is offline.
 - Evidence: TDD red run `npm run test:admin` failed 25/26 on the missing `const frameUrl = site.url` assertion; green run passed 26/26 after the component change.
-- Regression: source button still uses `repoUrl`, iframe still renders from `frameUrl`, and loaded online cards return the access button to `site.url`.
+- Regression: source button still uses `repoUrl`, iframe still renders from `frameUrl`, loaded online cards return the access button to `site.url`, and `npm run build` passed after normalizing the fallback visit target to a string.
 - Remaining gate: FOLLOWUP-07 and FOLLOWUP-08, then REVIEW-06.
 
 ## FOLLOWUP-07

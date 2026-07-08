@@ -132,9 +132,10 @@ describe("admin production API path", () => {
       card,
       /site\.fallbackUrl && \(isOffline \|\| !frameLoaded\)/
     );
+    assert.match(card, /const fallbackVisitUrl = site\.fallbackUrl \?\? site\.url/);
     assert.match(
       card,
-      /const visitUrl = shouldUseFallbackVisit \? site\.fallbackUrl : site\.url/
+      /const visitUrl = shouldUseFallbackVisit \? fallbackVisitUrl : site\.url/
     );
     assert.match(card, /<iframe/);
     assert.match(card, /src=\{frameUrl\}/);

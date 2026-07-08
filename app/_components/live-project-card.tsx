@@ -31,7 +31,8 @@ export function LiveProjectCard({
   const frameLoaded = loadedFrameUrl === frameUrl;
   const shouldUseFallbackVisit =
     site.fallbackUrl && (isOffline || !frameLoaded);
-  const visitUrl = shouldUseFallbackVisit ? site.fallbackUrl : site.url;
+  const fallbackVisitUrl = site.fallbackUrl ?? site.url;
+  const visitUrl = shouldUseFallbackVisit ? fallbackVisitUrl : site.url;
   const interactionEnabled =
     site.allowInteraction &&
     interactionState.enabled &&
