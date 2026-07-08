@@ -1,0 +1,15 @@
+## REVIEW-01
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: main-session-fallback
+- Review independence: weak
+- Scope checked: Phase 4 portfolio data model extension: D1 migration, shared contracts, Worker validation and CRUD/public list mapping, admin portfolio editor, homepage featured/metadata display, animal-island-ui usage beyond login, validation and out-of-scope boundaries.
+- Evidence checked: commits 486c2a2, 0de4da0, ee5d0f6, 4971000, 658b059, 4397085, 2e338d9, 6c2e1f7, 19af37d; task CSV notes; claim ledger; npm run test:admin; npm run lint; npm run build; worker npm run typecheck; SQLite migration command; browser notes for localhost:3000.
+- Claim coverage: complete
+- Claim/evidence alignment: limited
+- Limited validation honestly reported: yes
+- Result: limited_review
+- Gaps: none actionable found by main-session fallback review. Strong independent review was not performed because the safer codex exec path was rejected by approval review as an external data transfer risk without explicit user authorization.
+- Follow-up issues added: REVIEW-02
+- Assumptions: Out-of-scope claim CLAIM-034 is treated as accounted for by static boundary searches and absence of matching app/worker/shared code paths. Rendered public-card metadata remains evidence-limited until local /sites data/API is available.
+- Decision debt: ui-ux-pro-max and screenpipe were not installed/exposed in this session; CSV notes record the limitation per affected frontend rows.
+- Human-required blockers: Explicit user approval is needed before sending private workspace code/docs to an external independent codex exec reviewer, or an equivalent local independent reviewer capability must become available.
