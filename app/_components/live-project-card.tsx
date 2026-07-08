@@ -26,7 +26,8 @@ export function LiveProjectCard({
   });
   const frameScale = featured ? 0.32 : IFRAME_SCALE;
   const isOffline = site.status.isOnline === false;
-  const frameUrl = isOffline && site.fallbackUrl ? site.fallbackUrl : site.url;
+  const visitUrl = isOffline && site.fallbackUrl ? site.fallbackUrl : site.url;
+  const frameUrl = visitUrl;
   const interactionSiteKey = `${site.id}:${frameUrl}:${site.allowInteraction}`;
   const frameLoaded = loadedFrameUrl === frameUrl;
   const interactionEnabled =
@@ -199,7 +200,7 @@ export function LiveProjectCard({
           <button
             type="button"
             onClick={() =>
-              window.open(site.url, "_blank", "noopener,noreferrer")
+              window.open(visitUrl, "_blank", "noopener,noreferrer")
             }
             className="border border-[var(--line)] bg-[var(--ink)] px-3 py-2 text-xs font-semibold text-[#fffaf0] transition hover:bg-[var(--green)]"
           >

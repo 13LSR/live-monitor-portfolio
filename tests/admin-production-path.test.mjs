@@ -127,6 +127,10 @@ describe("admin production API path", () => {
     assert.match(card, /site\.techStack\.slice\(0,\s*5\)/);
     assert.match(card, /site\.repoUrl/);
     assert.match(card, /site\.fallbackUrl/);
+    assert.match(
+      card,
+      /const visitUrl = isOffline && site\.fallbackUrl \? site\.fallbackUrl : site\.url/
+    );
     assert.match(card, /<iframe/);
     assert.match(card, /src=\{frameUrl\}/);
   });
@@ -146,7 +150,7 @@ describe("admin production API path", () => {
     assert.match(card, /flex-wrap/);
     assert.match(card, /<iframe/);
     assert.match(card, /StatusPill/);
-    assert.match(card, /window\.open\(site\.url/);
+    assert.match(card, /window\.open\(visitUrl/);
     assert.match(card, /src=\{frameUrl\}/);
     assert.doesNotMatch(card, /worker\/|D1|listSites|handleGetSites/);
   });
@@ -165,7 +169,7 @@ describe("admin production API path", () => {
     assert.match(card, /loading="lazy"/);
     assert.match(card, /pointer-events-none/);
     assert.match(card, /site\.allowInteraction &&/);
-    assert.match(card, /window\.open\(site\.url/);
+    assert.match(card, /window\.open\(visitUrl/);
     assert.match(card, /加载网站中/);
     assert.match(card, /暂时无法访问/);
     assert.match(card, /访问网站/);
