@@ -103,8 +103,25 @@ describe("admin production API path", () => {
     assert.match(homePage, /<PortfolioGridClient \/>/);
     assert.match(portfolio, /mergeSitesWithStatuses\(resolvedSites, monitorMap/);
     assert.match(portfolio, /mergeSitesWithStatuses\(resolvedSites, \{\}/);
+    assert.match(
+      portfolio,
+      /setSites\(\s*mergeSitesWithStatuses\(resolvedSites, \{\}\)\s*\);\s*setIsLoading\(false\);\s*}\s*try \{\s*const monitorMap = await fetchMonitorMap\(\);/s
+    );
     assert.doesNotMatch(portfolio, /setSites\(\[\]\);\s*setIsLoading\(false\);\s*}\s*catch \(error\) \{\s*console\.error\("无法获取监控数据"/s);
     assert.match(bentoGrid, /<LiveProjectCard/);
+  });
+
+  it("keeps monitor fetching bounded so public sites are not hidden by a slow status source", () => {
+    const uptimeflare = readFileSync(
+      join(root, "app/_lib/uptimeflare.ts"),
+      "utf8"
+    );
+
+    assert.match(uptimeflare, /MONITOR_FETCH_TIMEOUT_MS = 4_000/);
+    assert.match(uptimeflare, /new AbortController\(\)/);
+    assert.match(uptimeflare, /signal: controller\.signal/);
+    assert.match(uptimeflare, /finally \{\s*clearTimeout\(timeoutId\);\s*}/s);
+    assert.match(uptimeflare, /clearTimeout\(timeoutId\)/);
   });
 
   it("keeps animal-island-ui spike scoped to root style and admin login", () => {

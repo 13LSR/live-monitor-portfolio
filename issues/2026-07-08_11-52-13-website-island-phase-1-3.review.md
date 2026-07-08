@@ -13,3 +13,11 @@
 - Assumptions: User will run frontend and Worker themselves; agent must not start the project. Local secrets such as `worker/.dev.vars` must not be read by the agent.
 - Decision debt: Strong independent review was not run because invoking `codex exec` was rejected without explicit user approval due private workspace disclosure risk. Browser MCP tooling was not available as a callable tool in this session.
 - Human-required blockers: User-provided `ADMIN_PASSWORD` is required for authenticated CRUD verifier coverage. Explicit user approval is required before sending repository/spec/CSV contents to an external independent review service.
+
+## FOLLOWUP-01
+- Source doc: docs/superpowers/specs/2026-07-08-website-island-phase-1-3-design.md
+- Trigger: Browser verification showed the homepage could render `Total 0` with no iframe while waiting for a slow or failed UptimeFlare request.
+- Fix: Public sites now render immediately with unknown monitor state, and the UptimeFlare request is bounded by a 4 second abort timeout.
+- Evidence checked: `npm run test:admin`, `npm run lint`, `npm run build`, `cd worker; npm run typecheck`, and in-app browser verification on the already-running `http://localhost:3000/`.
+- Result: fixed
+- Remaining: Authenticated CRUD still requires `ADMIN_PASSWORD`; strong independent review still requires explicit user approval.

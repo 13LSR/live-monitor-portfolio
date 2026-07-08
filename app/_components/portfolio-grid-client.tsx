@@ -55,6 +55,11 @@ export function PortfolioGridClient() {
         return;
       }
 
+      if (!ignore) {
+        setSites(mergeSitesWithStatuses(resolvedSites, {}));
+        setIsLoading(false);
+      }
+
       try {
         const monitorMap = await fetchMonitorMap();
 
@@ -67,7 +72,7 @@ export function PortfolioGridClient() {
           setIsLoading(false);
         }
       } catch (error) {
-        console.error("无法获取监控数据", error);
+        console.warn("无法获取监控数据", error);
 
         if (!ignore) {
           setSites(
