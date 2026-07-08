@@ -13,3 +13,23 @@
 - Assumptions: Out-of-scope claim CLAIM-034 is treated as accounted for by static boundary searches and absence of matching app/worker/shared code paths. Rendered public-card metadata remains evidence-limited until local /sites data/API is available.
 - Decision debt: ui-ux-pro-max and screenpipe were not installed/exposed in this session; CSV notes record the limitation per affected frontend rows.
 - Human-required blockers: Explicit user approval is needed before sending private workspace code/docs to an external independent codex exec reviewer, or an equivalent local independent reviewer capability must become available.
+
+## REVIEW-02
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: Phase 4 portfolio data model extension across approved spec, CSV state, claim ledger, previous review/handoff, commit range b1574f7..bd352b7, Worker validation/storage/public list paths, homepage card behavior, and recorded verification evidence.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; app/_components/live-project-card.tsx; worker/src/site-validation.ts; worker/src/routes/sites.ts; worker/src/db.ts; tests/admin-production-path.test.mjs.
+- Claim coverage: gaps
+- Claim/evidence alignment: mismatches found
+- Limited validation honestly reported: yes
+- Result: gaps_found
+- Gaps:
+  - CLAIM-028 mismatch: spec expects fallbackUrl to be preferred by the access button in loading/offline/error contexts, but LiveProjectCard opens site.url.
+  - CLAIM-017/CLAIM-030 mismatch: Worker validation checks tags/techStack are arrays but does not reject non-string array items before normalization.
+  - Real E2E claims for admin UI, homepage metadata/source button, animal-island-ui visibility, and mobile layout are marked stronger than the available rendered evidence.
+  - Claim ledger summary and CSV/review notes disagree on claim coverage status.
+- Follow-up issues added: FOLLOWUP-01, FOLLOWUP-02, FOLLOWUP-03, FOLLOWUP-04, REVIEW-03
+- Assumptions: Existing recorded npm/build/typecheck evidence is treated as recorded evidence, not freshly reproduced by the read-only reviewer.
+- Decision debt: Browser-visible public card/admin interaction evidence still depends on configured local data/API and admin credentials.
+- Human-required blockers: none for the implementation gaps; rendered E2E evidence remains environment-limited until local public sites and admin access are available.
