@@ -127,3 +127,9 @@
 - Evidence: TDD red run `npm run test:admin` failed 25/26 because `repoUrl: 42` returned `null`; green run passed 26/26 after the validation helper change.
 - Regression: `worker npm run typecheck` passed; null, empty string, and valid https URLs remain accepted.
 - Remaining gate: FOLLOWUP-08, then REVIEW-06.
+
+## FOLLOWUP-08
+- Fixed: The handoff no longer lists the already-closed public-card/admin E2E blockers as remaining work.
+- Current handoff state: REVIEW-05 gaps are described as FOLLOWUP-06, FOLLOWUP-07, and FOLLOWUP-08; the remaining gate is REVIEW-06.
+- Evidence: stale lines about needing public `/sites` data and admin session were replaced with direct-spawn-agent review availability and REVIEW-06 next steps.
+- Remaining gate: REVIEW-06 final independent review.
