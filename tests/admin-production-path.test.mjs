@@ -17,6 +17,7 @@ import {
 import {
   createCollectionSummary,
   filterSitesByCategory,
+  splitFeaturedSites,
 } from "../app/_lib/portfolio-summary.ts";
 import {
   getSiteMutationErrorMessage,
@@ -52,6 +53,41 @@ describe("admin production API path", () => {
       filterSitesByCategory(sites, "tool").map((site) => site.id),
       [2]
     );
+    assert.deepEqual(splitFeaturedSites(sites).featuredSite.id, 1);
+    assert.deepEqual(
+      splitFeaturedSites([
+        makeSite({ id: 1, category: "web", isOnline: true }),
+        makeSite({
+          id: 2,
+          category: "web",
+          isOnline: true,
+          isFeatured: true,
+        }),
+        makeSite({
+          id: 3,
+          category: "web",
+          isOnline: true,
+          isFeatured: true,
+        }),
+      ]),
+      {
+        featuredSite: makeSite({
+          id: 2,
+          category: "web",
+          isOnline: true,
+          isFeatured: true,
+        }),
+        ordinarySites: [
+          makeSite({ id: 1, category: "web", isOnline: true }),
+          makeSite({
+            id: 3,
+            category: "web",
+            isOnline: true,
+            isFeatured: true,
+          }),
+        ],
+      }
+    );
   });
 
   it("keeps homepage brand and featured site as first-viewport anchors", () => {
@@ -66,8 +102,33 @@ describe("admin production API path", () => {
 
     assert.match(homePage, /小茄的网站小岛/);
     assert.match(homePage, /正在运行的网站作品/);
-    assert.match(bentoGrid, /const \[featuredSite, \.\.\.otherSites\] = sites/);
+    assert.match(bentoGrid, /splitFeaturedSites\(sites\)/);
     assert.match(bentoGrid, /<LiveProjectCard site=\{featuredSite\} featured/);
+  });
+
+  it("selects featured portfolio cards and renders lightweight metadata", () => {
+    const bentoGrid = readFileSync(
+      join(root, "app/_components/bento-grid.tsx"),
+      "utf8"
+    );
+    const card = readFileSync(
+      join(root, "app/_components/live-project-card.tsx"),
+      "utf8"
+    );
+
+    assert.match(bentoGrid, /splitFeaturedSites\(sites\)/);
+    assert.match(bentoGrid, /ordinarySites/);
+    assert.doesNotMatch(
+      bentoGrid,
+      /const \[featuredSite, \.\.\.otherSites\] = sites/
+    );
+    assert.match(card, /site\.summary \|\| site\.description/);
+    assert.match(card, /site\.tags\.slice\(0,\s*4\)/);
+    assert.match(card, /site\.techStack\.slice\(0,\s*5\)/);
+    assert.match(card, /site\.repoUrl/);
+    assert.match(card, /site\.fallbackUrl/);
+    assert.match(card, /<iframe/);
+    assert.match(card, /src=\{frameUrl\}/);
   });
 
   it("keeps live project cards as real iframe windows with safe interaction states", () => {
@@ -827,7 +888,7 @@ describe("admin production API path", () => {
   });
 });
 
-function makeSite({ id, category, isOnline }) {
+function makeSite({ id, category, isOnline, isFeatured = false }) {
   return {
     id,
     name: `Site ${id}`,
@@ -839,7 +900,7 @@ function makeSite({ id, category, isOnline }) {
     summary: "",
     tags: [],
     techStack: [],
-    isFeatured: false,
+    isFeatured,
     repoUrl: null,
     fallbackUrl: null,
     coverMode: "iframe",

@@ -40,3 +40,12 @@ export function filterSitesByCategory(
 
   return sites.filter((site) => site.category === category);
 }
+
+export function splitFeaturedSites(sites: SiteWithStatus[]) {
+  const featuredSite = sites.find((site) => site.isFeatured) ?? sites[0] ?? null;
+  const ordinarySites = featuredSite
+    ? sites.filter((site) => site.id !== featuredSite.id)
+    : [];
+
+  return { featuredSite, ordinarySites };
+}

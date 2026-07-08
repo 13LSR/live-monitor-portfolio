@@ -24,17 +24,22 @@ export function LiveProjectCard({
     siteKey: "",
   });
   const frameScale = featured ? 0.32 : IFRAME_SCALE;
-  const interactionSiteKey = `${site.id}:${site.url}:${site.allowInteraction}`;
-  const frameLoaded = loadedFrameUrl === site.url;
+  const isOffline = site.status.isOnline === false;
+  const frameUrl = isOffline && site.fallbackUrl ? site.fallbackUrl : site.url;
+  const interactionSiteKey = `${site.id}:${frameUrl}:${site.allowInteraction}`;
+  const frameLoaded = loadedFrameUrl === frameUrl;
   const interactionEnabled =
     site.allowInteraction &&
     interactionState.enabled &&
     interactionState.siteKey === interactionSiteKey;
-  const isOffline = site.status.isOnline === false;
   const hasUnknownState =
     site.status.isOnline === null && site.status.hasMonitorKey;
   const isNotConnected = !site.status.hasMonitorKey;
   const canToggleInteraction = site.allowInteraction;
+  const summary = site.summary || site.description;
+  const visibleTags = site.tags.slice(0, 4);
+  const visibleTechStack = site.techStack.slice(0, 5);
+  const repoUrl = site.repoUrl;
 
   return (
     <article
@@ -80,9 +85,9 @@ export function LiveProjectCard({
         >
           <iframe
             title={site.name}
-            src={site.url}
+            src={frameUrl}
             loading="lazy"
-            onLoad={() => setLoadedFrameUrl(site.url)}
+            onLoad={() => setLoadedFrameUrl(frameUrl)}
             className={`absolute left-0 top-0 origin-top-left ${
               interactionEnabled ? "pointer-events-auto" : "pointer-events-none"
             }`}
@@ -116,8 +121,25 @@ export function LiveProjectCard({
       <div className="flex flex-col gap-4 border-t border-[var(--line)] bg-[var(--paper-raised)] p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="space-y-2">
           <p className="max-w-2xl text-sm leading-6 text-[var(--muted)]">
-            {site.description}
+            {summary}
           </p>
+          {visibleTags.length > 0 ? (
+            <div className="flex flex-wrap gap-1.5">
+              {visibleTags.map((tag) => (
+                <span
+                  key={tag}
+                  className="border border-[var(--line)] bg-[#fffaf0] px-2 py-1 text-[11px] font-semibold text-[var(--ink)]"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          ) : null}
+          {visibleTechStack.length > 0 ? (
+            <p className="font-mono text-[11px] uppercase text-[var(--muted)]">
+              {visibleTechStack.join(" / ")}
+            </p>
+          ) : null}
           {hasUnknownState || isNotConnected ? (
             <p className="font-mono text-[11px] uppercase text-[var(--muted)]">
               {isNotConnected ? "状态未接入" : "状态未知"}，作品入口仍可访问。
@@ -125,6 +147,17 @@ export function LiveProjectCard({
           ) : null}
         </div>
         <div className="flex shrink-0 flex-wrap items-center gap-2">
+          {repoUrl ? (
+            <button
+              type="button"
+              onClick={() =>
+                window.open(repoUrl, "_blank", "noopener,noreferrer")
+              }
+              className="border border-[var(--line)] bg-[#fffaf0] px-3 py-2 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf]"
+            >
+              查看源码
+            </button>
+          ) : null}
           {canToggleInteraction ? (
             <button
               type="button"
