@@ -462,6 +462,9 @@ describe("admin production API path", () => {
     assert.match(table, /打开站点/);
     assert.match(table, /确认删除/);
     assert.match(table, /取消删除/);
+    assert.match(table, /md:hidden/);
+    assert.match(table, /hidden md:block/);
+    assert.doesNotMatch(table, /overflow-x-auto/);
   });
 
   it("keeps animal-island-ui root style import and durable non-commercial attribution", () => {

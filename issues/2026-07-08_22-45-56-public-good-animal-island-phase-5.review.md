@@ -50,3 +50,15 @@
   - Runtime validation of authenticated admin state remains the only material evidence gap identified by the external reviewer.
 - Human-required blockers:
   - Authenticated admin browser validation requires a local ADMIN_PASSWORD/session or an already-authenticated browser state.
+
+## FOLLOWUP-01
+- Source doc: docs/superpowers/specs/2026-07-08-public-good-animal-island-phase-5-design.md:163
+- Scope checked: authenticated /admin desktop and mobile browser validation, island-office header, site list, current editor, open-site action, delete action, create/save entry, no horizontal overflow, no obvious control overlap, and current-page console errors.
+- Evidence checked: app/_components/admin-site-table.tsx; tests/admin-production-path.test.mjs; npm run test:admin; npm run lint; npm run build; in-app browser desktop 1280x720 authenticated /admin; in-app browser mobile 390x844 authenticated /admin.
+- Result: gap_resolved
+- Findings:
+  - Initial mobile validation showed the site table inside an internal horizontal scroll area, with edit/open/delete controls positioned outside the 390px viewport.
+  - The admin site list now renders mobile-first vertical site entries (`md:hidden`) and keeps the desktop table for `md` and up (`hidden md:block`).
+  - Desktop authenticated /admin still exposes island-office header, 4 site houses, edit/open/delete/create actions, no document-level horizontal overflow, and no current-page console errors.
+  - Mobile 390x844 authenticated /admin now exposes vertical site entries, edit/open/delete/create actions in viewport, no overwide elements, no detected control overlap, and no current-page console errors.
+- Remaining gaps: none from this follow-up.
