@@ -4,28 +4,49 @@ A static-first Next.js frontend plus a Cloudflare Worker backend for managing an
 
 ## Local Development
 
-Frontend only:
+One command for the full local app:
 
 ```bash
 npm ci
+npm run dev:all
+```
+
+This starts both local services in one terminal:
+
+- Frontend: `http://localhost:3000`
+- Worker API: `http://localhost:8787`
+
+`dev:all` also defaults the frontend API base to `http://localhost:8787`, so the homepage calls the local Worker proxy for `/public-good`.
+
+Frontend only:
+
+```bash
 npm run dev
 ```
 
-Full local flow:
+Manual full local flow, if you want separate terminals:
 
 ```bash
 copy .env.example .env.local
-npm run dev
 cd worker
 npm install
 copy .dev.vars.example .dev.vars
-npx wrangler dev
+npm run dev
 ```
 
-Expected local addresses:
+In another terminal from the repository root:
 
-- Frontend: `http://localhost:3000`
-- Worker: `http://localhost:8787`
+```bash
+npm run dev
+```
+
+To verify the public-good Worker proxy directly:
+
+```bash
+curl http://localhost:8787/public-good
+```
+
+The response should contain `success: true`, five `items`, `sourceApi: "https://api.isoyu.com/gy/api.php"`, and `cacheTtlSeconds: 21600`. If the third-party API is temporarily unavailable, the Worker still returns five fallback-safe items with `isFallback: true`.
 
 ## Environment Variables
 
