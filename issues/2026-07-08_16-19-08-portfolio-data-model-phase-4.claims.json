@@ -7,7 +7,9 @@
     "total": 34,
     "status": "gaps",
     "limited": 6,
-    "updated_by": "FOLLOWUP-03"
+    "updated_by": "FOLLOWUP-04",
+    "review_result": "gaps_found",
+    "review_state": "REVIEW-03 pending after follow-ups"
   },
   "claims": [
     {

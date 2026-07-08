@@ -100,6 +100,10 @@ AdminSiteForm 单一面板 → 作品信息区 → chip 输入 / URL 校验 / �
 
 因此，admin UI、首页真实作品元信息、源码按钮、animal-island-ui 首页可见性和移动端真实卡片布局仍不能按 real E2E 级别记为 covered。`CLAIM-019`、`CLAIM-022`、`CLAIM-023`、`CLAIM-024`、`CLAIM-027`、`CLAIM-029` 已在 claim ledger 中降为 `limited`。
 
+## FOLLOWUP-04 当前状态
+
+当前审查结果保持 `gaps_found`。claim ledger 现为 `27/34 covered`、`6 limited`、`claim_coverage_status:gaps`，CSV、review log 和本 handoff 已统一到同一表述。`FOLLOWUP-01`、`FOLLOWUP-02`、`FOLLOWUP-03`、`FOLLOWUP-04` 关闭后，还需要 `REVIEW-03` 再跑一次最强可用独立审查，才能决定是否把 Phase 4 标记为 `vision_met`。
+
 **还剩什么**
 
 - 在有公开站点数据和 API 可用时，补一次真实首页卡片的桌面/移动端视觉验收。

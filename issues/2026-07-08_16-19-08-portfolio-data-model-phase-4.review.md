@@ -33,3 +33,10 @@
 - Assumptions: Existing recorded npm/build/typecheck evidence is treated as recorded evidence, not freshly reproduced by the read-only reviewer.
 - Decision debt: Browser-visible public card/admin interaction evidence still depends on configured local data/API and admin credentials.
 - Human-required blockers: none for the implementation gaps; rendered E2E evidence remains environment-limited until local public sites and admin access are available.
+
+## FOLLOWUP-04 State Reconciliation
+- Current review result: gaps_found
+- Current claim coverage: 27/34 covered, 6 limited, status gaps
+- Closed follow-ups: FOLLOWUP-01 fixed fallbackUrl access target; FOLLOWUP-02 rejects non-string tags/techStack items; FOLLOWUP-03 downgraded unavailable real E2E claims to limited.
+- Remaining review gate: REVIEW-03 must rerun the strongest available independent review before Phase 4 can be marked vision_met or fully closed.
+- Artifacts aligned: claim ledger summary, CSV REVIEW-02/FOLLOWUP rows, this review log, and handoff now use the same current result/status language.
