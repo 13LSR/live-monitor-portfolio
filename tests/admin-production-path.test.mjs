@@ -1245,6 +1245,11 @@ describe("admin production API path", () => {
     assert.match(script, /http:\/\/localhost:8787/);
     assert.match(script, /cwd: workerDir/);
     assert.match(script, /cwd: root/);
+    assert.match(script, /cmd\.exe/);
+    assert.match(script, /\/d/);
+    assert.match(script, /\/s/);
+    assert.match(script, /\/c/);
+    assert.doesNotMatch(script, /npm\.cmd/);
   });
 });
 

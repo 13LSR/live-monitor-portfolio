@@ -4,12 +4,12 @@ import { dirname, join } from "node:path";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const workerDir = join(root, "worker");
-const npmCommand = process.platform === "win32" ? "npm.cmd" : "npm";
+const npmCommand = process.platform === "win32" ? "cmd.exe" : "npm";
 const defaultApiBaseUrl = "http://localhost:8787";
 const children = [];
 
 function startProcess(name, args, options = {}) {
-  const child = spawn(npmCommand, args, {
+  const child = spawn(npmCommand, getNpmArgs(args), {
     cwd: root,
     env: process.env,
     stdio: ["ignore", "pipe", "pipe"],
@@ -32,6 +32,10 @@ function startProcess(name, args, options = {}) {
   });
 
   return child;
+}
+
+function getNpmArgs(args) {
+  return process.platform === "win32" ? ["/d", "/s", "/c", "npm", ...args] : args;
 }
 
 function writeOutput(name, chunk) {
