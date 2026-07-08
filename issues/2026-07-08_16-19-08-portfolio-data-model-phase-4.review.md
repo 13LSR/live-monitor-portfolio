@@ -133,3 +133,20 @@
 - Current handoff state: REVIEW-05 gaps are described as FOLLOWUP-06, FOLLOWUP-07, and FOLLOWUP-08; the remaining gate is REVIEW-06.
 - Evidence: stale lines about needing public `/sites` data and admin session were replaced with direct-spawn-agent review availability and REVIEW-06 next steps.
 - Remaining gate: REVIEW-06 final independent review.
+
+## REVIEW-06
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed HEAD 7b948ed, REVIEW-05 follow-up commits, fallbackUrl access behavior, Worker URL type validation, handoff consistency, claim ledger accounting, CLAIM-034 out-of-scope boundary, frontend secret boundary, and Phase 5 scope boundary.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; app/_components/live-project-card.tsx; worker/src/site-validation.ts; tests/admin-production-path.test.mjs; git diff a0eefa6..7b948ed.
+- Claim coverage: complete
+- Claim/evidence alignment: mismatches found
+- Limited validation honestly reported: not_applicable
+- Result: gaps_found
+- Gaps:
+  - P3 handoff: top summary and validation section still list already-closed public-card/admin E2E blockers as current limitations.
+- Follow-up issues added: FOLLOWUP-09, REVIEW-07
+- Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer.
+- Decision debt: recorded npm/build/typecheck evidence was inspected as committed review evidence, not freshly reproduced by reviewer.
+- Human-required blockers: none.
