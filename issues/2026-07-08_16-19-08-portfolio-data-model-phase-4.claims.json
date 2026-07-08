@@ -348,7 +348,8 @@
         "ISSUE-07"
       ],
       "evidence_required": "integration",
-      "status": "covered"
+      "status": "covered",
+      "evidence_observed": "FOLLOWUP-06: LiveProjectCard iframe src remains site.url, while the access button now uses fallbackUrl when the iframe is still loading or the site is offline; npm run test:admin passed 26/26."
     },
     {
       "claim_id": "CLAIM-029",

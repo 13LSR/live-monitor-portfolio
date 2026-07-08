@@ -115,3 +115,9 @@
 - Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer because the worktree is dirty.
 - Decision debt: recorded FOLLOWUP-05 command evidence remains from main-session verification against the dirty worktree, though committed tests cover the reviewed behavior.
 - Human-required blockers: none.
+
+## FOLLOWUP-06
+- Fixed: LiveProjectCard now keeps the iframe on `site.url` while making the access button prefer `fallbackUrl` when the iframe is still loading or the site is offline.
+- Evidence: TDD red run `npm run test:admin` failed 25/26 on the missing `const frameUrl = site.url` assertion; green run passed 26/26 after the component change.
+- Regression: source button still uses `repoUrl`, iframe still renders from `frameUrl`, and loaded online cards return the access button to `site.url`.
+- Remaining gate: FOLLOWUP-07 and FOLLOWUP-08, then REVIEW-06.

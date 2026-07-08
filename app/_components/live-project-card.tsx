@@ -26,10 +26,12 @@ export function LiveProjectCard({
   });
   const frameScale = featured ? 0.32 : IFRAME_SCALE;
   const isOffline = site.status.isOnline === false;
-  const visitUrl = isOffline && site.fallbackUrl ? site.fallbackUrl : site.url;
-  const frameUrl = visitUrl;
+  const frameUrl = site.url;
   const interactionSiteKey = `${site.id}:${frameUrl}:${site.allowInteraction}`;
   const frameLoaded = loadedFrameUrl === frameUrl;
+  const shouldUseFallbackVisit =
+    site.fallbackUrl && (isOffline || !frameLoaded);
+  const visitUrl = shouldUseFallbackVisit ? site.fallbackUrl : site.url;
   const interactionEnabled =
     site.allowInteraction &&
     interactionState.enabled &&

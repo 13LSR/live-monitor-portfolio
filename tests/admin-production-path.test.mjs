@@ -127,9 +127,14 @@ describe("admin production API path", () => {
     assert.match(card, /site\.techStack\.slice\(0,\s*5\)/);
     assert.match(card, /site\.repoUrl/);
     assert.match(card, /site\.fallbackUrl/);
+    assert.match(card, /const frameUrl = site\.url/);
     assert.match(
       card,
-      /const visitUrl = isOffline && site\.fallbackUrl \? site\.fallbackUrl : site\.url/
+      /site\.fallbackUrl && \(isOffline \|\| !frameLoaded\)/
+    );
+    assert.match(
+      card,
+      /const visitUrl = shouldUseFallbackVisit \? site\.fallbackUrl : site\.url/
     );
     assert.match(card, /<iframe/);
     assert.match(card, /src=\{frameUrl\}/);
