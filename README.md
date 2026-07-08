@@ -46,7 +46,25 @@ To verify the public-good Worker proxy directly:
 curl http://localhost:8787/public-good
 ```
 
-The response should contain `success: true`, five `items`, `sourceApi: "https://api.isoyu.com/gy/api.php"`, and `cacheTtlSeconds: 21600`. If the third-party API is temporarily unavailable, the Worker still returns five fallback-safe items with `isFallback: true`.
+The response should contain `success: true`, five `items`, `sourceApi: "https://api.isoyu.com/gy/api.php"`, and `cacheTtlSeconds: 21600`.
+
+### Local public-good API behavior
+
+The public-good module first tries the real upstream API:
+
+```text
+https://api.isoyu.com/gy/api.php
+```
+
+That endpoint can return a Cloudflare challenge page to local server-side requests. When that happens on `localhost`, the Worker returns the documented API sample first, then fills the rest of the five-person notice with safe fallback items. In that state the response has `isFallback: true` and a message that mentions local verification. This confirms the Worker route and frontend notice wiring without pretending the blocked upstream returned live data.
+
+For stricter local verification, put a compact API response or an array of API responses into `worker/.dev.vars` and restart `npm run dev:all`:
+
+```bash
+PUBLIC_GOOD_FIXTURE_JSON='[{"success":true,"data":{"id":"448061","name":"李瑾怡","sex":"女","birth_time":"2004年02月17日","lost_time":"2020年01月01日","child_pic":"https://assets.example.com/child.jpg","lost_place":"湖北省荆州市监利县容城镇","url":"https://example.com/detail","child_feature":"圆脸，短发，走失时穿黄色外套。"},"contacts":{"consult_mail":"baobeihuijia@yeah.net","tel":"0435-3338090"},"name":"姬长信API","api":"https://api.isoyu.com/"}]'
+```
+
+If the fixture contains five valid unique records, `/public-good` returns them with `isFallback: false` and does not call the third-party API.
 
 ## Environment Variables
 

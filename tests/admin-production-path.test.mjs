@@ -295,6 +295,131 @@ describe("admin production API path", () => {
     }
   });
 
+  it("serves a local public-good fixture without calling the third-party API", async () => {
+    const originalFetch = globalThis.fetch;
+    const { getPublicGoodBatch } = await import(
+      `../worker/src/public-good.ts?fixture-${Date.now()}`
+    );
+    const fixtureResponses = [
+      makePublicGoodApiResponse({ id: "448061", name: "李瑾怡" }),
+      makePublicGoodApiResponse({ id: "448062", name: "王小明" }),
+      makePublicGoodApiResponse({ id: "448063", name: "陈小花" }),
+      makePublicGoodApiResponse({ id: "448064", name: "赵小安" }),
+      makePublicGoodApiResponse({ id: "448065", name: "周小宁" }),
+    ];
+
+    globalThis.fetch = async () => {
+      throw new Error("Fixture mode should not request the third-party API");
+    };
+
+    try {
+      const batch = await getPublicGoodBatch(
+        createPublicGoodEnv({
+          PUBLIC_GOOD_FIXTURE_JSON: JSON.stringify(fixtureResponses),
+        })
+      );
+
+      assert.equal(batch.success, true);
+      assert.equal(batch.items.length, 5);
+      assert.equal(batch.isFallback, false);
+      assert.equal(batch.sourceName, "姬长信API");
+      assert.equal(batch.items[0].name, "李瑾怡");
+      assert.equal(batch.items[0].lostPlace, "湖北省荆州市监利县容城镇");
+      assert.equal(batch.items[0].detailUrl, "https://example.com/detail");
+      assert.equal("data" in batch, false);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("uses the documented public-good sample on localhost when the upstream returns a Cloudflare challenge", async () => {
+    const originalFetch = globalThis.fetch;
+    const { handlePublicGood } = await import(
+      `../worker/src/public-good.ts?local-challenge-${Date.now()}`
+    );
+
+    globalThis.fetch = async () =>
+      new Response("<!DOCTYPE html><title>Just a moment...</title>", {
+        status: 403,
+        headers: { "Content-Type": "text/html; charset=UTF-8" },
+      });
+
+    try {
+      const response = await handlePublicGood(
+        new Request("http://localhost:8787/public-good"),
+        createPublicGoodEnv()
+      );
+      const batch = await response.json();
+
+      assert.equal(response.status, 200);
+      assert.equal(batch.success, true);
+      assert.equal(batch.items.length, 5);
+      assert.equal(batch.items[0].id, "448061");
+      assert.equal(batch.items[0].name, "李瑾怡");
+      assert.equal(batch.items[0].lostPlace, "湖北省荆州市监利县容城镇");
+      assert.equal(batch.sourceName, "姬长信API 文档示例");
+      assert.equal(batch.isFallback, true);
+      assert.match(batch.message, /本地验证/);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
+  it("does not reuse localhost public-good sample cache for non-local Worker requests", async () => {
+    const originalFetch = globalThis.fetch;
+    const { handlePublicGood } = await import(
+      `../worker/src/public-good.ts?cache-scope-${Date.now()}`
+    );
+    const liveResponses = [
+      makePublicGoodApiResponse({ id: "448061", name: "李瑾怡" }),
+      makePublicGoodApiResponse({ id: "448062", name: "王小明" }),
+      makePublicGoodApiResponse({ id: "448063", name: "陈小花" }),
+      makePublicGoodApiResponse({ id: "448064", name: "赵小安" }),
+      makePublicGoodApiResponse({ id: "448065", name: "周小宁" }),
+    ];
+    let requestCount = 0;
+
+    globalThis.fetch = async () => {
+      requestCount += 1;
+
+      if (requestCount <= 8) {
+        return new Response("<!DOCTYPE html><title>Just a moment...</title>", {
+          status: 403,
+          headers: { "Content-Type": "text/html; charset=UTF-8" },
+        });
+      }
+
+      return Response.json(liveResponses[requestCount - 9]);
+    };
+
+    try {
+      const localResponse = await handlePublicGood(
+        new Request("http://localhost:8787/public-good"),
+        createPublicGoodEnv()
+      );
+      const localBatch = await localResponse.json();
+
+      assert.equal(localBatch.sourceName, "姬长信API 文档示例");
+      assert.equal(localBatch.isFallback, true);
+
+      const productionResponse = await handlePublicGood(
+        new Request("https://worker.example/public-good"),
+        createPublicGoodEnv()
+      );
+      const productionBatch = await productionResponse.json();
+
+      assert.equal(productionBatch.sourceName, "姬长信API");
+      assert.equal(productionBatch.isFallback, false);
+      assert.deepEqual(
+        productionBatch.items.map((item) => item.id),
+        ["448061", "448062", "448063", "448064", "448065"]
+      );
+      assert.equal(requestCount, 13);
+    } finally {
+      globalThis.fetch = originalFetch;
+    }
+  });
+
   it("filters invalid public-good API structures and falls back after eight refresh attempts", async () => {
     const originalFetch = globalThis.fetch;
     const { getPublicGoodBatch } = await import(
@@ -1296,11 +1421,12 @@ function createSqliteD1Env(db) {
   };
 }
 
-function createPublicGoodEnv() {
+function createPublicGoodEnv(overrides = {}) {
   return {
     ADMIN_PASSWORD: "test-password",
     SESSION_SECRET: "test-secret",
     DB: null,
+    ...overrides,
   };
 }
 

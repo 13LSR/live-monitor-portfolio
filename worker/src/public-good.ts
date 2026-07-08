@@ -8,6 +8,7 @@ import type {
 interface PublicGoodCacheEntry {
   batch: PublicGoodBatch;
   expiresAt: number;
+  key: string;
 }
 
 interface ThirdPartyPublicGoodResponse {
@@ -18,6 +19,10 @@ interface ThirdPartyPublicGoodResponse {
     tel?: unknown;
   };
   name?: unknown;
+}
+
+interface PublicGoodBatchOptions {
+  allowLocalSampleFallback?: boolean;
 }
 
 const PUBLIC_GOOD_SOURCE_API = "https://api.isoyu.com/gy/api.php";
@@ -35,61 +40,101 @@ export async function handlePublicGood(request: Request, env: Env) {
     );
   }
 
-  const batch = await getPublicGoodBatch(env);
+  const batch = await getPublicGoodBatch(env, {
+    allowLocalSampleFallback: isLocalDevRequest(request),
+  });
   return Response.json(batch);
 }
 
-export async function getPublicGoodBatch(env: Env): Promise<PublicGoodBatch> {
+export async function getPublicGoodBatch(
+  env: Env,
+  options: PublicGoodBatchOptions = {}
+): Promise<PublicGoodBatch> {
   const now = Date.now();
   const ttlSeconds = getCacheTtlSeconds(env);
+  const cacheKey = getPublicGoodCacheKey(env, options);
 
-  if (cachedPublicGoodBatch && cachedPublicGoodBatch.expiresAt > now) {
+  if (
+    cachedPublicGoodBatch &&
+    cachedPublicGoodBatch.key === cacheKey &&
+    cachedPublicGoodBatch.expiresAt > now
+  ) {
     return cachedPublicGoodBatch.batch;
   }
 
-  const previousBatch = cachedPublicGoodBatch?.batch ?? null;
+  const previousBatch =
+    cachedPublicGoodBatch?.key === cacheKey ? cachedPublicGoodBatch.batch : null;
   const seenIds = new Set<string>();
   const items: PublicGoodPerson[] = [];
   let contacts: PublicGoodContacts | null = previousBatch?.contacts ?? null;
   let sourceName = previousBatch?.sourceName ?? "姬长信API";
+  let usedLocalSample = false;
 
-  for (
-    let requestCount = 0;
-    requestCount < MAX_REFRESH_REQUESTS && items.length < TARGET_BATCH_SIZE;
-    requestCount += 1
-  ) {
-    try {
-      const response = await fetch(PUBLIC_GOOD_SOURCE_API);
+  const fixtureResponses = parsePublicGoodFixtureResponses(
+    env.PUBLIC_GOOD_FIXTURE_JSON
+  );
 
-      if (!response.ok) {
+  if (fixtureResponses) {
+    const fixtureResult = appendThirdPartyResponses(
+      items,
+      fixtureResponses,
+      seenIds,
+      contacts,
+      sourceName
+    );
+    contacts = fixtureResult.contacts;
+    sourceName = fixtureResult.sourceName;
+  } else {
+    for (
+      let requestCount = 0;
+      requestCount < MAX_REFRESH_REQUESTS && items.length < TARGET_BATCH_SIZE;
+      requestCount += 1
+    ) {
+      try {
+        const response = await fetch(PUBLIC_GOOD_SOURCE_API);
+
+        if (!response.ok) {
+          continue;
+        }
+
+        const raw = (await response.json()) as ThirdPartyPublicGoodResponse;
+
+        const liveResult = appendThirdPartyResponses(
+          items,
+          [raw],
+          seenIds,
+          contacts,
+          sourceName
+        );
+        contacts = liveResult.contacts;
+        sourceName = liveResult.sourceName;
+      } catch {
         continue;
       }
-
-      const raw = (await response.json()) as ThirdPartyPublicGoodResponse;
-
-      if (raw.success !== true) {
-        continue;
-      }
-
-      const item = normalizePublicGoodItem(raw.data);
-
-      if (!item || seenIds.has(item.id)) {
-        continue;
-      }
-
-      seenIds.add(item.id);
-      items.push(item);
-      contacts = normalizeContacts(raw.contacts) ?? contacts;
-      sourceName = normalizeText(raw.name, 40) || sourceName;
-    } catch {
-      continue;
     }
   }
 
-  const thirdPartyItemCount = items.length;
+  const primaryItemCount = items.length;
 
   if (items.length < TARGET_BATCH_SIZE && previousBatch) {
     appendUniqueItems(items, previousBatch.items, seenIds);
+  }
+
+  if (items.length < TARGET_BATCH_SIZE && options.allowLocalSampleFallback) {
+    const appendedLocalSample = appendUniqueItems(
+      items,
+      documentedPublicGoodSampleItems,
+      seenIds
+    );
+
+    if (appendedLocalSample) {
+      usedLocalSample = true;
+      contacts = contacts ?? documentedPublicGoodSampleContacts;
+
+      if (primaryItemCount === 0) {
+        sourceName = "姬长信API 文档示例";
+      }
+    }
   }
 
   if (items.length < TARGET_BATCH_SIZE) {
@@ -104,18 +149,56 @@ export async function getPublicGoodBatch(env: Env): Promise<PublicGoodBatch> {
     sourceApi: PUBLIC_GOOD_SOURCE_API,
     cachedAt: new Date(now).toISOString(),
     cacheTtlSeconds: ttlSeconds,
-    isFallback: thirdPartyItemCount < TARGET_BATCH_SIZE,
-    ...(thirdPartyItemCount < TARGET_BATCH_SIZE
-      ? { message: "公益公告暂时使用缓存或本地备用数据。" }
+    isFallback: primaryItemCount < TARGET_BATCH_SIZE,
+    ...(primaryItemCount < TARGET_BATCH_SIZE
+      ? {
+          message: usedLocalSample
+            ? "本地验证正在使用 API 文档示例；真实上游恢复后会自动展示实时公益公告。"
+            : "公益公告暂时使用缓存或本地备用数据。",
+        }
       : {}),
   };
 
   cachedPublicGoodBatch = {
     batch,
     expiresAt: now + ttlSeconds * 1000,
+    key: cacheKey,
   };
 
   return batch;
+}
+
+function appendThirdPartyResponses(
+  target: PublicGoodPerson[],
+  responses: ThirdPartyPublicGoodResponse[],
+  seenIds: Set<string>,
+  contacts: PublicGoodContacts | null,
+  sourceName: string
+) {
+  let nextContacts = contacts;
+  let nextSourceName = sourceName;
+
+  for (const raw of responses) {
+    if (target.length >= TARGET_BATCH_SIZE || raw.success !== true) {
+      continue;
+    }
+
+    const item = normalizePublicGoodItem(raw.data);
+
+    if (!item || seenIds.has(item.id)) {
+      continue;
+    }
+
+    seenIds.add(item.id);
+    target.push(item);
+    nextContacts = normalizeContacts(raw.contacts) ?? nextContacts;
+    nextSourceName = normalizeText(raw.name, 40) || nextSourceName;
+  }
+
+  return {
+    contacts: nextContacts,
+    sourceName: nextSourceName,
+  };
 }
 
 function appendUniqueItems(
@@ -123,9 +206,11 @@ function appendUniqueItems(
   candidates: PublicGoodPerson[],
   seenIds: Set<string>
 ) {
+  let appended = false;
+
   for (const item of candidates) {
     if (target.length >= TARGET_BATCH_SIZE) {
-      return;
+      return appended;
     }
 
     if (seenIds.has(item.id)) {
@@ -134,7 +219,10 @@ function appendUniqueItems(
 
     seenIds.add(item.id);
     target.push(item);
+    appended = true;
   }
+
+  return appended;
 }
 
 function getCacheTtlSeconds(env: Env) {
@@ -145,6 +233,45 @@ function getCacheTtlSeconds(env: Env) {
   }
 
   return DEFAULT_CACHE_TTL_SECONDS;
+}
+
+function getPublicGoodCacheKey(env: Env, options: PublicGoodBatchOptions) {
+  const fixtureJson = env.PUBLIC_GOOD_FIXTURE_JSON?.trim();
+
+  if (fixtureJson) {
+    return `fixture:${fixtureJson}`;
+  }
+
+  return options.allowLocalSampleFallback ? "live:local-sample" : "live";
+}
+
+function isLocalDevRequest(request: Request) {
+  try {
+    const hostname = new URL(request.url).hostname;
+    return hostname === "localhost" || hostname === "127.0.0.1";
+  } catch {
+    return false;
+  }
+}
+
+function parsePublicGoodFixtureResponses(value: string | undefined) {
+  if (!value?.trim()) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(value) as unknown;
+    const responses = Array.isArray(parsed) ? parsed : [parsed];
+    return responses.filter(isThirdPartyPublicGoodResponse);
+  } catch {
+    return null;
+  }
+}
+
+function isThirdPartyPublicGoodResponse(
+  value: unknown
+): value is ThirdPartyPublicGoodResponse {
+  return Boolean(value && typeof value === "object");
 }
 
 function normalizePublicGoodItem(raw: unknown): PublicGoodPerson | null {
@@ -212,6 +339,25 @@ function normalizeHttpsUrl(value: unknown) {
     return null;
   }
 }
+
+const documentedPublicGoodSampleContacts: PublicGoodContacts = {
+  consultMail: "baobeihuijia@yeah.net",
+  tel: "0435-3338090",
+};
+
+const documentedPublicGoodSampleItems: PublicGoodPerson[] = [
+  {
+    id: "448061",
+    name: "李瑾怡",
+    sex: "女",
+    birthTime: "2004年02月17日",
+    lostTime: "2020年01月01日",
+    childPic: null,
+    lostPlace: "湖北省荆州市监利县容城镇",
+    childFeature: "API 文档示例数据。真实上游可用时会显示宝贝回家寻子网的实时公益信息。",
+    detailUrl: null,
+  },
+];
 
 const fallbackPublicGoodItems: PublicGoodPerson[] = [
   {

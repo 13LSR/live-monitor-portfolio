@@ -9,6 +9,7 @@ export interface Env {
   SESSION_SECRET: string;
   DB: D1Database;
   PUBLIC_GOOD_CACHE_TTL_SECONDS?: string;
+  PUBLIC_GOOD_FIXTURE_JSON?: string;
 }
 
 export async function isAuthenticated(request: Request, env: Env) {
