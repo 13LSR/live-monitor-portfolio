@@ -200,3 +200,19 @@
 - Fixed: The handoff top summary and lower remaining-work section now both point to REVIEW-09 as the current final review gate.
 - Evidence: current-state REVIEW-07/REVIEW-08 pointer checks are clean except for historical references, and the handoff says REVIEW-06/REVIEW-07/REVIEW-08 only found historical pointer residue.
 - Remaining gate: REVIEW-09 final independent review.
+
+## REVIEW-09
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed HEAD 4cc41ab, FOLLOWUP-11 handoff pointer cleanup, prior fallbackUrl and Worker validation fixes, claim ledger accounting, CLAIM-034 out-of-scope boundary, frontend secret boundary, and Phase 5 scope boundary.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; app/_components/live-project-card.tsx; worker/src/site-validation.ts; tests/admin-production-path.test.mjs; git diff d4e258f..4cc41ab.
+- Claim coverage: complete, 33 covered plus CLAIM-034 out_of_scope, 34/34 accounted, 0 limited
+- Claim/evidence alignment: matched
+- Limited validation honestly reported: not_applicable
+- Result: vision_met
+- Gaps: none
+- Follow-up issues added: none
+- Assumptions: Tests were not rerun by reviewer; committed review log, CSV, claim ledger, and static/source inspection were used as evidence for the read-only HEAD review.
+- Decision debt: none
+- Human-required blockers: none.

@@ -7,7 +7,7 @@ WARNING: self-review only, NOT independently verified
 
 ## 总结
 
-本轮执行的是 `小茄的网站小岛 Phase 4 作品集数据模型设计`。设计里要求把现有站点记录升级成作品集作品：能保存一句话简介、标签、技术栈、精选状态、源码地址和 iframe 备用地址；后台能编辑这些字段；首页能轻量展示它们；`animal-island-ui` 不再只停留在登录页。代码层面这些能力已经接通，并通过测试、构建、Worker typecheck、migration、真实公开卡片和后台编辑链路验收。早期缺少公开数据和 admin session 的限制已在 BLOCKER-01 关闭时补证；REVIEW-06、REVIEW-07、REVIEW-08 后续只发现本 handoff 的历史指针残留，当前只剩 REVIEW-09 做最终独立复审。
+本轮执行的是 `小茄的网站小岛 Phase 4 作品集数据模型设计`。设计里要求把现有站点记录升级成作品集作品：能保存一句话简介、标签、技术栈、精选状态、源码地址和 iframe 备用地址；后台能编辑这些字段；首页能轻量展示它们；`animal-island-ui` 不再只停留在登录页。代码层面这些能力已经接通，并通过测试、构建、Worker typecheck、migration、真实公开卡片和后台编辑链路验收。早期缺少公开数据和 admin session 的限制已在 BLOCKER-01 关闭时补证；REVIEW-09 最终独立复审确认 `vision_met`，当前没有剩余可执行 gap。
 
 ## spec 目标逐条对账
 
@@ -112,12 +112,11 @@ BLOCKER-01 已关闭：通过真实 Worker auth/CRUD 创建并编辑了一条 Ph
 
 REVIEW-04 又发现一个 Worker 边界缺口：外部 create/update payload 缺少 Phase 4 字段时会绕过校验并在归一化阶段变成 500。FOLLOWUP-05 已修复这个问题，缺失 `summary`、`tags`、`techStack`、`isFeatured`、`repoUrl`、`fallbackUrl` 现在都会在 Worker 校验层返回稳定错误；`npm run test:admin` 26/26 通过，`worker npm run typecheck` 通过。
 
-REVIEW-05 继续挑出三处收尾问题：loading 状态下访问按钮没有优先使用 `fallbackUrl`，非字符串 `repoUrl`/`fallbackUrl` 仍可能穿过 Worker 校验，以及本交接文档还残留已关闭的 E2E 阻塞描述。FOLLOWUP-06 已让访问按钮在 iframe loading/offline 时优先打开备用链接，同时 iframe 仍加载主站点；FOLLOWUP-07 已让非字符串源码/备用链接返回稳定校验错误；FOLLOWUP-08 则把这份 handoff 调回当前状态。REVIEW-06、REVIEW-07、REVIEW-08 后续只发现 handoff 自身的状态指针残留，FOLLOWUP-09、FOLLOWUP-10、FOLLOWUP-11 已把这些指针清到当前状态。现在只剩 `REVIEW-09` 做最终独立复审。
+REVIEW-05 继续挑出三处收尾问题：loading 状态下访问按钮没有优先使用 `fallbackUrl`，非字符串 `repoUrl`/`fallbackUrl` 仍可能穿过 Worker 校验，以及本交接文档还残留已关闭的 E2E 阻塞描述。FOLLOWUP-06 已让访问按钮在 iframe loading/offline 时优先打开备用链接，同时 iframe 仍加载主站点；FOLLOWUP-07 已让非字符串源码/备用链接返回稳定校验错误；FOLLOWUP-08 则把这份 handoff 调回当前状态。REVIEW-06、REVIEW-07、REVIEW-08 后续只发现 handoff 自身的状态指针残留，FOLLOWUP-09、FOLLOWUP-10、FOLLOWUP-11 已把这些指针清到当前状态。REVIEW-09 最终独立复审确认 Phase 4 达成 `vision_met`。
 
 **还剩什么**
 
-- 跑 `REVIEW-09`，确认 FOLLOWUP-11 已把 handoff 的最终复审指针调到当前状态。
-- 如果 REVIEW-09 没有新的可执行 gap，就把 Phase 4 关闭为最终通过；如果还有 gap，继续追加下一轮 follow-up。
+- Phase 4 当前已由 REVIEW-09 确认为最终通过，没有剩余 follow-up。
 
 **阻塞/配置**
 
