@@ -209,10 +209,14 @@ function isDuplicateSlugError(message: string) {
 }
 
 function getOptionalHttpsUrlError(
-  value: SitePayload["repoUrl"] | SitePayload["fallbackUrl"] | undefined,
+  value: unknown,
   label: "Repo" | "Fallback"
 ) {
-  const trimmed = typeof value === "string" ? value.trim() : "";
+  if (value !== null && typeof value !== "string") {
+    return `${label} URL must be a string or null`;
+  }
+
+  const trimmed = value?.trim() ?? "";
 
   if (!trimmed) {
     return null;

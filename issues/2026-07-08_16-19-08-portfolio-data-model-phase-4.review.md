@@ -121,3 +121,9 @@
 - Evidence: TDD red run `npm run test:admin` failed 25/26 on the missing `const frameUrl = site.url` assertion; green run passed 26/26 after the component change.
 - Regression: source button still uses `repoUrl`, iframe still renders from `frameUrl`, and loaded online cards return the access button to `site.url`.
 - Remaining gate: FOLLOWUP-07 and FOLLOWUP-08, then REVIEW-06.
+
+## FOLLOWUP-07
+- Fixed: Worker optional URL validation now rejects non-string, non-null `repoUrl` and `fallbackUrl` values before `normalizeOptionalUrl` can call `.trim()`.
+- Evidence: TDD red run `npm run test:admin` failed 25/26 because `repoUrl: 42` returned `null`; green run passed 26/26 after the validation helper change.
+- Regression: `worker npm run typecheck` passed; null, empty string, and valid https URLs remain accepted.
+- Remaining gate: FOLLOWUP-08, then REVIEW-06.

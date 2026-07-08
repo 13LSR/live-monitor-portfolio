@@ -217,7 +217,7 @@
       ],
       "evidence_required": "unit",
       "status": "covered",
-      "evidence_observed": "FOLLOWUP-05: Worker validation now rejects missing summary/tags/techStack/isFeatured/repoUrl/fallbackUrl fields before normalization; npm run test:admin passed 26/26 and worker npm run typecheck passed."
+      "evidence_observed": "FOLLOWUP-05: Worker validation rejects missing summary/tags/techStack/isFeatured/repoUrl/fallbackUrl fields before normalization. FOLLOWUP-07: non-string repoUrl/fallbackUrl now return stable URL type errors before normalizeOptionalUrl; npm run test:admin passed 26/26 and worker npm run typecheck passed."
     },
     {
       "claim_id": "CLAIM-018",
@@ -375,7 +375,7 @@
       ],
       "evidence_required": "integration",
       "status": "covered",
-      "evidence_observed": "FOLLOWUP-05: external malformed payloads missing Phase 4 fields now receive stable validation errors instead of reaching normalizeStringArray/summary.trim and falling into generic 500; npm run test:admin passed 26/26 and worker npm run typecheck passed."
+      "evidence_observed": "FOLLOWUP-05: external malformed payloads missing Phase 4 fields receive stable validation errors instead of reaching normalizeStringArray/summary.trim. FOLLOWUP-07: non-string repoUrl/fallbackUrl receive stable URL type errors instead of reaching normalizeOptionalUrl; npm run test:admin passed 26/26 and worker npm run typecheck passed."
     },
     {
       "claim_id": "CLAIM-031",

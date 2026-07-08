@@ -648,6 +648,14 @@ describe("admin production API path", () => {
       "Fallback URL must be a valid absolute URL"
     );
     assert.equal(
+      getSitePayloadValidationError({ ...validPayload, repoUrl: 42 }),
+      "Repo URL must be a string or null"
+    );
+    assert.equal(
+      getSitePayloadValidationError({ ...validPayload, fallbackUrl: {} }),
+      "Fallback URL must be a string or null"
+    );
+    assert.equal(
       getSitePayloadValidationError({ ...validPayload, summary: undefined }),
       "Summary is required"
     );
