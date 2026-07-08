@@ -1,0 +1,409 @@
+{
+  "source_doc": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md",
+  "csv": "2026-07-08_16-19-08-portfolio-data-model-phase-4.csv",
+  "execution_scope": "Phase 4 portfolio data model extension only: D1 fields, Worker/API contracts, admin structured editing, homepage lightweight metadata display, and visible animal-island-ui usage beyond login.",
+  "claim_coverage": {
+    "covered": 33,
+    "total": 34,
+    "status": "pending"
+  },
+  "claims": [
+    {
+      "claim_id": "CLAIM-001",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:14",
+      "promise": "Execution scope is limited to Phase 4 portfolio data model extension.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-02",
+        "ISSUE-03",
+        "ISSUE-04",
+        "ISSUE-05",
+        "ISSUE-06",
+        "ISSUE-07",
+        "ISSUE-08",
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-002",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:35",
+      "promise": "Next.js static export support must continue.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-003",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:36",
+      "promise": "Cloudflare Worker must continue to own admin auth, site CRUD, and sensitive logic.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-04",
+        "ISSUE-09"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-004",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:37",
+      "promise": "Live iframe must remain the core display capability.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07",
+        "ISSUE-09"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-005",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:38",
+      "promise": "New fields must not carry secrets and frontend must not reference ADMIN_PASSWORD, SESSION_SECRET, or Worker-only secrets.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-006",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:40",
+      "promise": "Existing site records must remain readable, editable, and displayable after migration.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-04",
+        "ISSUE-09"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-007",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:41",
+      "promise": "D1 migration must be low-risk and must not infer portfolio data from old fields.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01"
+      ],
+      "evidence_required": "migration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-008",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:45",
+      "promise": "Create worker/migrations/0002_portfolio_fields.sql using ALTER TABLE ADD COLUMN only.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01"
+      ],
+      "evidence_required": "migration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-009",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:47",
+      "promise": "Add summary, tags, tech_stack, is_featured, repo_url, and fallback_url columns with documented defaults.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01"
+      ],
+      "evidence_required": "migration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-010",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:56",
+      "promise": "D1 stores tags and tech_stack as JSON strings while API returns string arrays and tolerates bad JSON as [].",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-04"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-011",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:60",
+      "promise": "repoUrl and fallbackUrl may be null but non-empty values must be https absolute URLs.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-05"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-012",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:62",
+      "promise": "Database may store multiple featured records without a uniqueness constraint or hidden cross-record updates.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-04"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-013",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:64",
+      "promise": "No new indexes are added in Phase 4.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-014",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:66",
+      "promise": "SiteRecord and SitePayload include summary, tags, techStack, isFeatured, repoUrl, and fallbackUrl.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-02"
+      ],
+      "evidence_required": "contract",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-015",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:79",
+      "promise": "Worker SiteRow, listSites SELECT, and handleGetSites map new snake_case columns to camelCase API fields.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-04"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-016",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:81",
+      "promise": "Create/update continue through existing authenticated CRUD APIs and normalize new portfolio fields.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-04"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-017",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:89",
+      "promise": "Worker validation covers summary length, string-array tags/techStack, repo/fallback URL, and existing name/slug/url validation.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03"
+      ],
+      "evidence_required": "unit",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-018",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:100",
+      "promise": "Featured selection uses first featured item in current filtered list, falls back to first item, and excludes featured from ordinary list.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07"
+      ],
+      "evidence_required": "unit",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-019",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:111",
+      "promise": "Admin form stays in the single editor panel and adds a portfolio information section for new fields.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-05",
+        "ISSUE-06"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-020",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:124",
+      "promise": "tags and techStack use chip input with add/delete, trim, remove empty values, de-dupe, and preserve insertion order.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-05"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-021",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:127",
+      "promise": "Phase 4 does not implement drag sorting, automatic tag recommendations, global tag management, or inferred tech stack.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-05",
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-022",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:137",
+      "promise": "Phase 4 must make animal-island-ui visible outside the login page.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-05",
+        "ISSUE-08"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-023",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:141",
+      "promise": "Admin portfolio information section is the second real animal-island-ui usage scenario and prefers its Card/Button/Input/form components.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-05",
+        "ISSUE-08"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-024",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:144",
+      "promise": "Homepage tags, techStack, and repoUrl button use or mimic animal-island-ui tag/button style without taking over iframe, status, Worker, or D1 logic.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07",
+        "ISSUE-08"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-025",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:153",
+      "promise": "LiveProjectCard displays summary with description fallback.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07"
+      ],
+      "evidence_required": "unit",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-026",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:155",
+      "promise": "Homepage displays at most 4 tags and 5 tech stack entries with a restrained overflow indicator.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07"
+      ],
+      "evidence_required": "unit",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-027",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:157",
+      "promise": "repoUrl displays a source entry that opens a new tab.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-028",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:159",
+      "promise": "fallbackUrl is preferred for access button only in iframe loading/offline/error contexts, without adding complex iframe failure detection or proxy rendering.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-07"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-029",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:163",
+      "promise": "Mobile layout must avoid button compression, text overflow, or uncontrolled card height.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-08",
+        "ISSUE-09"
+      ],
+      "evidence_required": "real_e2e",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-030",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:165",
+      "promise": "Frontend local validation and Worker final validation cover new-field errors, while corrupt D1 JSON degrades to [].",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-03",
+        "ISSUE-05"
+      ],
+      "evidence_required": "integration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-031",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:181",
+      "promise": "Completion requires npm run test:admin or equivalent, npm run lint, npm run build, and cd worker; npm run typecheck.",
+      "production_path_required": false,
+      "covered_by": [
+        "ISSUE-09"
+      ],
+      "evidence_required": "static",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-032",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:188",
+      "promise": "D1 migration validation evidence is required, or validation_limited plus user-runnable wrangler/D1 commands must be recorded.",
+      "production_path_required": true,
+      "covered_by": [
+        "ISSUE-01",
+        "ISSUE-09"
+      ],
+      "evidence_required": "migration",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-033",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:203",
+      "promise": "Final independent or strongest available review must check migration, API compatibility, secrets, UI, featured logic, animal-island-ui use, and validation evidence.",
+      "production_path_required": false,
+      "covered_by": [
+        "REVIEW-01"
+      ],
+      "evidence_required": "manual",
+      "status": "covered"
+    },
+    {
+      "claim_id": "CLAIM-034",
+      "source_ref": "docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md:214",
+      "promise": "Public-good module, detail pages, monitor proxy/history, community features, inferred tags/techStack, and forced screenshot/proxy rendering are out of scope.",
+      "production_path_required": false,
+      "covered_by": [],
+      "evidence_required": "static",
+      "status": "out_of_scope"
+    }
+  ]
+}

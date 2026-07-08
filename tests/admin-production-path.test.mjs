@@ -2,6 +2,7 @@ import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { DatabaseSync } from "node:sqlite";
 
 import { getFriendlyApiErrorMessage } from "../app/_lib/api-errors.ts";
 import {
@@ -146,22 +147,98 @@ describe("admin production API path", () => {
     assert.match(login, /<Button/);
   });
 
-  it("keeps Phase 4 data model work out of the Phase 1-3 delivery", () => {
+  it("applies the Phase 4 portfolio migration without changing existing rows", () => {
     const nextConfig = readFileSync(join(root, "next.config.ts"), "utf8");
-    const migrations = readFileSync(
+    const initialMigration = readFileSync(
       join(root, "worker/migrations/0001_init.sql"),
       "utf8"
     );
-    const sharedContracts = readFileSync(
-      join(root, "shared/contracts.ts"),
+    const portfolioMigration = readFileSync(
+      join(root, "worker/migrations/0002_portfolio_fields.sql"),
       "utf8"
     );
     const migrationFiles = readdirSync(join(root, "worker/migrations"));
+    const statements = portfolioMigration
+      .split(";")
+      .map((statement) => statement.trim())
+      .filter(Boolean);
 
     assert.match(nextConfig, /output:\s*"export"/);
-    assert.doesNotMatch(migrations, /is_featured|tech_stack|repo_url|fallback_url/);
-    assert.doesNotMatch(sharedContracts, /isFeatured|techStack|repoUrl|fallbackUrl/);
-    assert.deepEqual(migrationFiles, ["0001_init.sql"]);
+    assert.doesNotMatch(
+      initialMigration,
+      /summary|tags|is_featured|tech_stack|repo_url|fallback_url/
+    );
+    assert.deepEqual(migrationFiles, [
+      "0001_init.sql",
+      "0002_portfolio_fields.sql",
+    ]);
+    assert.ok(statements.length > 0);
+    assert.equal(
+      statements.every((statement) =>
+        /^ALTER TABLE sites ADD COLUMN /i.test(statement)
+      ),
+      true
+    );
+    assert.doesNotMatch(
+      portfolioMigration,
+      /CREATE\s+INDEX|UPDATE\s+sites|INSERT\s+INTO/i
+    );
+
+    const db = new DatabaseSync(":memory:");
+    db.exec(initialMigration);
+    db.exec(`
+      INSERT INTO sites (
+        name,
+        slug,
+        url,
+        category,
+        created_at,
+        updated_at
+      ) VALUES (
+        'Old Site',
+        'old-site',
+        'https://old.example.com',
+        'web',
+        '2026-07-08T00:00:00.000Z',
+        '2026-07-08T00:00:00.000Z'
+      );
+    `);
+    db.exec(portfolioMigration);
+
+    const columns = db
+      .prepare("PRAGMA table_info(sites)")
+      .all()
+      .map((column) => column.name);
+    assert.deepEqual(
+      [
+        "summary",
+        "tags",
+        "tech_stack",
+        "is_featured",
+        "repo_url",
+        "fallback_url",
+      ].every((column) => columns.includes(column)),
+      true
+    );
+    const existingRow = db
+      .prepare(
+        `SELECT summary, tags, tech_stack, is_featured, repo_url, fallback_url
+           FROM sites
+           WHERE slug = 'old-site'`
+      )
+      .get();
+    assert.deepEqual(
+      Object.fromEntries(Object.entries(existingRow)),
+      {
+        summary: "",
+        tags: "[]",
+        tech_stack: "[]",
+        is_featured: 0,
+        repo_url: null,
+        fallback_url: null,
+      }
+    );
+    db.close();
   });
 
   it("provides a local verifier without starting frontend or Worker services", () => {

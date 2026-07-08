@@ -6,7 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test:admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/admin-production-path.test.mjs",
+    "test:admin": "node --disable-warning=ExperimentalWarning --disable-warning=MODULE_TYPELESS_PACKAGE_JSON --test tests/admin-production-path.test.mjs",
     "verify:local": "node scripts/verify-local-e2e.mjs",
     "lint": "eslint"
   },
