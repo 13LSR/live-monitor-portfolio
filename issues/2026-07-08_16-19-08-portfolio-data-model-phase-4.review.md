@@ -96,3 +96,22 @@
 - Evidence: TDD red run `npm run test:admin` failed 25/26 because missing summary returned null; green run passed 26/26 after validation change.
 - Regression: `worker npm run typecheck` passed; existing valid empty summary, empty arrays, false isFeatured, and null repo/fallback URLs remain accepted.
 - Remaining gate: REVIEW-05 final independent review.
+
+## REVIEW-05
+- Source doc: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md
+- Review agent: direct-spawn-agent
+- Review independence: strong
+- Scope checked: committed HEAD 94db5ac only, FOLLOWUP-05 payload validation fix, prior fallback/source behavior, real E2E evidence, claim ledger accounting, CLAIM-034 out-of-scope boundary, frontend secret boundary, and Phase 5 scope boundary.
+- Evidence checked: docs/superpowers/specs/2026-07-08-portfolio-data-model-phase-4-design.md; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.csv; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.claims.json; issues/2026-07-08_16-19-08-portfolio-data-model-phase-4.handoff.md; worker/src/site-validation.ts; app/_components/live-project-card.tsx; tests/admin-production-path.test.mjs; git diff 2101f85..94db5ac.
+- Claim coverage: gaps
+- Claim/evidence alignment: mismatches found
+- Limited validation honestly reported: not_applicable
+- Result: gaps_found
+- Gaps:
+  - P1 CLAIM-028: access button does not prefer fallbackUrl while iframe is still in loading context; `visitUrl` only switches on offline state.
+  - P2 CLAIM-017/CLAIM-030: non-string repoUrl/fallbackUrl can bypass Worker validation and reach normalization.
+  - P3 handoff: remaining-work and blocker sections still describe already-closed public-card/admin E2E blockers.
+- Follow-up issues added: FOLLOWUP-06, FOLLOWUP-07, FOLLOWUP-08, REVIEW-06
+- Assumptions: Reviewer inspected committed HEAD and ignored unrelated dirty worktree changes; tests were not rerun by reviewer because the worktree is dirty.
+- Decision debt: recorded FOLLOWUP-05 command evidence remains from main-session verification against the dirty worktree, though committed tests cover the reviewed behavior.
+- Human-required blockers: none.
