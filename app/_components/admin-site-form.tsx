@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, KeyboardEvent, useState } from "react";
+import { Button, Card, Tag } from "animal-island-ui";
 import {
   addUniqueListValue,
   buildSitePayloadForSubmit,
@@ -273,7 +274,11 @@ export function AdminSiteForm({
         />
       </Field>
 
-      <section className="space-y-5 border border-[var(--line)] bg-[#fffdf7] p-4">
+      <Card
+        color="app-yellow"
+        pattern="app-yellow"
+        className="space-y-5 border border-[var(--line)] p-4"
+      >
         <div className="border-b border-[var(--line)] pb-3">
           <h3 className="text-base font-semibold text-[var(--ink)]">
             作品信息
@@ -389,7 +394,7 @@ export function AdminSiteForm({
             disabled={pending}
           />
         </ToggleCard>
-      </section>
+      </Card>
 
       <Field label="展示模式" hint="当前真实活体网页展示请选择 iframe">
         <select
@@ -501,27 +506,32 @@ function ChipInput({
           placeholder={placeholder}
           disabled={pending}
         />
-        <button
-          type="button"
+        <Button
+          htmlType="button"
+          type="default"
+          size="small"
           onClick={onAdd}
           disabled={pending || !inputValue.trim()}
           className="border border-[var(--line)] bg-[#e7eadf] px-3 py-2 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#f7d879] disabled:cursor-not-allowed disabled:opacity-50"
         >
           添加
-        </button>
+        </Button>
       </div>
       {values.length ? (
         <div className="flex flex-wrap gap-2">
           {values.map((value) => (
-            <button
+            <Tag
               key={value}
-              type="button"
-              onClick={() => onRemove(value)}
+              closable
+              onClose={() => onRemove(value)}
               disabled={pending}
+              color="app-teal"
+              variant="outlined"
+              size="small"
               className="border border-[var(--line)] bg-[#f7d879] px-2.5 py-1 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {value} x
-            </button>
+              {value}
+            </Tag>
           ))}
         </div>
       ) : null}

@@ -444,6 +444,19 @@ describe("admin production API path", () => {
     assert.doesNotMatch(form, /drag|auto recommendation|global tag/i);
   });
 
+  it("uses animal-island-ui in the admin portfolio information section", () => {
+    const form = readFileSync(
+      join(root, "app/_components/admin-site-form.tsx"),
+      "utf8"
+    );
+
+    assert.match(form, /from "animal-island-ui"/);
+    assert.match(form, /<Card[\s\S]*作品信息/);
+    assert.match(form, /<Button[\s\S]*添加/);
+    assert.match(form, /<Tag[\s\S]*closable/);
+    assert.match(form, /color="app-yellow"|color="app-teal"|color="app-green"/);
+  });
+
   it("keeps Worker site validation specific enough for the admin UI", () => {
     assert.equal(
       getSitePayloadValidationError({
