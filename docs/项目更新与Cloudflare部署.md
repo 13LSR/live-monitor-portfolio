@@ -38,6 +38,41 @@ npx wrangler whoami
 - Worker：`live-monitor-portfolio-api`
 - D1：`live-monitor-portfolio`
 
+## GitHub Actions 双账号配置
+
+本项目的 Pages 和 Worker 位于两个不同的 Cloudflare 账号，因此两个部署工作流必须使用不同的 GitHub Secrets。
+
+在 GitHub 仓库的 **Settings → Secrets and variables → Actions** 中配置：
+
+| 用途 | GitHub Secret | 对应账号 |
+| --- | --- | --- |
+| Pages API Token | `CLOUDFLARE_API_TOKEN` | Pages 所在 Cloudflare 账号 |
+| Pages Account ID | `CLOUDFLARE_ACCOUNT_ID` | Pages 所在 Cloudflare 账号 |
+| Worker API Token | `CLOUDFLARE_WORKER_API_TOKEN` | Worker 和 D1 所在 Cloudflare 账号 |
+| Worker Account ID | `CLOUDFLARE_WORKER_ACCOUNT_ID` | Worker 和 D1 所在 Cloudflare 账号 |
+
+Pages 工作流继续使用原来的 `CLOUDFLARE_API_TOKEN` 和 `CLOUDFLARE_ACCOUNT_ID`。Worker 工作流只使用带 `WORKER` 的两项密钥。
+
+Worker API Token 至少需要 Worker 脚本和 D1 的编辑权限。`CLOUDFLARE_WORKER_ACCOUNT_ID` 必须属于同时拥有以下资源的账号：
+
+- Worker：`live-monitor-portfolio-api`
+- D1：`live-monitor-portfolio`
+- D1 ID 与 `worker/wrangler.toml` 中的 `database_id` 一致
+
+可以在登录 Worker 账号后执行以下命令查看正确的 Account ID：
+
+```powershell
+npx wrangler whoami
+```
+
+如果本机当前登录的是 Pages 账号，先切换账号：
+
+```powershell
+npx wrangler logout
+npx wrangler login
+npx wrangler whoami
+```
+
 ## 每次更新前的检查
 
 先安装依赖并验证项目：
