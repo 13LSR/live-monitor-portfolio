@@ -199,4 +199,69 @@ describe("browser direct public-good client", () => {
     assert.equal(result.cacheState, "stale");
     assert.deepEqual(result.items, [cachedItem]);
   });
+
+  it("stops after the configured eight attempts when responses never add a unique record", async () => {
+    const {
+      PUBLIC_GOOD_DIRECT_CONFIG,
+      refreshPublicGoodDirect,
+    } = await import(`../app/_lib/public-good-direct.ts?attempts-${Date.now()}`);
+    let requests = 0;
+
+    const result = await refreshPublicGoodDirect({
+      fetcher: async () => {
+        requests += 1;
+        return Response.json(
+          makePublicGoodApiResponse({ id: "448061", name: "同一条真实记录" })
+        );
+      },
+      storage: createStorage(),
+      sleep: async () => {},
+    });
+
+    assert.equal(PUBLIC_GOOD_DIRECT_CONFIG.maxAttempts, 8);
+    assert.equal(requests, PUBLIC_GOOD_DIRECT_CONFIG.maxAttempts);
+    assert.equal(result.displayable, true);
+    assert.deepEqual(result.items.map((item) => item.id), ["448061"]);
+  });
+
+  it("returns fresh versioned real cache without making a network request", async () => {
+    const {
+      PUBLIC_GOOD_DIRECT_CONFIG,
+      refreshPublicGoodDirect,
+    } = await import(`../app/_lib/public-good-direct.ts?fresh-${Date.now()}`);
+    const now = 1_900_000_000_000;
+    const cachedItem = {
+      id: "448061",
+      name: "李瑾怡",
+      sex: "女",
+      birthTime: "2013-02-15",
+      lostTime: "2018-08-01",
+      childPic: "https://assets.example.com/child.jpg",
+      lostPlace: "湖北省荆州市监利县容城镇",
+      childFeature: "穿黄色外套",
+      detailUrl: "https://example.com/detail",
+    };
+    const storage = createStorage({
+      [PUBLIC_GOOD_DIRECT_CONFIG.cacheKey]: JSON.stringify({
+        version: PUBLIC_GOOD_DIRECT_CONFIG.cacheVersion,
+        savedAt: now - 1_000,
+        expiresAt: now + PUBLIC_GOOD_DIRECT_CONFIG.cacheTtlMs,
+        items: [cachedItem],
+      }),
+    });
+    let requests = 0;
+
+    const result = await refreshPublicGoodDirect({
+      fetcher: async () => {
+        requests += 1;
+        throw new Error("fresh cache must prevent network access");
+      },
+      now: () => now,
+      storage,
+    });
+
+    assert.equal(requests, 0);
+    assert.equal(result.cacheState, "fresh");
+    assert.deepEqual(result.items, [cachedItem]);
+  });
 });

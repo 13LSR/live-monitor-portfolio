@@ -91,98 +91,52 @@ describe("admin production API path", () => {
     );
   });
 
-  it("keeps homepage brand and featured site as first-viewport anchors", () => {
-    const homePage = readFileSync(
-      join(root, "app/_components/home-page.tsx"),
-      "utf8"
-    );
-    const bentoGrid = readFileSync(
-      join(root, "app/_components/bento-grid.tsx"),
-      "utf8"
-    );
+  it("keeps the approved hero and featured work as the first public anchors", () => {
+    const homePage = readFileSync(join(root, "app/_components/home-page.tsx"), "utf8");
+    const hero = readFileSync(join(root, "app/_components/portfolio-hero.tsx"), "utf8");
+    const showcase = readFileSync(join(root, "app/_components/portfolio-showcase.tsx"), "utf8");
 
-    assert.match(homePage, /小茄的网站小岛/);
-    assert.match(homePage, /正在运行的网站作品/);
-    assert.match(bentoGrid, /splitFeaturedSites\(sites\)/);
-    assert.match(bentoGrid, /<LiveProjectCard site=\{featuredSite\} featured/);
+    assert.match(homePage, /<PortfolioHero \/>[\s\S]*id="featured-work"/);
+    assert.match(hero, /小茄的网站作品集/);
+    assert.match(hero, /收录站长正在运行的网站作品，也记录每一次认真完成的创作。/);
+    assert.match(showcase, /splitFeaturedSites\(sites\)/);
+    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>/);
   });
 
-  it("selects featured portfolio cards and renders lightweight metadata", () => {
-    const bentoGrid = readFileSync(
-      join(root, "app/_components/bento-grid.tsx"),
-      "utf8"
-    );
-    const card = readFileSync(
-      join(root, "app/_components/live-project-card.tsx"),
-      "utf8"
-    );
+  it("renders featured-first project metadata inside live website cards", () => {
+    const showcase = readFileSync(join(root, "app/_components/portfolio-showcase.tsx"), "utf8");
+    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8");
 
-    assert.match(bentoGrid, /splitFeaturedSites\(sites\)/);
-    assert.match(bentoGrid, /ordinarySites/);
-    assert.doesNotMatch(
-      bentoGrid,
-      /const \[featuredSite, \.\.\.otherSites\] = sites/
-    );
-    assert.match(card, /site\.summary \|\| site\.description/);
-    assert.match(card, /site\.tags\.slice\(0,\s*4\)/);
-    assert.match(card, /site\.techStack\.slice\(0,\s*5\)/);
-    assert.match(card, /site\.repoUrl/);
-    assert.match(card, /site\.fallbackUrl/);
-    assert.match(card, /const frameUrl = site\.url/);
-    assert.match(
-      card,
-      /site\.fallbackUrl && \(isOffline \|\| !frameLoaded\)/
-    );
-    assert.match(card, /const fallbackVisitUrl = site\.fallbackUrl \?\? site\.url/);
-    assert.match(
-      card,
-      /const visitUrl = shouldUseFallbackVisit \? fallbackVisitUrl : site\.url/
-    );
-    assert.match(card, /<iframe/);
-    assert.match(card, /src=\{frameUrl\}/);
+    assert.match(showcase, /splitFeaturedSites\(sites\)/);
+    assert.match(showcase, /ordinarySites\.map/);
+    assert.match(project, /site\.summary \|\| site\.description/);
+    assert.match(project, /site\.fallbackUrl \?\? site\.url/);
+    assert.match(project, /site\.fallbackUrl && \(isOffline \|\| !frameLoaded\)/);
+    assert.match(project, /<iframe/);
+    assert.match(project, /src=\{site\.url\}/);
+    assert.match(project, /visibleTags/);
+    assert.match(project, /visibleTechStack/);
+    assert.match(project, /site\.repoUrl/);
+    assert.match(project, /portfolio-project__chrome/);
+    assert.match(project, /portfolio-project__status-pulse/);
+    assert.doesNotMatch(project, /StatusPill|animal-island-ui|<Tag/);
   });
 
-  it("uses animal-island-ui for homepage metadata without taking over live card logic", () => {
-    const card = readFileSync(
-      join(root, "app/_components/live-project-card.tsx"),
-      "utf8"
-    );
+  it("keeps project previews as real iframes with safe interaction states", () => {
+    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8");
 
-    assert.match(card, /from "animal-island-ui"/);
-    assert.match(card, /\bButton\b/);
-    assert.match(card, /\bTag\b/);
-    assert.match(card, /visibleTags\.map\([\s\S]*<Tag/);
-    assert.match(card, /visibleTechStack\.map\([\s\S]*<Tag/);
-    assert.match(card, /<Button[\s\S]*查看源码[\s\S]*<\/Button>/);
-    assert.match(card, /flex-wrap/);
-    assert.match(card, /<iframe/);
-    assert.match(card, /StatusPill/);
-    assert.match(card, /window\.open\(visitUrl/);
-    assert.match(card, /src=\{frameUrl\}/);
-    assert.doesNotMatch(card, /worker\/|D1|listSites|handleGetSites/);
-  });
-
-  it("keeps live project cards as real iframe windows with safe interaction states", () => {
-    const card = readFileSync(
-      join(root, "app/_components/live-project-card.tsx"),
-      "utf8"
-    );
-    const statusPill = readFileSync(
-      join(root, "app/_components/status-pill.tsx"),
-      "utf8"
-    );
-
-    assert.match(card, /<iframe/);
-    assert.match(card, /loading="lazy"/);
-    assert.match(card, /pointer-events-none/);
-    assert.match(card, /site\.allowInteraction &&/);
-    assert.match(card, /window\.open\(visitUrl/);
-    assert.match(card, /加载网站中/);
-    assert.match(card, /暂时无法访问/);
-    assert.match(card, /访问网站/);
-    assert.match(card, /aspect-\[16\/9\]/);
-    assert.match(statusPill, /状态未接入/);
-    assert.match(statusPill, /状态未知/);
+    assert.match(project, /<iframe/);
+    assert.match(project, /loading="lazy"/);
+    assert.match(project, /interactionEnabled/);
+    assert.match(project, /site\.allowInteraction/);
+    assert.match(project, /<a[\s\S]*href=\{visitUrl\}[\s\S]*target="_blank"[\s\S]*rel="noreferrer"/);
+    assert.doesNotMatch(project, /window\.open\(/);
+    assert.match(project, /正在载入网站预览/);
+    assert.match(project, /网站暂时无法访问/);
+    assert.match(project, /打开网站/);
+    assert.match(project, /状态未接入/);
+    assert.match(project, /状态未知/);
+    assert.doesNotMatch(project, /worker\/|D1|listSites|handleGetSites/);
   });
 
   it("keeps homepage behavior wired through the production page path", () => {
@@ -195,8 +149,8 @@ describe("admin production API path", () => {
       join(root, "app/_components/portfolio-grid-client.tsx"),
       "utf8"
     );
-    const bentoGrid = readFileSync(
-      join(root, "app/_components/bento-grid.tsx"),
+    const showcase = readFileSync(
+      join(root, "app/_components/portfolio-showcase.tsx"),
       "utf8"
     );
 
@@ -213,7 +167,8 @@ describe("admin production API path", () => {
       portfolio,
       /console\.warn\("监控数据暂时不可用，已使用未知状态。",\s*error\)/
     );
-    assert.match(bentoGrid, /<LiveProjectCard/);
+    assert.match(portfolio, /<PortfolioShowcase sites=\{sites\} \/>/);
+    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>/);
   });
 
   it("serves a sanitized five-person public-good batch through the Worker route and cache", async () => {
@@ -457,85 +412,42 @@ describe("admin production API path", () => {
     }
   });
 
-  it("fetches public-good data through the frontend API client with local fallback", async () => {
-    const originalFetch = globalThis.fetch;
-    const originalApiBase = process.env.NEXT_PUBLIC_API_BASE_URL;
-    const apiClientSource = readFileSync(
-      join(root, "app/_lib/api-client.ts"),
-      "utf8"
-    );
-    const requestedUrls = [];
-
-    process.env.NEXT_PUBLIC_API_BASE_URL = "https://worker.example";
-    globalThis.fetch = async (url) => {
-      requestedUrls.push(String(url));
-      throw new Error("Worker unavailable");
-    };
-
-    try {
-      const apiClient = await import(
-        `../app/_lib/api-client.ts?public-good-${Date.now()}`
-      );
-
-      assert.equal(typeof apiClient.getPublicGood, "function");
-
-      const batch = await apiClient.getPublicGood();
-
-      assert.deepEqual(requestedUrls, [
-        "https://worker.example/public-good",
-      ]);
-      assert.equal(batch.success, true);
-      assert.equal(batch.items.length, 5);
-      assert.equal(batch.isFallback, true);
-      assert.match(batch.message, /本地备用/);
-      assert.equal(apiClientSource.includes("api.isoyu.com"), false);
-    } finally {
-      globalThis.fetch = originalFetch;
-
-      if (originalApiBase === undefined) {
-        delete process.env.NEXT_PUBLIC_API_BASE_URL;
-      } else {
-        process.env.NEXT_PUBLIC_API_BASE_URL = originalApiBase;
-      }
-    }
-  });
-
-  it("wires the public-good notice into the homepage before the portfolio list", () => {
-    const homePage = readFileSync(
-      join(root, "app/_components/home-page.tsx"),
+  it("wires the direct public-good notice after featured work without fake fallback", () => {
+    const showcase = readFileSync(
+      join(root, "app/_components/portfolio-showcase.tsx"),
       "utf8"
     );
     const noticePath = join(root, "app/_components/public-good-notice.tsx");
 
-    assert.match(homePage, /PublicGoodNotice/);
-    assert.match(homePage, /<PublicGoodNotice[\s\S]*<PortfolioGridClient/);
+    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>[\s\S]*<PublicGoodNotice \/>[\s\S]*ordinarySites\.map/);
     assert.equal(existsSync(noticePath), true);
 
     const notice = readFileSync(noticePath, "utf8");
 
     assert.match(notice, /"use client"/);
-    assert.match(notice, /getPublicGood/);
-    assert.match(notice, /getPublicGoodFallbackBatch/);
-    assert.match(notice, /公益公告/);
-    assert.match(notice, /batch\.items\.slice\(0,\s*5\)/);
+    assert.match(notice, /refreshPublicGoodDirect/);
+    assert.doesNotMatch(notice, /getPublicGood|FallbackBatch|local-fallback/);
+    assert.match(notice, /愿更多人被看见/);
+    assert.match(notice, /createPublicGoodView/);
     assert.match(notice, /onMouseEnter/);
+    assert.match(notice, /onFocus/);
     assert.match(notice, /onClick/);
     assert.match(notice, /selectedPerson/);
     assert.match(notice, /childPic/);
     assert.match(notice, /PublicGoodPhoto/);
-    assert.match(notice, /暂无照片/);
+    assert.match(notice, /setFailed\(true\)/);
     assert.match(notice, /detailUrl/);
     assert.match(notice, /查看详情/);
-    assert.match(notice, /from "animal-island-ui"/);
+    assert.doesNotMatch(notice, /from "animal-island-ui"/);
   });
 
-  it("strengthens the homepage as an Animal Island surface without making status a dashboard", () => {
+  it("removes the old island and dashboard presentation from the public path", () => {
     const homePage = readFileSync(
       join(root, "app/_components/home-page.tsx"),
       "utf8"
     );
-    const card = readFileSync(
-      join(root, "app/_components/live-project-card.tsx"),
+    const hero = readFileSync(
+      join(root, "app/_components/portfolio-hero.tsx"),
       "utf8"
     );
     const portfolio = readFileSync(
@@ -543,23 +455,10 @@ describe("admin production API path", () => {
       "utf8"
     );
 
-    assert.match(homePage, /island-hero/);
-    assert.match(homePage, /作品小岛/);
-    assert.match(homePage, /岛上公告/);
-    assert.match(homePage, /aria-label="小岛状态说明"/);
-    assert.doesNotMatch(homePage, /Total|Online|Unknown/);
-    assert.doesNotMatch(portfolio, />\s*Total\s*</);
-    assert.doesNotMatch(portfolio, />\s*Online\s*</);
-    assert.doesNotMatch(portfolio, />\s*Unknown\s*</);
-    assert.match(portfolio, /岛上现在有/);
-    assert.match(portfolio, /座小屋亮着灯/);
-    assert.match(card, /island-project-card/);
-    assert.match(card, /rounded-\[1\.5rem\]/);
-    assert.match(card, /bg-\[#fff7df\]/);
-    assert.match(card, /shadow-\[0_18px_0/);
-    assert.match(card, /StatusPill/);
-    assert.match(card, /<iframe/);
-    assert.match(card, /loading="lazy"/);
+    assert.match(homePage, /<PortfolioHero \/>/);
+    assert.match(hero, /小茄的网站作品集/);
+    assert.doesNotMatch(`${homePage}\n${hero}\n${portfolio}`, /作品小岛|网站小岛|岛上公告|网站小屋|BentoGrid|StatusPill/);
+    assert.doesNotMatch(portfolio, /createCollectionSummary|portfolioCategoryFilters|filterSitesByCategory/);
   });
 
   it("presents the authenticated admin as an island office without hiding CRUD controls", () => {

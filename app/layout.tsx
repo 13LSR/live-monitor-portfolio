@@ -3,8 +3,8 @@ import "animal-island-ui/style";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "小茄的网站集合",
-  description: "收录小茄部署在云平台上的在线网站作品。",
+  title: "小茄的网站作品集",
+  description: "收录站长正在运行的网站作品，也记录每一次认真完成的创作。",
 };
 
 export default function RootLayout({
