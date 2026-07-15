@@ -897,3 +897,357 @@ select {
     cursor: auto !important;
   }
 }
+
+/* ── Demo 评审导览页 ────────────────────────────── */
+
+.demo-page {
+  min-height: 100vh;
+  background: var(--portfolio-content-warm);
+  color: var(--portfolio-deep-ink);
+}
+
+.demo-skip-link {
+  position: absolute;
+  top: -100%;
+  left: 1.5rem;
+  z-index: 100;
+  display: inline-block;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  background: var(--portfolio-deep-ink);
+  color: #fffdf6;
+  font-size: 0.82rem;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.demo-skip-link:focus-visible {
+  top: 1.5rem;
+  outline: 3px solid rgba(22, 119, 97, 0.28);
+  outline-offset: 3px;
+}
+
+.demo-nav {
+  display: flex;
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1.25rem 1.5rem 0;
+}
+
+.demo-nav__back {
+  display: inline-flex;
+  color: var(--portfolio-muted-green);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  gap: 0.45rem;
+  align-items: center;
+  transition: color 160ms ease;
+}
+
+.demo-nav__back:hover {
+  color: var(--portfolio-deep-ink);
+}
+
+.demo-nav__back:focus-visible {
+  outline: 3px solid rgba(22, 119, 97, 0.25);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.demo-hero {
+  padding: clamp(2rem, 6vw, 4rem) 1.5rem clamp(2.5rem, 5vw, 4rem);
+  text-align: center;
+}
+
+.demo-hero__inner {
+  max-width: 42rem;
+  margin: 0 auto;
+}
+
+.demo-hero__eyebrow {
+  margin: 0 0 0.75rem;
+  color: #735432;
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.demo-hero h1 {
+  margin: 0;
+  font-size: clamp(2.4rem, 6vw, 3.6rem);
+  font-weight: 750;
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+.demo-hero__subtitle {
+  max-width: 34rem;
+  margin: 1.25rem auto 0;
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: var(--portfolio-muted-green);
+}
+
+.demo-hero__cta {
+  display: inline-flex;
+  margin-top: 2rem;
+  padding: 0.8rem 1.6rem;
+  border: 1px solid var(--portfolio-deep-ink);
+  border-radius: 6px;
+  background: var(--portfolio-deep-ink);
+  color: #fffdf6;
+  font-size: 0.92rem;
+  font-weight: 650;
+  text-decoration: none;
+  gap: 0.5rem;
+  align-items: center;
+  transition: background-color 160ms ease, border-color 160ms ease;
+}
+
+.demo-hero__cta:hover {
+  border-color: #43715f;
+  background: #43715f;
+}
+
+.demo-hero__cta:focus-visible {
+  outline: 3px solid rgba(22, 119, 97, 0.28);
+  outline-offset: 3px;
+}
+
+/* ── 通用 section ── */
+
+.demo-section {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 5vw, 3.5rem) 1.5rem;
+}
+
+.demo-section h2 {
+  margin: 0 0 1.75rem;
+  font-size: 1.6rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* ── 体验路线 ── */
+
+.demo-route {
+  display: grid;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  gap: 1.5rem;
+}
+
+.demo-route__step {
+  display: grid;
+  grid-template-columns: 2.25rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: start;
+}
+
+.demo-route__number {
+  display: grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid rgba(37, 53, 47, 0.24);
+  border-radius: 50%;
+  background: #fffaf0;
+  color: var(--portfolio-deep-ink);
+  font-size: 0.9rem;
+  font-weight: 700;
+  place-items: center;
+}
+
+.demo-route__step h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.08rem;
+  font-weight: 650;
+}
+
+.demo-route__step p {
+  margin: 0;
+  color: var(--portfolio-muted-green);
+  font-size: 0.92rem;
+  line-height: 1.7;
+}
+
+.demo-route__step a {
+  color: #356452;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.demo-route__step a:focus-visible {
+  outline: 3px solid rgba(22, 119, 97, 0.25);
+  outline-offset: 3px;
+}
+
+/* ── 技术架构 ── */
+
+.demo-arch {
+  display: grid;
+  gap: 0;
+}
+
+.demo-arch__layer {
+  padding: 1rem 1.25rem;
+  border: 1px solid rgba(37, 53, 47, 0.2);
+  border-radius: 8px;
+  background: #fffaf0;
+}
+
+.demo-arch__layer + .demo-arch__layer {
+  border-top: 0;
+  border-radius: 0 0 8px 8px;
+}
+
+.demo-arch__layer:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.demo-arch__label {
+  display: inline-block;
+  margin-bottom: 0.3rem;
+  color: #735432;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.demo-arch__layer p {
+  margin: 0;
+  color: var(--portfolio-deep-ink);
+  font-size: 0.9rem;
+  line-height: 1.55;
+}
+
+.demo-arch__arrow {
+  display: grid;
+  height: 1.75rem;
+  color: var(--portfolio-muted-green);
+  font-size: 1.1rem;
+  place-items: center;
+}
+
+/* ── 返回链接 ── */
+
+.demo-back {
+  max-width: 44rem;
+  margin: 0 auto;
+  padding: 1rem 1.5rem clamp(3rem, 6vw, 4.5rem);
+}
+
+.demo-back__link {
+  display: inline-flex;
+  color: var(--portfolio-muted-green);
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: none;
+  gap: 0.45rem;
+  align-items: center;
+  transition: color 160ms ease;
+}
+
+.demo-back__link:hover {
+  color: var(--portfolio-deep-ink);
+}
+
+.demo-back__link:focus-visible {
+  outline: 3px solid rgba(22, 119, 97, 0.25);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── 页脚评审导览入口 ── */
+
+.portfolio-footer__links {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.portfolio-footer__demo-link {
+  color: var(--portfolio-muted-green);
+  font-size: 0.78rem;
+  text-decoration: none;
+  transition: color 160ms ease;
+}
+
+.portfolio-footer__demo-link:hover {
+  color: var(--portfolio-deep-ink);
+  text-decoration: underline;
+  text-underline-offset: 0.2rem;
+}
+
+.portfolio-footer__demo-link:focus-visible {
+  outline: 3px solid rgba(22, 119, 97, 0.25);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+/* ── 移动端适配 ── */
+
+@media (max-width: 767px) {
+  .demo-nav {
+    padding: 1rem 1.25rem 0;
+  }
+
+  .demo-hero {
+    padding: 2rem 1.25rem 2rem;
+  }
+
+  .demo-hero__subtitle {
+    font-size: 0.96rem;
+  }
+
+  .demo-section {
+    padding: 2rem 1.25rem;
+  }
+
+  .demo-section h2 {
+    font-size: 1.35rem;
+  }
+
+  .demo-route__step {
+    grid-template-columns: 1.85rem minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .demo-route__number {
+    width: 1.85rem;
+    height: 1.85rem;
+    font-size: 0.82rem;
+  }
+
+  .demo-route__step h3 {
+    font-size: 1rem;
+  }
+
+  .demo-route__step p {
+    font-size: 0.86rem;
+  }
+
+  .demo-arch__layer p {
+    font-size: 0.84rem;
+  }
+
+  .portfolio-footer__links {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .demo-hero__cta,
+  .demo-back__link,
+  .demo-nav__back,
+  .portfolio-footer__demo-link {
+    transition: none;
+  }
+}

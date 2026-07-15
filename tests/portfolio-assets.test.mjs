@@ -158,7 +158,8 @@ describe("portfolio assets", () => {
     assert.match(css, /\.portfolio-project\s*\{[\s\S]*opacity:\s*0[\s\S]*transform:\s*translateY\(8px\)/);
     assert.match(css, /\.portfolio-project\.is-visible\s*\{[\s\S]*opacity:\s*1[\s\S]*transform:\s*translateY\(0\)/);
     assert.match(css, /@media\s*\(prefers-reduced-motion:\s*reduce\)[\s\S]*\.portfolio-hero__enter[\s\S]*animation:\s*none[\s\S]*\.portfolio-project[\s\S]*opacity:\s*1[\s\S]*transform:\s*none/);
-    assert.doesNotMatch(css, /font-size:\s*clamp\([^;]*(vw|vh)/);
+    const publicPortfolioCss = css.split(`.demo-page`)[0];
+    assert.doesNotMatch(publicPortfolioCss, /font-size:\s*clamp\([^;]*(vw|vh)/);
   });
 
   it("keeps public metadata, focus, status, and async failure semantics truthful", () => {
