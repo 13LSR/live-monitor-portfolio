@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import "animal-island-ui/style";
 import "./globals.css";
+import "./_styles/immersive.css";
+import "./_styles/gallery.css";
+import { PortfolioShell } from "@/app/_components/portfolio-shell";
 
 export const metadata: Metadata = {
   title: "小茄的网站作品集",
@@ -14,7 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="zh-CN" className="h-full antialiased">
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><PortfolioShell>{children}</PortfolioShell></body>
     </html>
   );
 }

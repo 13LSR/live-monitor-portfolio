@@ -13,6 +13,10 @@ const eslintConfig = defineConfig([
     "build/**",
     "next-env.d.ts",
     "worker/.wrangler/**",
+    "samsyninja-rebuild/**",
+    ".superpowers/**",
+    ".tmp/**",
+    "CharityAdWidget.tsx",
   ]),
 ]);
 

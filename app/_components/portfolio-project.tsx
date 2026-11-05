@@ -1,7 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SiteWithStatus } from "@/app/_lib/site-mappers";
+import { ProjectPreview } from "@/app/_components/project-preview";
+import { usePageVisibility } from "@/app/_components/use-page-visibility";
 
 interface PortfolioProjectProps {
   site: SiteWithStatus;
@@ -23,8 +25,11 @@ export function PortfolioProject({
 }: PortfolioProjectProps) {
   const projectRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
+  const [isNearViewport, setIsNearViewport] = useState(false);
+  const pageVisible = usePageVisibility();
   const [loadedFrameUrl, setLoadedFrameUrl] = useState<string | null>(null);
   const [interactionEnabled, setInteractionEnabled] = useState(false);
+  const interactionActive = interactionEnabled && site.allowInteraction;
   const frameLoaded = loadedFrameUrl === site.url;
   const isOffline = site.status.isOnline === false;
   const fallbackVisitUrl = site.fallbackUrl ?? site.url;
@@ -41,23 +46,28 @@ export function PortfolioProject({
   const summary = site.summary || site.description;
   const visibleTags = site.tags.slice(0, featured ? 4 : 3);
   const visibleTechStack = site.techStack.slice(0, featured ? 5 : 3);
+  const onLoadedChange = useCallback((loaded: boolean) => {
+    setLoadedFrameUrl(loaded ? site.url : null);
+  }, [site.url]);
 
   useEffect(() => {
     const node = projectRef.current;
     if (!node) return;
 
     if (typeof window.IntersectionObserver === "undefined") {
-      const frame = window.requestAnimationFrame(() => setIsVisible(true));
+      const frame = window.requestAnimationFrame(() => {
+        setIsVisible(true);
+        setIsNearViewport(true);
+      });
       return () => window.cancelAnimationFrame(frame);
     }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        setIsVisible(true);
-        observer.unobserve(node);
+        setIsNearViewport(entry.isIntersecting);
+        if (entry.isIntersecting) setIsVisible(true);
       },
-      { threshold: 0.12 }
+      { threshold: 0, rootMargin: "240px 0px" }
     );
 
     observer.observe(node);
@@ -97,18 +107,12 @@ export function PortfolioProject({
         </div>
       </header>
       <div className="portfolio-project__preview">
-        <iframe
-          title={site.name}
-          src={site.url}
-          loading="lazy"
-          onLoad={() => setLoadedFrameUrl(site.url)}
-          className={interactionEnabled ? "is-interactive" : ""}
+        <ProjectPreview
+          site={site}
+          active={(isNearViewport && pageVisible && !isOffline) || interactionActive}
+          interactionEnabled={interactionActive}
+          onLoadedChange={onLoadedChange}
         />
-        {!frameLoaded ? (
-          <div className="portfolio-project__message" aria-live="polite">
-            正在载入网站预览，入口仍可直接访问。
-          </div>
-        ) : null}
         {isOffline ? (
           <div className="portfolio-project__message is-offline" aria-live="polite">
             网站暂时无法访问，已保留备用入口。
@@ -152,10 +156,10 @@ export function PortfolioProject({
           {site.allowInteraction ? (
             <button
               type="button"
-              aria-pressed={interactionEnabled}
+              aria-pressed={interactionActive}
               onClick={() => setInteractionEnabled((enabled) => !enabled)}
             >
-              {interactionEnabled ? "关闭预览交互" : "开启预览交互"}
+              {interactionActive ? "关闭预览交互" : "开启预览交互"}
             </button>
           ) : null}
           <a

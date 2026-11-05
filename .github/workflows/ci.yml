@@ -1,0 +1,38 @@
+name: Quality checks
+
+on:
+  pull_request:
+  workflow_dispatch:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            package-lock.json
+            worker/package-lock.json
+      - name: Install frontend dependencies
+        run: npm ci
+      - name: Install Worker dependencies
+        run: npm ci --prefix worker
+      - name: Lint, types, tests and production build
+        run: npm run check
+        env:
+          NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
+          NEXT_PUBLIC_UPTIMEFLARE_API_URL: ${{ vars.NEXT_PUBLIC_UPTIMEFLARE_API_URL }}
+      - name: Save verified static site
+        uses: actions/upload-artifact@v4
+        with:
+          name: pages-static
+          path: out
+          if-no-files-found: error
+          retention-days: 7

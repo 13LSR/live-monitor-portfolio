@@ -1,5 +1,6 @@
 import type { SitePayload } from "../../shared/contracts";
 import type { SiteRecord } from "../../shared/types";
+import { isCoverUrl } from "../../shared/site-cover.ts";
 
 export interface NormalizedSiteStoragePayload {
   name: string;
@@ -14,6 +15,7 @@ export interface NormalizedSiteStoragePayload {
   isFeaturedValue: 1 | 0;
   repoUrl: string | null;
   fallbackUrl: string | null;
+  coverUrl: string | null;
   coverMode: SitePayload["coverMode"];
   sortOrder: number;
   isVisibleValue: 1 | 0;
@@ -34,6 +36,7 @@ interface SiteRowForMapping {
   is_featured?: number | null;
   repo_url?: string | null;
   fallback_url?: string | null;
+  cover_url?: string | null;
   cover_mode: string;
   sort_order: number;
   is_visible: number;
@@ -45,15 +48,16 @@ interface SiteRowForMapping {
 export function getSitePayloadValidationError(
   payload: Partial<SitePayload>
 ): string | null {
-  if (!payload.name?.trim()) {
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) return "Invalid site payload";
+  if (typeof payload.name !== "string" || !payload.name.trim()) {
     return "Site name is required";
   }
 
-  if (!payload.slug?.trim()) {
+  if (typeof payload.slug !== "string" || !payload.slug.trim()) {
     return "Site slug is required";
   }
 
-  if (!payload.url?.trim()) {
+  if (typeof payload.url !== "string" || !payload.url.trim()) {
     return "Site URL is required";
   }
 
@@ -65,6 +69,13 @@ export function getSitePayloadValidationError(
   } catch {
     return "Site URL must be a valid absolute URL";
   }
+
+  if (typeof payload.description !== "string") return "Description must be a string";
+  if (payload.monitorKey !== null && typeof payload.monitorKey !== "string") return "Monitor key must be a string or null";
+  if (!["web", "landing", "tool", "other"].includes(payload.category ?? "")) return "Invalid site category";
+  if (!["iframe", "text", "gallery"].includes(payload.coverMode ?? "")) return "Invalid cover mode";
+  if (!Number.isSafeInteger(payload.sortOrder)) return "Sort order must be an integer";
+  if (typeof payload.isVisible !== "boolean" || typeof payload.allowInteraction !== "boolean") return "Invalid site flags";
 
   if (typeof payload.summary !== "string") {
     return "Summary is required";
@@ -117,6 +128,12 @@ export function getSitePayloadValidationError(
     return fallbackUrlError;
   }
 
+  // Older clients may omit the new optional field during a rolling update.
+  if (payload.coverUrl != null &&
+      (typeof payload.coverUrl !== "string" || (payload.coverUrl.trim() && !isCoverUrl(payload.coverUrl.trim())))) {
+    return "Cover URL must be a valid http(s) image URL";
+  }
+
   return null;
 }
 
@@ -136,6 +153,7 @@ export function normalizeSitePayloadForStorage(
     isFeaturedValue: payload.isFeatured ? 1 : 0,
     repoUrl: normalizeOptionalUrl(payload.repoUrl),
     fallbackUrl: normalizeOptionalUrl(payload.fallbackUrl),
+    coverUrl: normalizeOptionalUrl(payload.coverUrl ?? null),
     coverMode: payload.coverMode,
     sortOrder: payload.sortOrder,
     isVisibleValue: payload.isVisible ? 1 : 0,
@@ -180,6 +198,7 @@ export function mapSiteRowToSiteRecord(row: SiteRowForMapping): SiteRecord {
     isFeatured: row.is_featured === 1,
     repoUrl: normalizeOptionalUrl(row.repo_url ?? null),
     fallbackUrl: normalizeOptionalUrl(row.fallback_url ?? null),
+    coverUrl: isCoverUrl(row.cover_url) ? row.cover_url.trim() : null,
     coverMode: row.cover_mode as SiteRecord["coverMode"],
     sortOrder: row.sort_order,
     isVisible: row.is_visible === 1,

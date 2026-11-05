@@ -91,24 +91,35 @@ describe("admin production API path", () => {
     );
   });
 
-  it("keeps the approved hero and featured work as the first public anchors", () => {
+  it("keeps the interactive home, project route, and about route as the public anchors", () => {
     const homePage = readFileSync(join(root, "app/_components/home-page.tsx"), "utf8");
-    const hero = readFileSync(join(root, "app/_components/portfolio-hero.tsx"), "utf8");
+    const scene = readFileSync(join(root, "app/_components/immersive-scene.tsx"), "utf8");
+    const sceneRuntime = readFileSync(join(root, "app/_lib/scene/scene-runtime.ts"), "utf8");
     const showcase = readFileSync(join(root, "app/_components/portfolio-showcase.tsx"), "utf8");
+    const nav = readFileSync(join(root, "app/_components/site-nav.tsx"), "utf8");
 
-    assert.match(homePage, /<PortfolioHero \/>[\s\S]*id="featured-work"/);
-    assert.match(hero, /小茄的网站作品集/);
-    assert.match(hero, /收录站长正在运行的网站作品，也记录每一次认真完成的创作。/);
-    assert.match(showcase, /splitFeaturedSites\(sites\)/);
-    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>/);
+    assert.match(homePage, /<SiteNav \/>/);
+    assert.match(readFileSync(join(root, "app/_components/portfolio-shell.tsx"), "utf8"), /<ImmersiveScene view=\{view\} \/>/);
+    assert.match(scene, /createSceneRuntime/);
+    assert.match(sceneRuntime, /GLTFLoader/);
+    assert.match(sceneRuntime, /minion-a01\.glb/);
+    assert.match(sceneRuntime, /ArrowUp/);
+    assert.match(sceneRuntime, /grounded/);
+    assert.match(showcase, /orderedSites\[activeIndex\]/);
+    assert.match(showcase, /goTo\(activeIndex \+ 1\)/);
+    assert.match(showcase, /goTo\(activeIndex - 1\)/);
+    assert.match(nav, /href: "\/works"/);
+    assert.match(nav, /href: "\/about"/);
+    assert.equal(existsSync(join(root, "app/about/page.tsx")), true);
   });
 
   it("renders featured-first project metadata inside live website cards", () => {
     const showcase = readFileSync(join(root, "app/_components/portfolio-showcase.tsx"), "utf8");
-    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8");
+    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8") +
+      readFileSync(join(root, "app/_components/project-preview.tsx"), "utf8");
 
-    assert.match(showcase, /splitFeaturedSites\(sites\)/);
-    assert.match(showcase, /ordinarySites\.map/);
+    assert.match(showcase, /\[\.\.\.sites\]\.sort/);
+    assert.match(showcase, /orderedSites\.map/);
     assert.match(project, /site\.summary \|\| site\.description/);
     assert.match(project, /site\.fallbackUrl \?\? site\.url/);
     assert.match(project, /site\.fallbackUrl && \(isOffline \|\| !frameLoaded\)/);
@@ -123,7 +134,8 @@ describe("admin production API path", () => {
   });
 
   it("keeps project previews as real iframes with safe interaction states", () => {
-    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8");
+    const project = readFileSync(join(root, "app/_components/portfolio-project.tsx"), "utf8") +
+      readFileSync(join(root, "app/_components/project-preview.tsx"), "utf8");
 
     assert.match(project, /<iframe/);
     assert.match(project, /loading="lazy"/);
@@ -148,27 +160,25 @@ describe("admin production API path", () => {
     const portfolio = readFileSync(
       join(root, "app/_components/portfolio-grid-client.tsx"),
       "utf8"
-    );
+    ) + readFileSync(join(root, "app/_components/portfolio-data.tsx"), "utf8");
     const showcase = readFileSync(
       join(root, "app/_components/portfolio-showcase.tsx"),
       "utf8"
     );
 
     assert.match(page, /return <HomePage \/>/);
-    assert.match(homePage, /<PortfolioGridClient \/>/);
+    assert.match(homePage, /public-page--home/);
+    assert.match(readFileSync(join(root, "app/works/page.tsx"), "utf8"), /<PortfolioGridClient \/>/);
     assert.match(portfolio, /mergeSitesWithStatuses\(resolvedSites, monitorMap/);
     assert.match(portfolio, /mergeSitesWithStatuses\(resolvedSites, \{\}/);
-    assert.match(
-      portfolio,
-      /setSites\(\s*mergeSitesWithStatuses\(resolvedSites, \{\}\)\s*\);\s*setIsLoading\(false\);\s*}\s*try \{\s*const monitorMap = await fetchMonitorMap\(\);/s
-    );
+    assert.match(portfolio, /reconcileSitesWithStatuses\(resolvedSites, previous\)/);
     assert.doesNotMatch(portfolio, /setSites\(\[\]\);\s*setIsLoading\(false\);\s*}\s*catch \(error\) \{\s*console\.error\("无法获取监控数据"/s);
     assert.doesNotMatch(
       portfolio,
       /console\.warn\("监控数据暂时不可用，已使用未知状态。",\s*error\)/
     );
     assert.match(portfolio, /<PortfolioShowcase sites=\{sites\} \/>/);
-    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>/);
+    assert.match(showcase, /<PortfolioProject site=\{orderedSites\[activeIndex\]\} featured \/>/);
   });
 
   it("serves a sanitized five-person public-good batch through the Worker route and cache", async () => {
@@ -419,7 +429,7 @@ describe("admin production API path", () => {
     );
     const noticePath = join(root, "app/_components/public-good-notice.tsx");
 
-    assert.match(showcase, /<PortfolioProject site=\{featuredSite\} featured \/>[\s\S]*<PublicGoodNotice \/>[\s\S]*ordinarySites\.map/);
+    assert.match(showcase, /<PortfolioProject site=\{orderedSites\[activeIndex\]\} featured \/>[\s\S]*<PublicGoodNotice \/>/);
     assert.equal(existsSync(noticePath), true);
 
     const notice = readFileSync(noticePath, "utf8");
@@ -455,9 +465,10 @@ describe("admin production API path", () => {
       "utf8"
     );
 
-    assert.match(homePage, /<PortfolioHero \/>/);
-    assert.match(hero, /小茄的网站作品集/);
-    assert.doesNotMatch(`${homePage}\n${hero}\n${portfolio}`, /作品小岛|网站小岛|岛上公告|网站小屋|BentoGrid|StatusPill/);
+    assert.match(homePage, /public-page--home/);
+    assert.match(hero, /PortfolioHero/);
+    assert.match(portfolio, /<PortfolioShowcase sites=\{sites\} \/>/);
+    assert.doesNotMatch(`${homePage}\n${portfolio}`, /作品小岛|网站小岛|岛上公告|网站小屋|BentoGrid|StatusPill/);
     assert.doesNotMatch(portfolio, /createCollectionSummary|portfolioCategoryFilters|filterSitesByCategory/);
   });
 
@@ -512,7 +523,7 @@ describe("admin production API path", () => {
 
     assert.match(uptimeflare, /MONITOR_FETCH_TIMEOUT_MS = 15_000/);
     assert.match(uptimeflare, /new AbortController\(\)/);
-    assert.match(uptimeflare, /signal: controller\.signal/);
+    assert.match(uptimeflare, /AbortSignal\.any\(\[controller\.signal, signal\]\)/);
     assert.match(uptimeflare, /finally \{\s*clearTimeout\(timeoutId\);\s*}/s);
     assert.match(uptimeflare, /clearTimeout\(timeoutId\)/);
   });
@@ -571,6 +582,8 @@ describe("admin production API path", () => {
     assert.deepEqual(migrationFiles, [
       "0001_init.sql",
       "0002_portfolio_fields.sql",
+      "0003_login_attempts.sql",
+      "0004_site_cover.sql",
     ]);
     assert.ok(statements.length > 0);
     assert.equal(
@@ -731,6 +744,7 @@ describe("admin production API path", () => {
       slug: "demo",
       url: "https://example.com",
       monitorKey: "",
+      coverUrl: null,
       category: "web",
       description: "",
       summary: "",
@@ -892,6 +906,7 @@ describe("admin production API path", () => {
       slug: "demo",
       url: "https://example.com",
       monitorKey: "example-monitor",
+      coverUrl: null,
       category: "web",
       description: "Description",
       summary: "Portfolio summary",
@@ -1022,6 +1037,7 @@ describe("admin production API path", () => {
         "utf8"
       )
     );
+    db.exec(readFileSync(join(root, "worker/migrations/0004_site_cover.sql"), "utf8"));
     const env = createSqliteD1Env(db);
     const payload = {
       name: " Demo ",
@@ -1083,6 +1099,7 @@ describe("admin production API path", () => {
         "utf8"
       )
     );
+    db.exec(readFileSync(join(root, "worker/migrations/0004_site_cover.sql"), "utf8"));
     const env = createSqliteD1Env(db);
 
     await insertSite(env, {

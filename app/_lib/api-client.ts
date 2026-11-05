@@ -11,13 +11,14 @@ import type {
 const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL ?? "";
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  const headers = new Headers(init?.headers);
+  if (init?.body) headers.set("Content-Type", "application/json");
+  const timeout = AbortSignal.timeout(15_000);
   const response = await fetch(`${apiBaseUrl}${path}`, {
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-      ...init?.headers,
-    },
     ...init,
+    credentials: "include",
+    headers,
+    signal: init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout,
   });
 
   if (!response.ok) {
@@ -38,7 +39,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   return (await response.json()) as T;
 }
 
-export function getSites(options?: { includeHidden?: boolean }) {
+export function getSites(options?: { includeHidden?: boolean; signal?: AbortSignal }) {
   const params = new URLSearchParams();
 
   if (options?.includeHidden) {
@@ -46,7 +47,7 @@ export function getSites(options?: { includeHidden?: boolean }) {
   }
 
   const suffix = params.toString() ? `?${params.toString()}` : "";
-  return request<PublicSitesResponse>(`/sites${suffix}`);
+  return request<PublicSitesResponse>(`/sites${suffix}`, { signal: options?.signal });
 }
 
 export function getAuthState() {

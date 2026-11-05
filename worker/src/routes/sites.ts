@@ -13,6 +13,7 @@ import {
   mapSiteRowToSiteRecord,
 } from "../site-validation.ts";
 import type { SitePayload } from "../../../shared/contracts";
+import { readJsonObject } from "../http.ts";
 
 export async function handleGetSites(request: Request, env: Env) {
   const url = new URL(request.url);
@@ -68,7 +69,7 @@ export async function handleCreateSite(request: Request, env: Env) {
     return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const rawPayload = (await request.json()) as Partial<SitePayload>;
+  const rawPayload = await readJsonObject(request) as Partial<SitePayload>;
   const validationError = getSitePayloadValidationError(rawPayload);
 
   if (validationError) {
@@ -103,7 +104,7 @@ export async function handleUpdateSite(
     return Response.json({ ok: false, error: "Unauthorized" }, { status: 401 });
   }
 
-  const rawPayload = (await request.json()) as Partial<SitePayload>;
+  const rawPayload = await readJsonObject(request) as Partial<SitePayload>;
   const validationError = getSitePayloadValidationError(rawPayload);
 
   if (validationError) {

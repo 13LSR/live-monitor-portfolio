@@ -29,38 +29,24 @@ export function resolveMonitorApiUrl(
 
 const monitorApiUrl = resolveMonitorApiUrl();
 
-export async function fetchMonitorMap(): Promise<MonitorMap> {
+export async function fetchMonitorMap(signal?: AbortSignal): Promise<MonitorMap> {
   const controller = new AbortController();
-  const timeoutId = setTimeout(
-    () => controller.abort(),
-    MONITOR_FETCH_TIMEOUT_MS
-  );
-
-  let response: Response;
-
+  const timeoutId = setTimeout(() => controller.abort(), MONITOR_FETCH_TIMEOUT_MS);
   try {
-    response = await fetch(monitorApiUrl, {
+    const response = await fetch(monitorApiUrl, {
       cache: "no-store",
-      signal: controller.signal,
+      signal: signal ? AbortSignal.any([controller.signal, signal]) : controller.signal,
     });
+    if (!response.ok) throw new Error(`Monitor request failed: ${response.status}`);
+    const data = (await response.json()) as UptimeFlareResponse;
+    const monitors = data.monitors ?? {};
+    return Object.fromEntries(
+      Object.entries(monitors).map(([key, value]) => [key, {
+        up: Boolean(value.up),
+        latency: typeof value.latency === "number" ? value.latency : null,
+      }])
+    );
   } finally {
     clearTimeout(timeoutId);
   }
-
-  if (!response.ok) {
-    throw new Error(`Monitor request failed: ${response.status}`);
-  }
-
-  const data = (await response.json()) as UptimeFlareResponse;
-  const monitors = data.monitors ?? {};
-
-  return Object.fromEntries(
-    Object.entries(monitors).map(([key, value]) => [
-      key,
-      {
-        up: Boolean(value.up),
-        latency: typeof value.latency === "number" ? value.latency : null,
-      },
-    ])
-  );
 }

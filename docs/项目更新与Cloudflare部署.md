@@ -1,251 +1,103 @@
 # 项目更新与 Cloudflare 部署指南
 
-本文档用于更新本项目的 Cloudflare Worker、D1 数据库和 Pages 前端。
+## 资源与账号
 
-## 先理解三个部分
+- Cloudflare Pages 承载 Next.js 静态构建产物 `out/`，由 GitHub Action 部署。
+- Worker `live-monitor-portfolio-api` 提供认证和站点 API。
+- D1 `live-monitor-portfolio` 保存站点与登录限流记录。
+- Pages 与 Worker 位于不同账号。仓库没有 Worker 自动部署工作流；Worker/D1 由对应账号手动管理。
 
-- **Cloudflare Pages**：部署 Next.js 静态前端。
-- **Cloudflare Worker**：提供管理员登录、网站列表和网站增删改接口。
-- **Cloudflare D1**：保存你在线上管理页添加的网站记录。
+## 更新前检查
 
-`worker/migrations/*.sql` 是数据库**表结构升级脚本**，不是本地测试数据。执行远程迁移不会把本地网站记录上传到线上，也不会用本地数据覆盖线上数据。
-
-本次的 `0002_portfolio_fields.sql` 只给线上 `sites` 表增加简介、标签、技术栈、精选状态、仓库地址和备用地址等字段。已有线上网站记录会保留，新字段使用默认值，之后可以在管理页逐条补充。
-
-## 环境准备
-
-在项目根目录打开 PowerShell，确认 Node.js 和 npm 可用：
-
-```powershell
-node --version
-npm --version
-```
-
-首次在这台电脑操作 Cloudflare 时登录：
-
-```powershell
-npx wrangler login
-```
-
-浏览器授权成功后，可以检查当前账号：
-
-```powershell
-npx wrangler whoami
-```
-
-项目使用的资源配置在 `worker/wrangler.toml`：
-
-- Worker：`live-monitor-portfolio-api`
-- D1：`live-monitor-portfolio`
-
-## Pages 与 Worker 使用不同账号
-
-本项目的 Pages 和 Worker 位于两个不同的 Cloudflare 账号：
-
-- Pages 由推送 `main` 后的 GitHub Action 自动部署。
-- Worker 和 D1 由本机登录 Worker 所在账号后手动更新。
-- 仓库不再提供 Worker 自动部署工作流，避免 Pages 账号凭据误操作 Worker 账号中的资源。
-
-更新 Worker 前先确认本机登录的是拥有 `live-monitor-portfolio-api` 和 `live-monitor-portfolio` 的账号：
-
-```powershell
-npx wrangler whoami
-```
-
-## 每次更新前的检查
-
-先安装依赖并验证项目：
+需要 Node.js 24 或更高版本。在仓库根目录执行：
 
 ```powershell
 npm ci
-npm run lint
-npm run build
+npm ci --prefix worker
+npm run check
 ```
 
-再检查本次提交是否包含 Worker、共享接口或数据库迁移：
+`check` 依次运行 lint、前后端类型检查、全部测试和生产构建。PR 会运行 Quality checks；推送 main 后 Deploy Pages 复用同一流程，仅部署通过检查的静态产物。
+
+## 新版后台的部署前提
+
+1. 先应用 `0003_login_attempts.sql`，它只新增登录限流表，不改站点数据。
+2. 为生产 Worker 配置 `ADMIN_PASSWORD`、`SESSION_SECRET` 和 `ALLOWED_ORIGINS`。
+3. `ALLOWED_ORIGINS` 必须包含前台的准确 Origin，例如 `https://portfolio.example.com`。多个域名以逗号分隔，不带路径或末尾斜线，不使用 `*`。
+4. 生产 Worker 不会自动允许 localhost。缺少域名授权时，浏览器请求将返回 403；缺少限流迁移时，登录返回 503。
+
+可在 Worker 平台设置中配置变量。也可进入 worker 目录，对应账号登录后通过 CLI 交互设置：
 
 ```powershell
-git diff --name-only origin/main...HEAD -- worker shared
+cd worker
+npx wrangler whoami
+npx wrangler secret put ADMIN_PASSWORD
+npx wrangler secret put SESSION_SECRET
+npx wrangler secret put ALLOWED_ORIGINS
 ```
 
-根据输出决定更新方式：
+ALLOWED_ORIGINS 本身不是秘密，使用 secret 命令可避免把具体生产配置写入仓库。不要打印密码或签名密钥到终端记录。域名配置为完整替换时须保留所有仍需使用的正式前台地址。
 
-- 只有 `app/`、`public/`、前端样式等变化：通常直接推送，由 Pages 自动部署。
-- 出现 `worker/` 或 `shared/`：需要先部署 Worker。
-- 出现新的 `worker/migrations/*.sql`：必须先执行远程 D1 迁移，再部署 Worker。
+## Worker/D1 更新顺序
 
-## 本次版本的正确更新步骤
-
-### 1. 查看远程迁移状态
+在 worker 目录操作，并先确认 Cloudflare 账号正确：
 
 ```powershell
-npx wrangler d1 migrations list live-monitor-portfolio --remote --config worker/wrangler.toml
+npx wrangler whoami
+npx wrangler d1 migrations list live-monitor-portfolio --remote
+npx wrangler d1 migrations apply live-monitor-portfolio --remote
+npx wrangler deploy
 ```
 
-如果列表显示 `0002_portfolio_fields.sql` 尚未应用，继续下一步。如果已经应用，不要重复处理，直接部署 Worker。
+迁移按编号依次执行：`0001_init.sql`、`0002_portfolio_fields.sql`、`0003_login_attempts.sql`。仅尚未应用的迁移会执行。数据库迁移不读取本地站点，也不上传本地内容。
 
-### 2. 应用远程 D1 表结构迁移
+部署后从白名单中的正式前台验证登录、读取隐藏站点和保存操作，再发布新前端。通过命令行执行写操作也需要合法 Origin 和管理员会话；避免在生产环境运行本地验证或 seed。
 
-```powershell
-npx wrangler d1 migrations apply live-monitor-portfolio --remote --config worker/wrangler.toml
-```
+## Pages 更新
 
-出现确认提示时，核对数据库名称为 `live-monitor-portfolio`，然后确认执行。
+GitHub 仓库需配置：
 
-这一步操作的是线上 D1 表结构，不会读取本地 D1 中的测试网站，也不会调用测试数据填充接口。
+- Secrets：`CLOUDFLARE_API_TOKEN`、`CLOUDFLARE_ACCOUNT_ID`，使用 Pages 所在账号。
+- Variables：`CLOUDFLARE_PAGES_PROJECT_NAME`、`NEXT_PUBLIC_API_BASE_URL`、`NEXT_PUBLIC_UPTIMEFLARE_API_URL`。
 
-执行完成后再次检查：
+推送 main 后，`deploy-pages.yml` 调用 `ci.yml` 安装前后端依赖并执行 `npm run check`。检查任务上传静态产物，部署任务下载同一产物并发布 Pages。PR 仅验证，不部署。Worker 更新和迁移不会随 Pages 自动执行。
 
-```powershell
-npx wrangler d1 migrations list live-monitor-portfolio --remote --config worker/wrangler.toml
-```
+含数据库改动的更新顺序为：**D1 迁移 → 配置允许的前台 Origin → Worker → Pages**。
 
-确认 `0002_portfolio_fields.sql` 已应用。
+## 本地开发与内容整理
 
-### 3. 手动部署新版 Worker
+根目录和 worker 目录先分别安装依赖，复制配置示例并填写本地密码及密钥。应用本地迁移：
 
 ```powershell
-npx wrangler deploy --config worker/wrangler.toml
-```
-
-部署完成后，Wrangler 会显示 Worker 名称和访问地址。确认名称是 `live-monitor-portfolio-api`。
-
-### 4. 验证线上 Worker
-
-打开线上管理页，至少检查：
-
-1. 管理员可以正常登录。
-2. 原有线上网站仍然存在。
-3. 编辑网站时可以保存简介、标签、技术栈、精选状态和仓库地址。
-4. 公开网站接口能正常返回网站列表。
-
-不要在线上调用 `/sites/seed`。这个接口是本地演示数据填充用途。
-
-### 5. 推送主分支，触发 Pages 部署
-
-确认当前准备推送的是 `main`，并检查工作区：
-
-```powershell
-git branch --show-current
-git status
-git log -1 --oneline
-```
-
-代码已经合并到 `main` 后再推送：
-
-```powershell
-git push origin main
-```
-
-推送到 `main` 后：
-
-- `.github/workflows/deploy-pages.yml` 会构建并部署 Pages。
-- 如果提交包含 `worker/**` 或 `shared/**`，`.github/workflows/deploy-worker.yml` 也会再次部署 Worker。
-
-Worker 被自动重复部署一次通常没有问题。提前手动部署的目的，是确保 Worker 已经在 Pages 新前端上线之前兼容新字段。
-
-### 6. 检查 GitHub Actions 和线上页面
-
-在 GitHub 仓库的 **Actions** 页面确认：
-
-- `Deploy Pages` 成功。
-- `Deploy Worker` 成功（本次包含 Worker 改动时）。
-
-最后用无痕窗口检查：
-
-1. 首页可以加载网站作品。
-2. 精选作品和普通作品顺序正确。
-3. 公益模块显示正常。
-4. 在线状态和延迟正常显示。
-5. 管理页保存的网站信息能在首页展示。
-
-## 以后日常更新的简化流程
-
-### 仅修改前端
-
-```powershell
-npm run lint
-npm run build
-git push origin main
-```
-
-无需手动更新 Worker，也无需执行 D1 迁移。
-
-### 修改 Worker，但没有新增迁移
-
-推荐先部署 Worker，再推送：
-
-```powershell
-npm run lint
-npm run build
-npx wrangler deploy --config worker/wrangler.toml
-git push origin main
-```
-
-### 修改 Worker，并新增 D1 迁移
-
-严格按照以下顺序：
-
-```powershell
-npm run lint
-npm run build
-npx wrangler d1 migrations list live-monitor-portfolio --remote --config worker/wrangler.toml
-npx wrangler d1 migrations apply live-monitor-portfolio --remote --config worker/wrangler.toml
-npx wrangler deploy --config worker/wrangler.toml
-git push origin main
-```
-
-顺序必须是：**D1 迁移 → Worker → Pages**。
-
-## 本地开发命令
-
-本地 D1 和线上 D1 相互独立。本地迁移使用：
-
-```powershell
-npx wrangler d1 migrations apply live-monitor-portfolio --local --config worker/wrangler.toml
-```
-
-本地同时启动前端和 Worker：
-
-```powershell
+cd worker
+npx wrangler d1 migrations apply live-monitor-portfolio --local
+cd ..
 npm run dev:all
 ```
 
-本地测试网站数据不会因为 `git push`、`wrangler deploy` 或远程 D1 迁移而自动上传到线上。线上网站仍然通过线上 `/admin` 管理页自行添加。
+首页 <http://localhost:3000>，后台 <http://localhost:3000/admin>，API <http://localhost:8787/sites>。前后端统一使用 localhost。
+
+现有本地验收数据可执行 `npm run content:local`：先备份到 `.tmp/content-backups/`，再隐藏 phase-4-e2e 验收卡片并更新三个匹配的正式作品。所有未知记录保留，已有技术栈和链接保留。该脚本只接受本机服务，线上内容继续由线上后台自行编辑。
+
+`npm run verify:local` 验证已启动的前后端。若通过进程环境提供 ADMIN_PASSWORD，将验证临时隐藏站点的 CRUD，并在 finally 中删除它创建的测试记录。不要把密码写进共享命令历史。
+
+## 上线验收
+
+- 首页读取正式作品，标题、简介、标签和精选顺序正确。
+- 管理后台从受信任前台登录成功，不受信任 Origin 的写操作返回 403。
+- 同一来源连续失败超过 5 次后返回 429；等待最多 10 分钟恢复。
+- 已过期或篡改会话不能执行写入。
+- 接近视口时加载预览；离线站点保留离线提示；打开交互后滚动不丢失窗口状态。
+- 页面隐藏时不继续轮询，重新可见后更新监控。
 
 ## 常见问题
 
-### 页面部署成功，但网站列表报错
+**登录返回 503：** 检查 Worker 是否已配置认证变量，0003 迁移是否已应用，以及 D1 绑定是否可用。
 
-通常是 Pages 已使用新接口字段，而 Worker 或 D1 仍是旧版本。依次执行：
+**请求返回 403：** 检查 ALLOWED_ORIGINS 是否包含当前前台的协议、域名及端口；不得混用 www、其他子域名或路径。
 
-```powershell
-npx wrangler d1 migrations apply live-monitor-portfolio --remote --config worker/wrangler.toml
-npx wrangler deploy --config worker/wrangler.toml
-```
+**登录成功但后台仍未登录：** 检查浏览器是否允许 Pages 与 Worker 间的 Cookie，及本地是否混用了 localhost 和 127.0.0.1。HTTPS Cookie 使用 SameSite=None; Secure；跨站 Cookie 仍可能被浏览器策略限制，同一主域的部署可减少此问题。
 
-然后重新检查页面。
+**需要立即使所有会话失效：** 轮换 SESSION_SECRET。退出登录只删除当前浏览器 Cookie，不撤销其他已复制的有效令牌。
 
-### Wrangler 登录了错误的 Cloudflare 账号
-
-```powershell
-npx wrangler logout
-npx wrangler login
-npx wrangler whoami
-```
-
-确认账号正确后再执行远程迁移或部署。
-
-### GitHub 自动部署 Worker 会执行 D1 迁移吗
-
-不会。当前 `.github/workflows/deploy-worker.yml` 只执行 `wrangler deploy`，没有执行 `wrangler d1 migrations apply`。因此新增迁移时必须先手动应用远程迁移。
-
-### 是否每次推送都要更新 Worker
-
-不需要。只有以下情况需要：
-
-- `worker/` 中的 Worker 代码发生变化。
-- `shared/` 中前后端接口契约发生变化。
-- 新增了 `worker/migrations/*.sql` 数据库迁移。
-
-单纯修改首页组件、CSS、图片或文案时，只需要部署 Pages。
+**构建报独立草稿错误：** 草稿不属于业务目录，检查是否误加入 TypeScript include。移入业务代码的文件必须补齐依赖和类型后再使用。

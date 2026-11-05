@@ -1,4 +1,5 @@
 import type { SitePayload } from "@/shared/contracts";
+import { isCoverUrl } from "../../shared/site-cover.ts";
 
 interface NextSlugInput {
   currentSlug: string;
@@ -66,6 +67,10 @@ export function validateAdminSitePayload(payload: SitePayload) {
     return fallbackUrlError;
   }
 
+  if (payload.coverUrl?.trim() && !isCoverUrl(payload.coverUrl.trim())) {
+    return "请输入有效的 http:// 或 https:// 封面图片链接（最多 2048 字符）。";
+  }
+
   return null;
 }
 
@@ -82,6 +87,7 @@ export function buildSitePayloadForSubmit(payload: SitePayload): SitePayload {
     techStack: normalizeListValues(payload.techStack),
     repoUrl: normalizeOptionalUrl(payload.repoUrl),
     fallbackUrl: normalizeOptionalUrl(payload.fallbackUrl),
+    coverUrl: normalizeOptionalUrl(payload.coverUrl ?? null),
   };
 }
 

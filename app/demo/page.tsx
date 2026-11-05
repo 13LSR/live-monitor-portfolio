@@ -31,7 +31,7 @@ export default function DemoPage() {
             直接嵌入真实运行的网站，不是截图。用实时 iframe 渲染与 UptimeFlare 监控，
             让每个部署的网站都以&quot;活体&quot;形式运行在作品集中。
           </p>
-          <Link href="/#featured-work" className="demo-hero__cta">
+          <Link href="/works" className="demo-hero__cta">
             开始体验作品
             <span aria-hidden="true">↗</span>
           </Link>
@@ -49,7 +49,7 @@ export default function DemoPage() {
             <div>
               <h3>精选真实网站</h3>
               <p>
-                首页顶部精选卡片嵌入真实运行网站的实时页面，不是截图。
+                从首页图片环进入作品展厅，当前作品嵌入真实运行网站的实时页面，不是截图。
                 通过 iframe 渲染，保持原始交互能力。
               </p>
             </div>
@@ -70,7 +70,7 @@ export default function DemoPage() {
             <div>
               <h3>公益关注</h3>
               <p>
-                精选卡片下方嵌入寻亲信息模块，数据来自公开公益数据接口，
+                作品页底部可展开公益关注，数据来自公开公益数据接口，
                 浏览器端实时拉取并本地缓存 6 小时。仅展示真实接口返回或历史真实缓存，
                 没有真实内容时自动隐藏。
               </p>
@@ -81,7 +81,7 @@ export default function DemoPage() {
             <div>
               <h3>更多网站作品</h3>
               <p>
-                页面下方以两列网格排列更多在线作品，每张卡片同样具备
+                通过滚轮、方向键或滑动逐页查看更多在线作品，每张卡片同样具备
                 实时渲染与状态监控，可在管理后台动态增减。
               </p>
             </div>

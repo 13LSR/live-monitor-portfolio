@@ -46,6 +46,7 @@ export interface SitePayload {
   isFeatured: boolean;
   repoUrl: string | null;
   fallbackUrl: string | null;
+  coverUrl: string | null;
   coverMode: "iframe" | "text" | "gallery";
   sortOrder: number;
   isVisible: boolean;

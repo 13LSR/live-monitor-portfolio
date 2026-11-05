@@ -14,6 +14,17 @@ interface MergeSitesWithStatusesOptions {
   monitorDataLoaded?: boolean;
 }
 
+export function reconcileSitesWithStatuses(sites: SiteRecord[], previous: SiteWithStatus[]) {
+  const previousById = new Map(previous.map((site) => [site.id, site]));
+  return mergeSitesWithStatuses(sites, {}).map((site) => {
+    const existing = previousById.get(site.id);
+    if (existing && existing.url === site.url && existing.monitorKey === site.monitorKey) {
+      return { ...site, status: existing.status };
+    }
+    return site;
+  });
+}
+
 export function mergeSitesWithStatuses(
   sites: SiteRecord[],
   monitorMap: MonitorMap,

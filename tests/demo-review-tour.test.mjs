@@ -19,13 +19,13 @@ describe("demo review tour", () => {
     assert.match(demoPage, /aria-label="跳转到主要内容"/);
   });
 
-  it("links CTA to the featured work anchor", () => {
+  it("links CTA to the works route", () => {
     const demoPage = readFileSync(join(appDir, "demo", "page.tsx"), "utf8");
-    const homePage = readFileSync(join(appDir, "_components", "home-page.tsx"), "utf8");
+    const homePage = readFileSync(join(appDir, "_components", "portfolio-shell.tsx"), "utf8");
 
-    assert.match(demoPage, /href="\/#featured-work"/);
+    assert.match(demoPage, /href="\/works"/);
     assert.match(demoPage, /开始体验作品/);
-    assert.match(homePage, /id="featured-work"/);
+    assert.match(homePage, /ImmersiveScene/);
   });
 
   it("provides clear navigation back to home", () => {

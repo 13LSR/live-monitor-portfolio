@@ -7,7 +7,13 @@ on:
   workflow_dispatch:
 
 jobs:
+  checks:
+    uses: ./.github/workflows/ci.yml
+    permissions:
+      contents: read
+
   deploy:
+    needs: checks
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -19,17 +25,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
           cache: npm
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Build static site
-        run: npm run build
-        env:
-          NEXT_PUBLIC_API_BASE_URL: ${{ vars.NEXT_PUBLIC_API_BASE_URL }}
-          NEXT_PUBLIC_UPTIMEFLARE_API_URL: ${{ vars.NEXT_PUBLIC_UPTIMEFLARE_API_URL }}
+      - name: Download verified static site
+        uses: actions/download-artifact@v4
+        with:
+          name: pages-static
+          path: out
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3

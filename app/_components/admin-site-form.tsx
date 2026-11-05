@@ -10,6 +10,8 @@ import {
   validateAdminSitePayload,
 } from "@/app/_lib/site-form-utils";
 import type { SitePayload } from "@/shared/contracts";
+import { DEFAULT_COVER_URL } from "@/shared/site-cover";
+import { SiteCover } from "@/app/_components/site-cover";
 import type { SiteRecord } from "@/shared/types";
 
 const emptyForm: SitePayload = {
@@ -25,6 +27,7 @@ const emptyForm: SitePayload = {
   isFeatured: false,
   repoUrl: null,
   fallbackUrl: null,
+  coverUrl: DEFAULT_COVER_URL,
   coverMode: "iframe",
   sortOrder: 0,
   isVisible: true,
@@ -396,6 +399,16 @@ export function AdminSiteForm({
         </ToggleCard>
       </Card>
 
+      <Field label="封面图片链接" hint="粘贴图床图片直链；留空使用默认随机图片。建议使用固定的 HTTPS 图片链接。">
+        <input type="url" value={form.coverUrl ?? ""} maxLength={2048}
+          onChange={(event) => setForm((current) => ({ ...current, coverUrl: event.target.value }))}
+          className="admin-input" placeholder={DEFAULT_COVER_URL} disabled={pending} />
+      </Field>
+      <div className="admin-cover-preview">
+        <SiteCover key={form.coverUrl} url={form.coverUrl} name={form.name || "封面预览"} />
+        <span>封面预览 · 将用于首页图片环和作品展厅</span>
+      </div>
+
       <Field label="展示模式" hint="当前真实活体网页展示请选择 iframe">
         <select
           value={form.coverMode}
@@ -601,6 +614,7 @@ function getFormState(initialSite?: SiteRecord | null): SitePayload {
     isFeatured: initialSite.isFeatured,
     repoUrl: initialSite.repoUrl,
     fallbackUrl: initialSite.fallbackUrl,
+    coverUrl: initialSite.coverUrl ?? null,
     coverMode: initialSite.coverMode,
     sortOrder: initialSite.sortOrder,
     isVisible: initialSite.isVisible,

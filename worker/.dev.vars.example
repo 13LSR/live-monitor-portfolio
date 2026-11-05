@@ -1,5 +1,6 @@
 ADMIN_PASSWORD=replace-with-your-local-admin-password
 SESSION_SECRET=replace-with-a-long-random-local-session-secret
+ALLOWED_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
 
 # Optional: paste one API response or an array of API responses to verify the
 # public-good notice locally without depending on the third-party endpoint.

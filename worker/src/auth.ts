@@ -7,6 +7,7 @@ import {
 export interface Env {
   ADMIN_PASSWORD: string;
   SESSION_SECRET: string;
+  ALLOWED_ORIGINS?: string;
   DB: D1Database;
   PUBLIC_GOOD_CACHE_TTL_SECONDS?: string;
   PUBLIC_GOOD_FIXTURE_JSON?: string;

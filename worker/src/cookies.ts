@@ -4,6 +4,7 @@ export interface SessionPayload {
 }
 
 const textEncoder = new TextEncoder();
+export const SESSION_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
 
 function toBase64Url(input: ArrayBuffer | Uint8Array) {
   const bytes = input instanceof Uint8Array ? input : new Uint8Array(input);
@@ -49,27 +50,30 @@ export async function verifySessionCookie(
   cookieValue: string | null,
   secret: string
 ) {
-  if (!cookieValue) {
+  if (!cookieValue || cookieValue.length > 2048 || !secret) {
     return false;
   }
 
-  const [payloadPart, signaturePart] = cookieValue.split(".");
+  const parts = cookieValue.split(".");
+  const [payloadPart, signaturePart] = parts;
 
-  if (!payloadPart || !signaturePart) {
-    return false;
-  }
-
-  const expectedSignature = toBase64Url(await sign(payloadPart, secret));
-
-  if (expectedSignature !== signaturePart) {
+  if (parts.length !== 2 || !payloadPart || !signaturePart) {
     return false;
   }
 
   try {
+    const key = await crypto.subtle.importKey(
+      "raw", textEncoder.encode(secret), { name: "HMAC", hash: "SHA-256" }, false, ["verify"]
+    );
+    const valid = await crypto.subtle.verify(
+      "HMAC", key, fromBase64Url(signaturePart), textEncoder.encode(payloadPart)
+    );
+    if (!valid) return false;
     const payloadJson = new TextDecoder().decode(fromBase64Url(payloadPart));
     const payload = JSON.parse(payloadJson) as SessionPayload;
-
-    return payload.authenticated === true;
+    if (!payload || typeof payload.issuedAt !== "string") return false;
+    const age = Date.now() - Date.parse(payload.issuedAt);
+    return payload.authenticated === true && Number.isFinite(age) && age >= 0 && age < SESSION_MAX_AGE_SECONDS * 1000;
   } catch {
     return false;
   }
@@ -80,7 +84,7 @@ export function buildSetCookie(value: string, request: Request) {
   const isHttps = url.protocol === "https:";
   const sameSitePart = isHttps ? "; SameSite=None; Secure" : "; SameSite=Lax";
 
-  return `admin_session=${value}; Path=/; HttpOnly${sameSitePart}; Max-Age=604800`;
+  return `admin_session=${value}; Path=/; HttpOnly${sameSitePart}; Max-Age=${SESSION_MAX_AGE_SECONDS}`;
 }
 
 export function buildClearCookie(request: Request) {

@@ -16,6 +16,7 @@ export interface SiteRecord {
   isFeatured: boolean;
   repoUrl: string | null;
   fallbackUrl: string | null;
+  coverUrl: string | null;
   coverMode: CoverMode;
   sortOrder: number;
   isVisible: boolean;
