@@ -49,7 +49,7 @@ npx wrangler d1 migrations apply live-monitor-portfolio --remote
 npx wrangler deploy
 ```
 
-迁移按编号依次执行：`0001_init.sql`、`0002_portfolio_fields.sql`、`0003_login_attempts.sql`。仅尚未应用的迁移会执行。数据库迁移不读取本地站点，也不上传本地内容。
+迁移按编号依次执行：`0001_init.sql`、`0002_portfolio_fields.sql`、`0003_login_attempts.sql`、`0004_site_cover.sql`。仅尚未应用的迁移会执行。数据库迁移不读取本地站点，也不上传本地内容。
 
 部署后从白名单中的正式前台验证登录、读取隐藏站点和保存操作，再发布新前端。通过命令行执行写操作也需要合法 Origin 和管理员会话；避免在生产环境运行本地验证或 seed。
 
@@ -101,3 +101,9 @@ npm run dev:all
 **需要立即使所有会话失效：** 轮换 SESSION_SECRET。退出登录只删除当前浏览器 Cookie，不撤销其他已复制的有效令牌。
 
 **构建报独立草稿错误：** 草稿不属于业务目录，检查是否误加入 TypeScript include。移入业务代码的文件必须补齐依赖和类型后再使用。
+
+## 封面更新后仍未保存
+
+仅更新 D1 或推送 Pages 不会更新 Worker 代码。旧 Worker 可能接受新的请求但忽略 `coverUrl`；必须在 D1 迁移完成后部署当前 Worker，公开 `/sites` 返回值应包含 `coverUrl`（允许 null）。新后台会在保存后回读并核对全部字段，发现遗漏时保留表单并提示，而不报成功。旧版未保存的封面链接需要重新填写。
+
+当前 `wrangler.toml` 的公开 `ALLOWED_ORIGINS` 配置同时包含 `https://proj.331106.xyz` 与 `https://eo-proj.331106.xyz`。密码和会话密钥仍使用现有 Worker secrets，不写入仓库。

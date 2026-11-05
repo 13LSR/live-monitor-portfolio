@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, KeyboardEvent, useState } from "react";
+import { FormEvent, KeyboardEvent, useEffect, useState } from "react";
 import { Button, Card, Tag } from "animal-island-ui";
 import {
   addUniqueListValue,
@@ -10,8 +10,10 @@ import {
   validateAdminSitePayload,
 } from "@/app/_lib/site-form-utils";
 import type { SitePayload } from "@/shared/contracts";
-import { DEFAULT_COVER_URL } from "@/shared/site-cover";
+import { DEFAULT_COVER_URL, isCoverUrl } from "@/shared/site-cover";
 import { SiteCover } from "@/app/_components/site-cover";
+import { TechStackLabel } from "@/app/_components/tech-stack-label";
+import { TECH_STACK_SUGGESTIONS } from "@/shared/tech-stack";
 import type { SiteRecord } from "@/shared/types";
 
 const emptyForm: SitePayload = {
@@ -40,6 +42,8 @@ interface AdminSiteFormProps {
   pending: boolean;
   onSubmit: (payload: SitePayload) => Promise<boolean>;
   onCancel?: () => void;
+  feedback?: string;
+  onDirtyChange?: (dirty: boolean) => void;
 }
 
 export function AdminSiteForm({
@@ -48,6 +52,8 @@ export function AdminSiteForm({
   pending,
   onSubmit,
   onCancel,
+  feedback,
+  onDirtyChange,
 }: AdminSiteFormProps) {
   const isEditModeWithoutSelection = mode === "edit" && !initialSite;
   const [form, setForm] = useState<SitePayload>(() =>
@@ -59,11 +65,29 @@ export function AdminSiteForm({
   const [tagInput, setTagInput] = useState("");
   const [techStackInput, setTechStackInput] = useState("");
   const [localError, setLocalError] = useState<string | null>(null);
+  const [previewCover, setPreviewCover] = useState(form.coverUrl);
+  useEffect(() => {
+    const url = form.coverUrl?.trim() || null;
+    if (url && !isCoverUrl(url)) return;
+    const timer = setTimeout(() => setPreviewCover(url), 500);
+    return () => clearTimeout(timer);
+  }, [form.coverUrl]);
+  const dirty = JSON.stringify(form) !== JSON.stringify(getFormState(initialSite)) || Boolean(tagInput.trim() || techStackInput.trim());
+  useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
+
+  function updateField<K extends keyof SitePayload>(field: K, value: SitePayload[K]) {
+    setLocalError(null);
+    setForm((current) => ({ ...current, [field]: value }));
+  }
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    const payload = buildSitePayloadForSubmit(form);
+    const payload = buildSitePayloadForSubmit({
+      ...form,
+      tags: addUniqueListValue(form.tags, tagInput),
+      techStack: addUniqueListValue(form.techStack, techStackInput),
+    });
     const validationError = validateAdminSitePayload(payload);
 
     if (validationError) {
@@ -74,9 +98,17 @@ export function AdminSiteForm({
     setLocalError(null);
     const succeeded = await onSubmit(payload);
 
+    if (succeeded) {
+      setForm(payload);
+      setTagInput("");
+      setTechStackInput("");
+    }
+
     if (mode === "create" && succeeded) {
       setForm(emptyForm);
       setSlugEditedManually(false);
+      setTagInput("");
+      setTechStackInput("");
     }
   }
 
@@ -140,42 +172,26 @@ export function AdminSiteForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 border border-[var(--line)] bg-[var(--paper-raised)] p-5 shadow-[8px_8px_0_rgba(31,37,35,0.16)]"
+      id="admin-site-editor"
+      className="admin-editor"
     >
-      <div className="flex items-center justify-between gap-4 border-b border-[var(--line)] pb-4">
-        <div>
-          <h2 className="text-lg font-semibold text-[var(--ink)]">
-            {mode === "create" ? "新建站点" : "编辑站点"}
-          </h2>
-          <p className="mt-1 text-xs leading-5 text-[var(--muted)]">
-            {mode === "create"
-              ? "录入一个真实运行的网站窗口。"
-              : "修改当前选中的网站资料。"}
-          </p>
-        </div>
-        {mode === "edit" && onCancel ? (
-          <button
-            type="button"
-            onClick={onCancel}
-            disabled={pending}
-            className="border border-[var(--line)] bg-[#fffaf0] px-3 py-1.5 text-sm font-semibold text-[var(--ink)] transition hover:bg-[#e7eadf] disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            取消
+      <header className="admin-editor__header">
+        <div><p className="admin-eyebrow">站点资料</p><h2>{mode === "create" ? "新建站点" : initialSite?.name ?? "编辑站点"}</h2></div>
+        <div className="admin-editor__actions">
+          {onCancel ? <button type="button" onClick={onCancel} disabled={pending}>返回列表</button> : null}
+          <button type="submit" className="admin-primary" disabled={pending || isEditModeWithoutSelection}>
+            {pending ? "保存中…" : mode === "create" ? "创建站点" : "保存更改"}
           </button>
-        ) : null}
-      </div>
-
-      {localError ? (
-        <div className="border border-[var(--line)] bg-[#f6ded7] p-3 text-sm font-semibold text-[var(--red)]">
-          {localError}
         </div>
-      ) : null}
-
+        {(localError || feedback) ? <p className={localError ? "admin-feedback is-error" : "admin-feedback"} role={localError ? "alert" : "status"}>{localError || feedback}</p> : null}
+      </header>
+      <fieldset className="admin-editor__section" disabled={pending}>
+        <legend>基本信息</legend>
       <div className="grid gap-5 md:grid-cols-2">
         <Field label="名称" hint="前台卡片标题，例如：网易云音乐 Demo">
           <input
             value={form.name}
-            onChange={(event) => updateName(event.target.value)}
+            onChange={(event) => updateName(event.currentTarget.value)}
             className="admin-input"
             placeholder="网易云音乐 Demo"
             disabled={pending}
@@ -189,11 +205,7 @@ export function AdminSiteForm({
             value={form.slug}
             onChange={(event) => {
               setSlugEditedManually(true);
-              setLocalError(null);
-              setForm((current) => ({
-                ...current,
-                slug: event.target.value,
-              }));
+              updateField("slug", event.currentTarget.value);
             }}
             className="admin-input"
             placeholder="wyy-331106-xyz"
@@ -203,7 +215,7 @@ export function AdminSiteForm({
         <Field label="URL" hint="网站真实可访问地址，必须以 https:// 开头">
           <input
             value={form.url}
-            onChange={(event) => updateUrl(event.target.value)}
+            onChange={(event) => updateUrl(event.currentTarget.value)}
             className="admin-input"
             placeholder="https://wyy.331106.xyz"
             disabled={pending}
@@ -216,11 +228,7 @@ export function AdminSiteForm({
           <input
             value={form.monitorKey ?? ""}
             onChange={(event) => {
-              setLocalError(null);
-              setForm((current) => ({
-                ...current,
-                monitorKey: event.target.value,
-              }));
+              updateField("monitorKey", event.currentTarget.value);
             }}
             className="admin-input"
             placeholder="wyy.331106.xyz"
@@ -231,12 +239,7 @@ export function AdminSiteForm({
           <input
             type="number"
             value={form.sortOrder}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                sortOrder: Number(event.target.value),
-              }))
-            }
+            onChange={(event) => updateField("sortOrder", Number(event.currentTarget.value))}
             className="admin-input"
             disabled={pending}
           />
@@ -244,12 +247,7 @@ export function AdminSiteForm({
         <Field label="分类" hint="用于首页分类过滤">
           <select
             value={form.category}
-            onChange={(event) =>
-              setForm((current) => ({
-                ...current,
-                category: event.target.value as SitePayload["category"],
-              }))
-            }
+            onChange={(event) => updateField("category", event.currentTarget.value as SitePayload["category"])}
             className="admin-input"
             disabled={pending}
           >
@@ -264,12 +262,7 @@ export function AdminSiteForm({
       <Field label="描述" hint="简短说明这个网站是什么">
         <textarea
           value={form.description}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              description: event.target.value,
-            }))
-          }
+          onChange={(event) => updateField("description", event.currentTarget.value)}
           rows={4}
           className="admin-input min-h-28 resize-y"
           placeholder="已部署在线站点，展示真实网页运行状态。"
@@ -277,10 +270,11 @@ export function AdminSiteForm({
         />
       </Field>
 
+      </fieldset>
       <Card
         color="app-yellow"
         pattern="app-yellow"
-        className="space-y-5 border border-[var(--line)] p-4"
+        className="admin-editor__section admin-editor__portfolio"
       >
         <div className="border-b border-[var(--line)] pb-3">
           <h3 className="text-base font-semibold text-[var(--ink)]">
@@ -295,11 +289,7 @@ export function AdminSiteForm({
           <textarea
             value={form.summary}
             onChange={(event) => {
-              setLocalError(null);
-              setForm((current) => ({
-                ...current,
-                summary: event.target.value,
-              }));
+              updateField("summary", event.currentTarget.value);
             }}
             rows={3}
             maxLength={120}
@@ -329,6 +319,7 @@ export function AdminSiteForm({
           />
           <ChipInput
             label="技术栈"
+            technology
             hint="按展示顺序添加，首页最多显示前几项"
             values={form.techStack}
             inputValue={techStackInput}
@@ -353,11 +344,7 @@ export function AdminSiteForm({
             <input
               value={form.repoUrl ?? ""}
               onChange={(event) => {
-                setLocalError(null);
-                setForm((current) => ({
-                  ...current,
-                  repoUrl: event.target.value,
-                }));
+                updateField("repoUrl", event.currentTarget.value);
               }}
               className="admin-input"
               placeholder="https://github.com/..."
@@ -368,11 +355,7 @@ export function AdminSiteForm({
             <input
               value={form.fallbackUrl ?? ""}
               onChange={(event) => {
-                setLocalError(null);
-                setForm((current) => ({
-                  ...current,
-                  fallbackUrl: event.target.value,
-                }));
+                updateField("fallbackUrl", event.currentTarget.value);
               }}
               className="admin-input"
               placeholder="https://..."
@@ -400,25 +383,22 @@ export function AdminSiteForm({
         </ToggleCard>
       </Card>
 
+      <fieldset className="admin-editor__section" disabled={pending}>
+        <legend>封面与展示</legend>
       <Field label="封面图片链接" hint="粘贴图床图片直链；留空使用默认随机图片。建议使用固定的 HTTPS 图片链接。">
         <input type="url" value={form.coverUrl ?? ""} maxLength={2048}
-          onChange={(event) => setForm((current) => ({ ...current, coverUrl: event.target.value }))}
+          onChange={(event) => updateField("coverUrl", event.currentTarget.value)}
           className="admin-input" placeholder={DEFAULT_COVER_URL} disabled={pending} />
       </Field>
       <div className="admin-cover-preview">
-        <SiteCover key={form.coverUrl} url={form.coverUrl} name={form.name || "封面预览"} />
+        <SiteCover key={previewCover} url={previewCover} name={form.name || "封面预览"} />
         <span>封面预览 · 将用于首页图片环和作品展厅</span>
       </div>
 
       <Field label="展示模式" hint="当前真实活体网页展示请选择 iframe">
         <select
           value={form.coverMode}
-          onChange={(event) =>
-            setForm((current) => ({
-              ...current,
-              coverMode: event.target.value as SitePayload["coverMode"],
-            }))
-          }
+          onChange={(event) => updateField("coverMode", event.currentTarget.value as SitePayload["coverMode"])}
           className="admin-input"
           disabled={pending}
         >
@@ -465,19 +445,7 @@ export function AdminSiteForm({
         </ToggleCard>
       </div>
 
-      {isEditModeWithoutSelection ? (
-        <div className="border border-[var(--line)] bg-[#f7d879] p-4 text-sm leading-6 text-[var(--ink)]">
-          先在站点列表里点击“编辑”，再修改并提交当前站点。
-        </div>
-      ) : null}
-
-      <button
-        type="submit"
-        disabled={pending || isEditModeWithoutSelection}
-        className="border border-[var(--line)] bg-[var(--ink)] px-5 py-3 text-sm font-semibold text-[#fffaf0] transition hover:bg-[var(--green)] disabled:cursor-not-allowed disabled:opacity-60"
-      >
-        {pending ? "保存中..." : mode === "create" ? "创建站点" : "更新站点"}
-      </button>
+      </fieldset>
     </form>
   );
 }
@@ -493,6 +461,7 @@ function ChipInput({
   onAdd,
   onKeyDown,
   onRemove,
+  technology = false,
 }: {
   label: string;
   hint: string;
@@ -504,6 +473,7 @@ function ChipInput({
   onAdd: () => void;
   onKeyDown: (event: KeyboardEvent<HTMLInputElement>) => void;
   onRemove: (value: string) => void;
+  technology?: boolean;
 }) {
   return (
     <div className="min-w-0 space-y-2 text-sm text-[var(--ink)]">
@@ -515,8 +485,10 @@ function ChipInput({
       </div>
       <div className="flex min-w-0 gap-2">
         <input
+          aria-label={label}
+          list={technology ? "tech-stack-options" : undefined}
           value={inputValue}
-          onChange={(event) => onInputChange(event.target.value)}
+          onChange={(event) => onInputChange(event.currentTarget.value)}
           onKeyDown={onKeyDown}
           className="admin-input min-w-0 flex-1"
           placeholder={placeholder}
@@ -533,6 +505,7 @@ function ChipInput({
           添加
         </Button>
       </div>
+      {technology ? <datalist id="tech-stack-options">{TECH_STACK_SUGGESTIONS.map((name) => <option key={name} value={name} />)}</datalist> : null}
       {values.length ? (
         <div className="flex flex-wrap gap-2">
           {values.map((value) => (
@@ -546,7 +519,7 @@ function ChipInput({
               size="small"
               className="border border-[var(--line)] bg-[#f7d879] px-2.5 py-1 text-xs font-semibold text-[var(--ink)] transition hover:bg-[#f6ded7] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {value}
+              {technology ? <TechStackLabel name={value} /> : value}
             </Tag>
           ))}
         </div>

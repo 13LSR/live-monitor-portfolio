@@ -1,9 +1,6 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
-import { EffectComposer } from "three/addons/postprocessing/EffectComposer.js";
-import { RenderPass } from "three/addons/postprocessing/RenderPass.js";
-import { UnrealBloomPass } from "three/addons/postprocessing/UnrealBloomPass.js";
-import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
+import { afterPaint } from "../after-paint.ts";
+import type { createSceneEffects } from "./scene-effects";
 import { createNeonCity, CITY_LIMIT, WORKS_POSITION } from "./neon-city";
 import { introSession } from "./intro-session";
 import { flightProgress, type SceneView } from "./camera-flight";
@@ -48,14 +45,8 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   camera.lookAt(cameraTarget);
   const city = createNeonCity(scene, compact);
   const starfield = createStarfield(scene, compact, reducedMotion);
-  const npcs = createNpcRuntime(scene, city.obstacles, { reducedMotion, onDialogue: callbacks.onDialogue });
-  const composer = new EffectComposer(renderer);
-  const renderPass = new RenderPass(scene, camera);
-  const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.5, 0.94);
-  const outputPass = new OutputPass();
-  composer.addPass(renderPass);
-  composer.addPass(bloom);
-  composer.addPass(outputPass);
+  const npcs = createNpcRuntime(scene, city.obstacles, { reducedMotion, onDialogue: callbacks.onDialogue, deferLoading: true });
+  let effects: ReturnType<typeof createSceneEffects> | undefined;
 
   scene.add(new THREE.HemisphereLight("#bbd4f4", "#17142d", 1.25));
   const keyLight = new THREE.DirectionalLight("#eef2ff", 2.8);
@@ -81,7 +72,11 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   let lastTime = 0;
   let mixer: THREE.AnimationMixer | undefined;
   let action: THREE.AnimationAction | undefined;
-  let modelReady = false;
+  let firstFrameRendered = false;
+  let modelsStarted = false;
+  let cancelModelStart = () => {};
+  let cancelEffectStart = () => {};
+  let npcDelay: number | undefined;
   let velocityY = 0;
   let grounded = true;
   let jumpRequested = false;
@@ -132,6 +127,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     if (next === view) return;
     if (view === "home") { homeCamera.copy(camera.position); homeTarget.copy(cameraTarget); }
     view = next;
+    if (view === "home") startModels();
     clearKeys();
     introSession.finish();
     transitionCamera.copy(camera.position);
@@ -151,12 +147,6 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     camera.fov = destinationFov;
   }
 
-  function ready() {
-    if (disposed || modelReady) return;
-    modelReady = true;
-    callbacks.onReady();
-  }
-  const modelTimeout = window.setTimeout(ready, 7000);
   function disposeObject(root: THREE.Object3D) {
     const geometries = new Set<THREE.BufferGeometry>();
     const materials = new Set<THREE.Material>();
@@ -174,31 +164,44 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     materials.forEach((material) => material.dispose());
     textures.forEach((texture) => texture.dispose());
   }
-  new GLTFLoader().load("/models/minion-a01.glb", (gltf) => {
-    if (disposed) { disposeObject(gltf.scene); return; }
-    const model = gltf.scene;
-    const bounds = new THREE.Box3().setFromObject(model);
-    const size = bounds.getSize(new THREE.Vector3());
-    model.scale.setScalar(1.9 / Math.max(size.x, size.y, size.z, 0.001));
-    const scaledBounds = new THREE.Box3().setFromObject(model);
-    const center = scaledBounds.getCenter(new THREE.Vector3());
-    model.position.set(-center.x, -scaledBounds.min.y, -center.z);
-    modelPivot.remove(fallback);
-    disposeObject(fallback);
-    modelPivot.add(model);
-    const clip = gltf.animations.find((clip) => /walk|run/i.test(clip.name)) ?? gltf.animations[0];
-    if (clip) {
-      mixer = new THREE.AnimationMixer(model);
-      action = mixer.clipAction(clip);
-      action.play();
-    }
-    host.dataset.modelState = "ready";
-    window.clearTimeout(modelTimeout);
-    ready();
-  }, undefined, () => {
-    if (!disposed) host.dataset.modelState = "fallback";
-    ready();
-  });
+  function startModels() {
+    if (modelsStarted || disposed || view !== "home") return;
+    modelsStarted = true;
+    cancelModelStart = afterPaint(() => {
+      if (disposed) return;
+      // Prioritize the player; visitors never block entering or moving around.
+      npcDelay = window.setTimeout(() => { if (!disposed) void npcs.startLoading(); }, 2500);
+      void import("three/addons/loaders/GLTFLoader.js").then(({ GLTFLoader }) => {
+        if (disposed) return;
+        new GLTFLoader().load("/models/minion-a01.glb", (gltf) => {
+          if (disposed) { disposeObject(gltf.scene); return; }
+          const model = gltf.scene;
+          const bounds = new THREE.Box3().setFromObject(model);
+          const size = bounds.getSize(new THREE.Vector3());
+          model.scale.setScalar(1.9 / Math.max(size.x, size.y, size.z, 0.001));
+          const scaledBounds = new THREE.Box3().setFromObject(model);
+          const center = scaledBounds.getCenter(new THREE.Vector3());
+          model.position.set(-center.x, -scaledBounds.min.y, -center.z);
+          modelPivot.remove(fallback);
+          disposeObject(fallback);
+          modelPivot.add(model);
+          const clip = gltf.animations.find((clip) => /walk|run/i.test(clip.name)) ?? gltf.animations[0];
+          if (clip) {
+            mixer = new THREE.AnimationMixer(model);
+            action = mixer.clipAction(clip);
+            action.play();
+          }
+          host.dataset.modelState = "ready";
+          window.clearTimeout(npcDelay);
+          void npcs.startLoading();
+        }, undefined, () => {
+          if (!disposed) host.dataset.modelState = "fallback";
+          window.clearTimeout(npcDelay);
+          if (!disposed) void npcs.startLoading();
+        });
+      }).catch(() => { if (!disposed) { host.dataset.modelState = "fallback"; void npcs.startLoading(); } });
+    });
+  }
 
   const updateKeys = () => {
     held.clear();
@@ -298,9 +301,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
-    composer.setSize(width, height);
-    // Bloom runs at half output resolution; the reflection target is capped too.
-    bloom.setSize(Math.floor(width * renderer.getPixelRatio() / 2), Math.floor(height * renderer.getPixelRatio() / 2));
+    effects?.resize(width, height);
   };
   const animate = (time: number) => {
     if (disposed || document.hidden) return;
@@ -363,7 +364,19 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
       if (galleryCamera.style.transform !== projection.cameraTransform) galleryCamera.style.transform = projection.cameraTransform;
       galleryViewport.style.visibility = projection.visible && reveal > 0.7 && (view === "home" || flying) ? "visible" : "hidden";
     }
-    composer.render(dt);
+    if (effects) effects.render(dt); else renderer.render(scene, camera);
+    if (!firstFrameRendered) {
+      firstFrameRendered = true;
+      callbacks.onReady();
+      startModels();
+      cancelEffectStart = afterPaint(() => {
+        void import("./scene-effects").then(({ createSceneEffects }) => {
+          if (disposed) return;
+          effects = createSceneEffects(renderer, scene, camera);
+          effects.resize(viewportWidth, viewportHeight);
+        }).catch(() => { /* The base renderer remains usable without bloom. */ });
+      });
+    }
   };
   const onVisibilityChange = () => {
     clearKeys();
@@ -394,7 +407,9 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     interact,
     dispose() {
       disposed = true;
-      window.clearTimeout(modelTimeout);
+      cancelModelStart();
+      cancelEffectStart();
+      window.clearTimeout(npcDelay);
       window.cancelAnimationFrame(frame);
       observer.disconnect();
       window.removeEventListener("keydown", onKeyDown, true);
@@ -416,9 +431,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
       starfield.dispose();
       city.dispose();
       disposeObject(scene);
-      bloom.dispose();
-      outputPass.dispose();
-      composer.dispose();
+      effects?.dispose();
       renderer.dispose();
       renderer.domElement.remove();
     },

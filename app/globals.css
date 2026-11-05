@@ -33,6 +33,9 @@ body {
   box-sizing: border-box;
 }
 
+.tech-stack-label { display: inline-flex; align-items: center; gap: 0.4em; vertical-align: middle; }
+.tech-stack-label svg { display: block; flex: none; width: 1.1em; height: 1.1em; }
+
 button,
 input,
 textarea,

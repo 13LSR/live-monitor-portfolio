@@ -9,8 +9,7 @@ interface NextSlugInput {
 }
 
 export function createSlugFromSiteInput(name: string, url: string) {
-  const source = name.trim() || getUrlHost(url);
-  return slugify(source);
+  return slugify(name) || slugify(getUrlHost(url));
 }
 
 export function getNextSlugValue({
@@ -38,6 +37,8 @@ export function validateAdminSitePayload(payload: SitePayload) {
   if (!payload.url.trim()) {
     return "请填写网站地址。";
   }
+
+  if (!Number.isSafeInteger(payload.sortOrder)) return "排序必须是整数。";
 
   try {
     const url = new URL(payload.url.trim());

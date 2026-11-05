@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
-import { createSceneRuntime } from "@/app/_lib/scene/scene-runtime";
+import type { createSceneRuntime } from "@/app/_lib/scene/scene-runtime";
+import { afterPaint } from "@/app/_lib/after-paint";
 import { introSession } from "@/app/_lib/scene/intro-session";
 import type { SceneView } from "@/app/_lib/scene/camera-flight";
 import { HomeGallery } from "@/app/_components/home-gallery";
@@ -32,21 +33,48 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
-    try {
-      runtime.current = createSceneRuntime(host, {
-        onReady: () => { setReady(true); introSession.start(); },
-        onKeys: setPressedKeys,
-        onDialogue: setDialogue,
-      }, initialView.current);
-    } catch (error) {
-      console.error("3D 场景暂时无法启动", error);
-      const timer = window.setTimeout(() => { setUnavailable(true); introSession.finish(); }, 0);
-      return () => window.clearTimeout(timer);
-    }
-    return () => { runtime.current?.dispose(); runtime.current = null; };
+    let cancelled = false;
+    if (initialView.current === "home") introSession.start();
+    else introSession.finish();
+    const cancelStart = afterPaint(() => {
+      void import("@/app/_lib/scene/scene-runtime").then(({ createSceneRuntime }) => {
+        if (cancelled) return;
+        runtime.current = createSceneRuntime(host, {
+          onReady: () => { setReady(true); setPressedKeys([]); },
+          onKeys: setPressedKeys,
+          onDialogue: setDialogue,
+        }, initialView.current);
+      }).catch((error) => {
+        if (cancelled) return;
+        console.error("3D 场景暂时无法启动", error);
+        setUnavailable(true);
+        introSession.finish();
+      });
+    });
+    return () => { cancelled = true; cancelStart(); runtime.current?.dispose(); runtime.current = null; };
   }, []);
 
-  useEffect(() => { runtime.current?.setView(view); }, [view]);
+  useEffect(() => { initialView.current = view; runtime.current?.setView(view); }, [view]);
+
+  // Keep the keyboard tutorial usable while the WebGL chunk downloads.
+  useEffect(() => {
+    if (view !== "home") return;
+    const keys = new Set<string>();
+    const keyMap: Record<string, string> = { KeyW: "w", ArrowUp: "w", KeyA: "a", ArrowLeft: "a", KeyS: "s", ArrowDown: "s", KeyD: "d", ArrowRight: "d", Space: "space" };
+    const change = (event: KeyboardEvent) => {
+      if (runtime.current || event.ctrlKey || event.metaKey || event.altKey || event.isComposing) return;
+      if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable='true']")) return;
+      const key = keyMap[event.code];
+      if (!key) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (event.type === "keydown") keys.add(key); else keys.delete(key);
+      setPressedKeys([...keys]);
+    };
+    window.addEventListener("keydown", change, true);
+    window.addEventListener("keyup", change, true);
+    return () => { window.removeEventListener("keydown", change, true); window.removeEventListener("keyup", change, true); };
+  }, [view]);
   const enterWorks = () => { introSession.finish(); router.push("/works"); };
 
   return (
@@ -87,7 +115,7 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
             <button type="button" data-control="space" className={pressedKeys.includes("space") ? "is-pressed" : ""}>SPACE <span>⎵</span></button>
             <p>跳跃 <span>JUMP</span></p>
           </div>
-          <p className="scene-tutorial__countdown" role="status">{ready ? <><strong>{String(countdown).padStart(2, "0")}</strong><span>秒后自动进入<br /><small>无需完成全部操作</small></span></> : <span>正在打开空间…</span>}</p>
+          <p className="scene-tutorial__countdown" role="status"><strong>{String(countdown).padStart(2, "0")}</strong><span>秒后自动进入<br /><small>无需完成全部操作</small></span></p>
           <button type="button" className="scene-tutorial__skip" onClick={introSession.finish}>跳过引导 <span aria-hidden="true">↗</span></button>
         </div>
       ) : null}
@@ -103,6 +131,7 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
         </button>
       </div>
       {unavailable ? <p className="scene-unavailable">当前设备暂时无法显示 3D 场景，可以直接浏览作品。</p> : null}
+      {!ready && !unavailable && !tutorialVisible ? <p className="scene-unavailable" role="status">场景正在载入，可以先浏览作品。</p> : null}
       <div className="scene-footer" inert={view !== "home"}>
         <p className="immersive-scene__hint">拖动转动视角 · 靠近角色按 F 交谈 <span>DRAG TO LOOK AROUND</span></p>
         <div className="scene-footer__works">

@@ -6,6 +6,8 @@ import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import * as formUtils from "../app/_lib/site-form-utils.ts";
 import * as siteCover from "../shared/site-cover.ts";
+import * as techStack from "../shared/tech-stack.ts";
+import { verifySavedSite } from "../app/_lib/site-save-verification.ts";
 import { createSessionCookie } from "../worker/src/cookies.ts";
 import worker from "../worker/src/index.ts";
 import { createTestDatabase } from "./helpers/d1.mjs";
@@ -34,6 +36,7 @@ function mountEditor(initialSite, onSubmit) {
     exports,
     require(id) {
       if (id === "react") return {
+        useEffect() {},
         useState(initial) {
           const index = hookIndex++;
           if (!(index in states)) states[index] = typeof initial === "function" ? initial() : initial;
@@ -45,6 +48,8 @@ function mountEditor(initialSite, onSubmit) {
       if (id === "animal-island-ui") return { Button: "button", Card: "section", Tag: "span" };
       if (id === "@/app/_components/site-cover") return { SiteCover: "img" };
       if (id === "@/shared/site-cover") return siteCover;
+      if (id === "@/shared/tech-stack") return techStack;
+      if (id === "@/app/_components/tech-stack-label") return { TechStackLabel: "span" };
       if (id === "@/app/_lib/site-form-utils") return formUtils;
       return require(id);
     },
@@ -55,6 +60,25 @@ function mountEditor(initialSite, onSubmit) {
   }
   let tree = render();
   return {
+    getField(label) {
+      const field = findElement(tree, (element) => element.props.label === label);
+      assert.ok(field, `Missing field: ${label}`);
+      return field;
+    },
+    changeField(label, value) {
+      const field = this.getField(label);
+      if (field.props.onInputChange) field.props.onInputChange(value);
+      else {
+        const input = field.props.children;
+        const target = { value };
+        const event = { target, currentTarget: target };
+        input.props.onChange(event);
+        target.value = input.props.value;
+        event.currentTarget = null;
+      }
+      updates.splice(0).forEach((update) => update());
+      tree = render();
+    },
     getCheckbox(title) {
       const card = findElement(tree, (element) => element.props.title === title);
       assert.ok(card, `Missing toggle: ${title}`);
@@ -132,6 +156,7 @@ it("preserves interaction permission through form edits, authenticated writes, p
   let saved = (await list(true))[0];
   assert.equal(saved.allowInteraction, true);
   assert.equal((await list(false))[0].allowInteraction, true);
+  assert.equal((await mutate("/sites/999999", "PUT", formUtils.buildSitePayloadForSubmit(site))).status, 404);
 
   for (const checked of [false, true]) {
     const editor = mountEditor(saved, async (payload) => {
@@ -149,4 +174,37 @@ it("preserves interaction permission through form edits, authenticated writes, p
     const reopened = mountEditor(saved, async () => true);
     assert.equal(reopened.getCheckbox("允许交互模式").props.checked, checked);
   }
+});
+
+it("submits every text and select field with the latest value and includes pending chips", async () => {
+  let submitted;
+  const editor = mountEditor(site, async (payload) => { submitted = payload; return true; });
+  const fields = [
+    ["名称", "name", "New site"], ["Slug", "slug", "new-site"], ["URL", "url", "https://new.example.com"],
+    ["Monitor Key", "monitorKey", "new-monitor"], ["排序", "sortOrder", "42", 42],
+    ["分类", "category", "tool"], ["描述", "description", "Updated description"],
+    ["作品简介", "summary", "New summary"], ["源码链接", "repoUrl", "https://github.com/example/new"],
+    ["备用访问链接", "fallbackUrl", "https://fallback.example.com"],
+    ["封面图片链接", "coverUrl", "https://images.example.com/new.webp"], ["展示模式", "coverMode", "gallery"],
+  ];
+  for (const [label, , value] of fields) editor.changeField(label, value);
+  editor.changeField("技术栈", "React");
+  editor.changeField("标签", "作品集");
+  await editor.submit();
+  for (const [, key, value, expected] of fields) assert.equal(submitted[key], expected ?? value, key);
+  assert.deepEqual(submitted.techStack, ["React"]);
+  assert.deepEqual(submitted.tags, ["作品集"]);
+  const reopened = mountEditor({ ...site, ...submitted }, async () => true);
+  assert.equal(reopened.getField("封面图片链接").props.children.props.value, submitted.coverUrl);
+});
+
+it("detects old Workers, lost fields and missing records instead of reporting success", () => {
+  const payload = formUtils.buildSitePayloadForSubmit(site);
+  const saved = { ...site, ...payload };
+  assert.equal(verifySavedSite([saved], payload, site.id), saved);
+  const { coverUrl: omitted, ...oldRecord } = saved;
+  assert.equal(omitted, null);
+  assert.throws(() => verifySavedSite([oldRecord], payload), /Worker/);
+  assert.throws(() => verifySavedSite([{ ...saved, summary: "lost edit" }], payload), /不一致/);
+  assert.throws(() => verifySavedSite([], payload, site.id), /未读取/);
 });

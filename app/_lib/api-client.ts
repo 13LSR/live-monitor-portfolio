@@ -17,6 +17,7 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${apiBaseUrl}${path}`, {
     ...init,
     credentials: "include",
+    cache: "no-store",
     headers,
     signal: init?.signal ? AbortSignal.any([init.signal, timeout]) : timeout,
   });

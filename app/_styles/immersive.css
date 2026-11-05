@@ -72,7 +72,7 @@
   min-height: 32rem;
   overflow: hidden;
   isolation: isolate;
-  background: #05060c;
+  background: radial-gradient(ellipse at 32% 70%, #1a1023, transparent 55%), #05060c;
   color: var(--scene-accent);
   touch-action: none;
 }

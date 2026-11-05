@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
+import { afterPaint } from "@/app/_lib/after-paint";
 import { usePortfolioData } from "@/app/_components/portfolio-data";
 import { SiteCover } from "@/app/_components/site-cover";
 
@@ -11,6 +12,8 @@ import { SiteCover } from "@/app/_components/site-cover";
 export function HomeGallery({ active }: { active: boolean }) {
   const { sites, selectSite } = usePortfolioData();
   const galleryRef = useRef<HTMLDivElement>(null);
+  const [hasOpened, setHasOpened] = useState(false);
+  useEffect(() => { if (active) return afterPaint(() => setHasOpened(true)); }, [active]);
   const ordered = [...sites].sort((a, b) => Number(b.isFeatured) - Number(a.isFeatured) || a.sortOrder - b.sortOrder);
   const visible = ordered.slice(0, 12);
   const count = visible.length ? Math.max(8, visible.length) : 0;
@@ -107,7 +110,7 @@ export function HomeGallery({ active }: { active: boolean }) {
                 style={{ transform: `translate(-50%, -50%) rotateY(${index / count * 360}deg) translateZ(280px)` }}
                 aria-label={`浏览作品：${site.name}`} aria-hidden={duplicate || undefined}
                 tabIndex={duplicate ? -1 : 0} onClick={() => selectSite(site.id)}>
-                <SiteCover url={site.coverUrl} name={site.name} decorative eager />
+                {active || hasOpened ? <SiteCover url={site.coverUrl} name={site.name} decorative eager={index < 2} /> : null}
                 <span>{site.name}</span>
               </Link>;
             })}

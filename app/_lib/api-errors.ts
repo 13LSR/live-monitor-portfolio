@@ -16,6 +16,7 @@ const errorMessageMap = new Map<string, string>([
   ["Site URL must be a valid absolute URL", "请输入有效的 https:// 网站地址。"],
   ["Failed to create site", "创建站点失败，请稍后再试。"],
   ["Failed to update site", "更新站点失败，请稍后再试。"],
+  ["Site not found", "该站点已不存在，请返回列表刷新后重试。"],
   ["Failed to delete site", "删除站点失败，请稍后再试。"],
   ["Failed to seed default site", "初始化站点失败，请稍后再试。"],
   ["Cover URL must be a valid http(s) image URL", "请输入有效的 http:// 或 https:// 封面图片链接。"],

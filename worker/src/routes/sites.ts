@@ -79,7 +79,10 @@ export async function handleCreateSite(request: Request, env: Env) {
   const payload = normalizeSitePayload(rawPayload as SitePayload);
 
   try {
-    await insertSite(env, payload);
+    const result = await insertSite(env, payload);
+    if (!result.success) {
+      return Response.json({ ok: false, error: "Failed to create site" }, { status: 500 });
+    }
     return Response.json({ ok: true });
   } catch (error) {
     console.error(error);
@@ -115,6 +118,10 @@ export async function handleUpdateSite(
 
   try {
     const result = await updateSiteById(env, id, payload);
+
+    if (result.meta?.changes === 0) {
+      return Response.json({ ok: false, error: "Site not found" }, { status: 404 });
+    }
 
     if (!result.success) {
       return Response.json(

@@ -2,6 +2,9 @@ name = "live-monitor-portfolio-api"
 main = "src/index.ts"
 compatibility_date = "2026-06-20"
 
+[vars]
+ALLOWED_ORIGINS = "https://proj.331106.xyz,https://eo-proj.331106.xyz"
+
 [[d1_databases]]
 binding = "DB"
 database_name = "live-monitor-portfolio"

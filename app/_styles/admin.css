@@ -1,0 +1,65 @@
+.admin-page { padding: 1.75rem; background: #efeee8; }
+.admin-page__inner { max-width: 94rem; margin: 0 auto; }
+.admin-workspace { --line: #d7dbd3; --ink: #263b34; --muted: #68756c; }
+.admin-workspace button, .admin-workspace a { cursor: pointer; }
+.admin-workspace button:disabled { cursor: wait; opacity: 0.55; }
+.admin-workspace button:focus-visible, .admin-workspace a:focus-visible { outline: 2px solid #167761; outline-offset: 3px; }
+.admin-workspace button:not(.admin-site-item__select) { min-height: 2.5rem; }
+.admin-topbar { display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; padding: 1.5rem 1.75rem; border: 1px solid var(--line); border-radius: 1rem; background: #fafaf4; }
+.admin-topbar h1 { margin: 0.6rem 0; font-size: 1.6rem; font-weight: 750; letter-spacing: -0.04em; }
+.admin-topbar p:last-child { color: var(--muted); font-size: 0.85rem; }
+.admin-eyebrow { display: flex; align-items: center; gap: 0.75rem; color: var(--muted); font-family: var(--font-mono-stack); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.08em; }
+.admin-topbar__actions, .admin-editor__actions { display: flex; gap: 0.65rem; align-items: center; flex-shrink: 0; }
+.admin-workspace .admin-primary { border: 1px solid #21634e; border-radius: 0.55rem; padding: 0.65rem 1.15rem; background: #21634e; color: #fff; font-size: 0.85rem; font-weight: 650; }
+.admin-workspace__body { display: grid; grid-template-columns: minmax(17rem, 0.8fr) minmax(0, 1.8fr); gap: 1.25rem; margin-top: 1.5rem; align-items: start; }
+.admin-workspace__list { position: sticky; top: 1rem; max-height: calc(100svh - 2rem); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; border: 1px solid var(--line); border-radius: 0.85rem; background: #fafbf6; }
+.admin-site-list > header { position: sticky; top: 0; z-index: 2; padding: 1.15rem; border-bottom: 1px solid var(--line); background: #fafbf6; }
+.admin-site-list > header > div { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.8rem; }
+.admin-site-list h2 { font-size: 0.95rem; font-weight: 700; }
+.admin-site-list header span { color: var(--muted); font-size: 0.75rem; }
+.admin-search .admin-input { padding: 0.65rem 0.8rem; font-size: 0.8rem; background: white; }
+.admin-site-item { padding: 1.1rem; border-bottom: 1px solid var(--line); border-left: 3px solid transparent; }
+.admin-site-item:last-child { border-bottom: 0; }
+.admin-site-item.is-selected { border-left-color: #21634e; background: #e9f0e7; }
+.admin-site-item__select { display: flex; gap: 0.8rem; width: 100%; text-align: left; align-items: center; justify-content: space-between; background: none; border: 0; padding: 0; }
+.admin-site-item__select > span:first-child { min-width: 0; }
+.admin-site-item strong { display: block; font-size: 0.95rem; }
+.admin-site-item small { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; margin-top: 0.35rem; color: var(--muted); font-size: 0.7rem; }
+.admin-site-item__flags { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.8rem; }
+.admin-site-item__flags > span { border-radius: 0.3rem; background: #e7e9e1; padding: 0.15rem 0.4rem; color: #687367; font-size: 0.65rem; }
+.admin-site-item__flags .is-public { background: #d8e9da; color: #296b46; }
+.admin-site-item__actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.8rem; margin-top: 0.55rem; font-size: 0.72rem; }
+.admin-site-item__actions button, .admin-site-item__actions a { background: none; border: 0; color: #566f60; padding: 0; text-decoration: none; }
+.admin-site-item__actions .is-danger { color: #b74336; }
+.admin-list-empty { padding: 2rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+.admin-editor { min-width: 0; border: 1px solid var(--line); border-radius: 0.85rem; background: #fffdf7; scroll-margin-top: 1rem; }
+.admin-editor__header { position: sticky; top: 0; z-index: 10; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.65rem 1rem; padding: 1rem 1.4rem; border-bottom: 1px solid var(--line); border-radius: 0.85rem 0.85rem 0 0; background: #fffdf7; box-shadow: 0 4px 12px #263b3408; }
+.admin-editor__header h2 { max-width: 24rem; overflow-wrap: anywhere; font-size: 1.1rem; font-weight: 700; }
+.admin-editor__header .admin-eyebrow { margin-bottom: 0.3rem; }
+.admin-editor__actions > button:not(.admin-primary) { border: 1px solid var(--line); border-radius: 0.55rem; padding: 0.55rem 0.8rem; background: white; color: var(--muted); font-size: 0.8rem; }
+.admin-feedback { width: 100%; margin: 0; padding: 0.65rem 0.8rem; border-radius: 0.45rem; background: #edf1e7; color: #365341; font-size: 0.8rem; line-height: 1.6; }
+.admin-workspace > .admin-feedback { margin-top: 1rem; }
+.admin-feedback.is-error { background: #fbe8e2; color: #973b2c; }
+.admin-editor__section { display: block; min-width: 0; margin: 0; padding: 1.5rem; border: 0; border-bottom: 1px solid var(--line); }
+.admin-editor__section > legend { float: left; width: 100%; padding: 0 0 1.1rem; font-size: 0.9rem; font-weight: 750; }
+.admin-editor__section > legend + * { clear: both; }
+.admin-editor__section > * + * { margin-top: 1.25rem; }
+.admin-editor__portfolio { border-radius: 0; }
+.admin-editor .admin-input { border-color: #cdd5c8; background: #fff; padding: 0.7rem 0.8rem; font-size: 0.88rem; }
+.admin-editor .admin-cover-preview { max-width: 22rem; }
+.admin-empty-editor { min-height: 27rem; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; border: 1px dashed #b9c4b6; border-radius: 0.85rem; }
+.admin-empty-editor > span { font-size: 2rem; color: #73947b; }
+.admin-empty-editor h2 { margin: 1rem 0 0.5rem; font-size: 1.2rem; font-weight: 700; }
+.admin-empty-editor p { max-width: 22rem; color: var(--muted); font-size: 0.85rem; line-height: 1.8; }
+.admin-empty-editor button { margin-top: 1rem; padding: 0.6rem; color: #21634e; font-size: 0.8rem; }
+@media (max-width: 900px) {
+  .admin-page { padding: 1rem; }
+  .admin-topbar { padding: 1.15rem; flex-wrap: wrap; }
+  .admin-topbar h1 { font-size: 1.3rem; }
+  .admin-workspace__body { grid-template-columns: minmax(0, 1fr); }
+  .admin-workspace__list { position: static; max-height: none; }
+  .admin-workspace:not(.is-editing) .admin-workspace__editor, .admin-workspace.is-editing .admin-workspace__list { display: none; }
+  .admin-editor__header { padding: 0.85rem; top: 0; }
+  .admin-editor__section { padding: 1rem; }
+  .admin-editor__actions { gap: 0.4rem; }
+}

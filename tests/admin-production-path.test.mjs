@@ -489,16 +489,15 @@ describe("admin production API path", () => {
     assert.match(dashboard, /<Button/);
     assert.match(dashboard, /<Tag/);
     assert.match(dashboard, /onClick=\{\(\) => void handleLogout\(\)\}/);
-    assert.match(table, /from "animal-island-ui"/);
     assert.match(table, /岛上站点/);
-    assert.match(table, /<Card/);
-    assert.match(table, /<Button/);
+    assert.match(table, /type="search"/);
+    assert.match(table, /aria-current/);
     assert.match(table, /编辑/);
     assert.match(table, /打开站点/);
     assert.match(table, /确认删除/);
     assert.match(table, /取消删除/);
-    assert.match(table, /md:hidden/);
-    assert.match(table, /hidden md:block/);
+    assert.match(dashboard, /admin-workspace__editor/);
+    assert.match(dashboard, /onDirtyChange/);
     assert.doesNotMatch(table, /overflow-x-auto/);
   });
 

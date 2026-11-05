@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import type { SiteWithStatus } from "@/app/_lib/site-mappers";
 import { ProjectPreview } from "@/app/_components/project-preview";
 import { usePageVisibility } from "@/app/_components/use-page-visibility";
+import { TechStackLabel } from "@/app/_components/tech-stack-label";
 
 interface PortfolioProjectProps {
   site: SiteWithStatus;
@@ -138,7 +139,7 @@ export function PortfolioProject({
                 <div className="portfolio-project__meta-group" aria-label="技术栈">
                   {visibleTechStack.map((tech) => (
                     <span key={tech} className="portfolio-project__tech">
-                      {tech}
+                      <TechStackLabel name={tech} />
                     </span>
                   ))}
                 </div>

@@ -1,5 +1,4 @@
 import * as THREE from "three";
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { clone } from "three/addons/utils/SkeletonUtils.js";
 import {
   createNpcConversation, createNpcPlacements, NPC_COLLISION_DISTANCE, NPC_MODEL_PATHS,
@@ -13,6 +12,7 @@ type NpcOptions = {
   onDialogue(dialogue: NpcDialogue | null): void;
   loadModel?: (path: string) => Promise<NpcModel>;
   placements?: readonly NpcPlacement[];
+  deferLoading?: boolean;
 };
 
 // Route changes preserve the runtime; even an admin visit/remount keeps this
@@ -81,9 +81,11 @@ export function createNpcRuntime(scene: THREE.Scene, obstacles: readonly NpcObst
     return { placement, root, pivot, fallback };
   });
 
-  const loader = new GLTFLoader();
-  const loadModel = options.loadModel ?? ((path: string) => loader.loadAsync(path));
-  const loading = Promise.all(NPC_MODEL_PATHS.map(async (path) => {
+  const loadModel = options.loadModel ?? (async (path: string) => {
+    const { GLTFLoader } = await import("three/addons/loaders/GLTFLoader.js");
+    return new GLTFLoader().loadAsync(path);
+  });
+  const loadAsset = async (path: string) => {
     let asset: NpcModel;
     try { asset = await loadModel(path); }
     catch { return; } // The lightweight visitors remain usable on load failure.
@@ -112,7 +114,19 @@ export function createNpcRuntime(scene: THREE.Scene, obstacles: readonly NpcObst
         actor.mixer.setTime(clip.duration > 0 ? (actor.placement.id * 0.43) % clip.duration : 0);
       }
     }
-  }));
+  };
+  let loading: Promise<void> | undefined;
+  function startLoading() {
+    return loading ??= (async () => {
+      for (const path of NPC_MODEL_PATHS) {
+        if (disposed) return;
+        await loadAsset(path);
+        // Yield between models so parsing the next one does not block input.
+        await new Promise<void>((resolve) => setTimeout(resolve, 0));
+      }
+    })();
+  }
+  if (!options.deferLoading) void startLoading();
 
   const publish = () => {
     const next = conversation.getSnapshot();
@@ -131,7 +145,8 @@ export function createNpcRuntime(scene: THREE.Scene, obstacles: readonly NpcObst
   };
 
   return {
-    loading,
+    get loading() { return loading ?? Promise.resolve(); },
+    startLoading,
     update(dt: number, player: THREE.Vector3, camera: THREE.PerspectiveCamera, enabled: boolean) {
       if (disposed) return;
       elapsed += dt;

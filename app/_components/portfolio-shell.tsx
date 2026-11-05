@@ -1,11 +1,9 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import dynamic from "next/dynamic";
+import { ImmersiveScene } from "@/app/_components/immersive-scene";
 import { PortfolioDataProvider } from "@/app/_components/portfolio-data";
 import type { SceneView } from "@/app/_lib/scene/camera-flight";
-
-const ImmersiveScene = dynamic(() => import("@/app/_components/immersive-scene").then((module) => module.ImmersiveScene), { ssr: false });
 
 export function PortfolioShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
