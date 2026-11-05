@@ -7,7 +7,7 @@ export default function AboutPage() {
       <SiteNav />
       <section className="about-content" aria-labelledby="about-title">
         <p className="about-content__eyebrow">INDEPENDENT MAKER / ALWAYS CURIOUS</p>
-        <h1 id="about-title"><span aria-hidden="true">XIAOQIE</span><span className="sr-only">你好，我是小茄。</span><sup>小茄</sup></h1>
+        <h1 id="about-title"><span aria-hidden="true">XIAOJIA</span><span className="sr-only">你好，我是小茄。</span><sup>小茄</sup></h1>
         <div className="about-content__columns">
           <div>
             <h2>你好，我是小茄。<br />喜欢把好奇心，写成代码。</h2>

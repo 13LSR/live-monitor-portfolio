@@ -7,6 +7,7 @@ import { introSession } from "@/app/_lib/scene/intro-session";
 import type { SceneView } from "@/app/_lib/scene/camera-flight";
 import { HomeGallery } from "@/app/_components/home-gallery";
 import { usePortfolioData } from "@/app/_components/portfolio-data";
+import type { NpcDialogue } from "@/app/_lib/scene/scene-npcs";
 
 const directions = [
   { key: "w", arrow: "↑", label: "向前" },
@@ -25,6 +26,7 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
   const [ready, setReady] = useState(false);
   const [unavailable, setUnavailable] = useState(false);
   const [pressedKeys, setPressedKeys] = useState<string[]>([]);
+  const [dialogue, setDialogue] = useState<NpcDialogue | null>(null);
   const tutorialVisible = view === "home" && countdown > 0;
 
   useEffect(() => {
@@ -34,6 +36,7 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
       runtime.current = createSceneRuntime(host, {
         onReady: () => { setReady(true); introSession.start(); },
         onKeys: setPressedKeys,
+        onDialogue: setDialogue,
       }, initialView.current);
     } catch (error) {
       console.error("3D 场景暂时无法启动", error);
@@ -72,7 +75,7 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
 
       {tutorialVisible ? (
         <div className="scene-tutorial" aria-label="入场操作引导">
-          <div className="scene-tutorial__wordmark" aria-hidden="true">XIAOQIE</div>
+          <div className="scene-tutorial__wordmark" aria-hidden="true">XIAOJIA</div>
           <p className="scene-tutorial__intro">在进入之前，试着动一动。</p>
           <div className="scene-tutorial__movement">
             <div className="scene-tutorial__keys">
@@ -89,9 +92,19 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
         </div>
       ) : null}
 
+      <div className="scene-npc-overlay" inert={view !== "home" || tutorialVisible || !dialogue}>
+        <div className="scene-dialogue" hidden={!dialogue?.text}>
+          <strong>{dialogue?.name ?? ""}</strong>
+          <p role="status" aria-live="polite" aria-atomic="true">{dialogue?.text ?? ""}</p>
+        </div>
+        <button type="button" className="scene-interaction-hint" hidden={!dialogue || !!dialogue.text}
+          aria-label={`与${dialogue?.name ?? "附近角色"}交谈`} aria-keyshortcuts="F" onClick={() => runtime.current?.interact()}>
+          <kbd>F</kbd><span>交谈</span>
+        </button>
+      </div>
       {unavailable ? <p className="scene-unavailable">当前设备暂时无法显示 3D 场景，可以直接浏览作品。</p> : null}
       <div className="scene-footer" inert={view !== "home"}>
-        <p className="immersive-scene__hint">拖动转动视角 <span>DRAG TO LOOK AROUND</span></p>
+        <p className="immersive-scene__hint">拖动转动视角 · 靠近角色按 F 交谈 <span>DRAG TO LOOK AROUND</span></p>
         <div className="scene-footer__works">
           <span>{isLoading ? "正在打开作品…" : `${String(sites.length).padStart(2, "0")} 个网站 · 持续生长`}</span>
           <button type="button" className="immersive-scene__portal-link" onClick={enterWorks}>浏览作品 <span aria-hidden="true">↗</span></button>

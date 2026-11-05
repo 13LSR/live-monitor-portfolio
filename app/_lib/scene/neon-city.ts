@@ -6,7 +6,7 @@ export const WORKS_POSITION = new THREE.Vector3(0, 5.6, -32);
 export const CITY_LIMIT = 43;
 
 type Block = { x: number; y: number; z: number; w: number; h: number; d: number; color: string };
-export type CityObstacle = { x: number; z: number; halfWidth: number; halfDepth: number };
+export type CityObstacle = { x: number; z: number; halfWidth: number; halfDepth: number; height: number };
 
 // The reference is samsyninja-rebuild/docs/pixelcompare/mirror-home.png:
 // a dark street, stacked luminous signs, wet reflections and a distant works wall.
@@ -108,7 +108,7 @@ export function createNeonCity(scene: THREE.Scene, compact: boolean) {
       box(x, h / 2, z, w, h, d);
       box(x, 0.22, z, w + 1.2, 0.44, d + 1);
       box(x, h - 0.8, z, w + 0.4, 0.22, d + 0.4, "#222536");
-      obstacles.push({ x, z, halfWidth: w / 2 + 0.5, halfDepth: d / 2 + 0.5 });
+      obstacles.push({ x, z, halfWidth: w / 2 + 0.5, halfDepth: d / 2 + 0.5, height: h });
       for (let rib = 0; rib < 4; rib++) {
         box(x - w / 2 + rib * w / 3, h / 2, z + d / 2 + 0.07, 0.12, h, 0.16, "#242735");
       }
@@ -180,11 +180,11 @@ export function createNeonCity(scene: THREE.Scene, compact: boolean) {
   signGeometries.forEach((geometry) => geometry.dispose());
   if (mergedSigns) city.add(new THREE.Mesh(mergedSigns, new THREE.MeshBasicMaterial({ map: atlas, color: new THREE.Color(0.82, 0.82, 0.82), side: THREE.DoubleSide })));
 
-  // The image orbit is projected onto this open plaza by the shared runtime.
+  // The image orbit has a fixed world transform above this open plaza.
   const footing = new THREE.Mesh(new THREE.BoxGeometry(17.5, 0.35, 2), new THREE.MeshStandardMaterial({ color: "#1b2530", metalness: 0.65, roughness: 0.35 }));
   footing.position.set(0, 0.18, -32.2);
   city.add(footing);
-  obstacles.push({ x: 0, z: -32.2, halfWidth: 8.4, halfDepth: 0.7 });
+  obstacles.push({ x: 0, z: -32.2, halfWidth: 8.4, halfDepth: 0.7, height: 0.35 });
   scene.add(city);
 
   for (const [x, y, z, color] of [[-9, 6, -3, "#ff154e"], [10, 10.8, -10, "#91c6ff"]] as const) {

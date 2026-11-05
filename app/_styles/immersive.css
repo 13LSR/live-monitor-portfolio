@@ -144,6 +144,85 @@
 .is-entering .scene-identity { opacity: 0; transition: opacity 250ms; pointer-events: none; }
 .scene-unavailable { position: absolute; top: 45%; right: 1.5rem; left: 1.5rem; color: #eee4e8; text-align: center; }
 
+/* A single nearby visitor owns the prompt and speech bubble. The runtime
+   anchors this overlay above that visitor using the shared scene camera. */
+.scene-npc-overlay {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  top: 0;
+  width: 0;
+  height: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+.scene-interaction-hint {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.4rem 0.85rem 0.4rem 0.45rem;
+  transform: translateX(-50%);
+  border: 1px solid rgb(244 120 158 / 55%);
+  border-radius: 0.5rem;
+  background: #130f1e;
+  color: #e5c7d4;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+  font-size: 0.8rem;
+  white-space: nowrap;
+  cursor: pointer;
+  pointer-events: auto;
+  touch-action: manipulation;
+}
+.scene-interaction-hint kbd {
+  display: grid;
+  width: 1.8rem;
+  height: 1.8rem;
+  border: 1px solid #d05d82;
+  border-radius: 0.25rem;
+  color: #f49bb8;
+  font: 700 0.9rem var(--font-mono-stack);
+  place-items: center;
+}
+.scene-interaction-hint:hover { border-color: #eda2bd; background: #241322; }
+.scene-dialogue {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: min(20rem, calc(100vw - 2rem));
+  padding: 0.85rem 1rem 1rem;
+  transform: translateX(calc(-50% + var(--dialogue-shift, 0px)));
+  border: 1px solid rgb(184 107 143 / 65%);
+  border-radius: 0.6rem;
+  background: #170f1f;
+  color: #ddd1e0;
+  box-shadow: 0 12px 32px rgb(0 0 0 / 40%);
+  animation: npc-dialogue-in 180ms ease-out;
+}
+.scene-dialogue::after {
+  content: "";
+  position: absolute;
+  bottom: -0.35rem;
+  left: calc(50% - var(--dialogue-shift, 0px));
+  width: 0.6rem;
+  height: 0.6rem;
+  border-right: 1px solid rgb(184 107 143 / 65%);
+  border-bottom: 1px solid rgb(184 107 143 / 65%);
+  background: #170f1f;
+  transform: translateX(-50%) rotate(45deg);
+}
+.scene-dialogue > strong { display: block; margin-bottom: 0.45rem; color: #d480a0; font-size: 0.65rem; font-weight: 500; letter-spacing: 0.08em; }
+.scene-dialogue p { margin: 0; font-size: 0.95rem; line-height: 1.85; overflow-wrap: anywhere; text-align: left; }
+.scene-interaction-hint[hidden], .scene-dialogue[hidden] { display: none; }
+.is-tutorial .scene-npc-overlay,
+.is-unavailable .scene-npc-overlay,
+.immersive-scene[data-view="works"] .scene-npc-overlay,
+.immersive-scene[data-view="about"] .scene-npc-overlay { display: none; }
+@keyframes npc-dialogue-in { from { opacity: 0; } to { opacity: 1; } }
+
 .works-page-status > span:first-child,
 .about-content__columns span,
 .about-content__link,
@@ -208,5 +287,6 @@
 
 @media (prefers-reduced-motion: reduce) {
   .scene-scanlines { display: none; }
+  .scene-dialogue { animation: none; }
   .site-nav__links a, .immersive-scene button { transition: none; }
 }

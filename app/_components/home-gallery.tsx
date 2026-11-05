@@ -95,23 +95,27 @@ export function HomeGallery({ active }: { active: boolean }) {
     };
   }, [active, count]);
 
-  return <div className="home-gallery-anchor" inert={!active}>
-    <div ref={galleryRef} className="home-gallery" aria-label="网站封面环形图库">
-      <div className="gallery-orbit">
-        {Array.from({ length: count }, (_, index) => {
-          const site = visible[index % visible.length];
-          const duplicate = index >= visible.length;
-          return <Link key={`${site.id}-${index}`} href="/works" className="gallery-plate"
-            style={{ transform: `translate(-50%, -50%) rotateY(${index / count * 360}deg) translateZ(280px)` }}
-            aria-label={`浏览作品：${site.name}`} aria-hidden={duplicate || undefined}
-            tabIndex={duplicate ? -1 : 0} onClick={() => selectSite(site.id)}>
-            <SiteCover url={site.coverUrl} name={site.name} decorative eager />
-            <span>{site.name}</span>
-          </Link>;
-        })}
-      </div>
-      <div className="gallery-title">
-        <span>小想法</span><strong>大世界。</strong>
+  return <div className="home-gallery-viewport" inert={!active}>
+    <div className="home-gallery-camera">
+      <div className="home-gallery-anchor">
+        <div ref={galleryRef} className="home-gallery" aria-label="网站封面环形图库">
+          <div className="gallery-orbit">
+            {Array.from({ length: count }, (_, index) => {
+              const site = visible[index % visible.length];
+              const duplicate = index >= visible.length;
+              return <Link key={`${site.id}-${index}`} href="/works" className="gallery-plate"
+                style={{ transform: `translate(-50%, -50%) rotateY(${index / count * 360}deg) translateZ(280px)` }}
+                aria-label={`浏览作品：${site.name}`} aria-hidden={duplicate || undefined}
+                tabIndex={duplicate ? -1 : 0} onClick={() => selectSite(site.id)}>
+                <SiteCover url={site.coverUrl} name={site.name} decorative eager />
+                <span>{site.name}</span>
+              </Link>;
+            })}
+          </div>
+          <div className="gallery-title">
+            <span>小想法</span><strong>大世界。</strong>
+          </div>
+        </div>
       </div>
     </div>
   </div>;

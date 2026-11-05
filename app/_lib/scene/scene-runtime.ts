@@ -7,10 +7,15 @@ import { OutputPass } from "three/addons/postprocessing/OutputPass.js";
 import { createNeonCity, CITY_LIMIT, WORKS_POSITION } from "./neon-city";
 import { introSession } from "./intro-session";
 import { flightProgress, type SceneView } from "./camera-flight";
+import { createWorldGalleryProjection } from "./world-gallery";
+import { createStarfield } from "./starfield";
+import { createNpcRuntime } from "./npc-runtime";
+import type { NpcDialogue } from "./scene-npcs";
 
 interface SceneCallbacks {
   onReady(): void;
   onKeys(keys: string[]): void;
+  onDialogue(dialogue: NpcDialogue | null): void;
 }
 
 const KEY_MAP: Record<string, string> = {
@@ -31,17 +36,19 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 0.88;
   renderer.domElement.className = "immersive-scene__canvas";
-  renderer.domElement.setAttribute("aria-label", "可使用方向键或 WASD 移动、空格跳跃的霓虹街区");
+  renderer.domElement.setAttribute("aria-label", "可使用方向键或 WASD 移动、空格跳跃、靠近角色后按 F 交谈的霓虹街区");
   renderer.domElement.tabIndex = 0;
   host.prepend(renderer.domElement);
   const scene = new THREE.Scene();
   scene.background = new THREE.Color("#05060c");
   scene.fog = new THREE.Fog("#05060c", 14, 100);
-  const camera = new THREE.PerspectiveCamera(compact ? 72 : 64, 1, 0.1, 160);
+  const camera = new THREE.PerspectiveCamera(compact ? 72 : 64, 1, 0.1, 320);
   camera.position.set(0, 2.6, 7.5).applyAxisAngle(UP, initialYaw).add(new THREE.Vector3(0, 0, 3));
   const cameraTarget = new THREE.Vector3(0, 1.35, -6).applyAxisAngle(UP, initialYaw).add(new THREE.Vector3(0, 0, 3));
   camera.lookAt(cameraTarget);
   const city = createNeonCity(scene, compact);
+  const starfield = createStarfield(scene, compact, reducedMotion);
+  const npcs = createNpcRuntime(scene, city.obstacles, { reducedMotion, onDialogue: callbacks.onDialogue });
   const composer = new EffectComposer(renderer);
   const renderPass = new RenderPass(scene, camera);
   const bloom = new UnrealBloomPass(new THREE.Vector2(1, 1), 0.28, 0.5, 0.94);
@@ -99,8 +106,12 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   const held = new Set<string>();
   const pointer = { id: -1, x: 0, startX: 0, startY: 0, moved: false };
   const mouse = new THREE.Vector2();
-  const galleryPosition = new THREE.Vector3();
-  const gallery = host.querySelector<HTMLElement>(".home-gallery-anchor");
+  const galleryProjection = createWorldGalleryProjection(WORKS_POSITION);
+  const galleryViewport = host.querySelector<HTMLElement>(".home-gallery-viewport");
+  const galleryCamera = host.querySelector<HTMLElement>(".home-gallery-camera");
+  const npcOverlay = host.querySelector<HTMLElement>(".scene-npc-overlay");
+  let viewportWidth = 0;
+  let viewportHeight = 0;
 
   function destination() {
     if (view === "works") {
@@ -200,11 +211,25 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     pointerHeld.clear();
     jumpRequested = false;
     pointer.id = -1;
+    npcs.reset();
+    if (npcOverlay) npcOverlay.style.visibility = "hidden";
     updateKeys();
   };
-  const isEditing = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest("input, textarea, select, [contenteditable='true']");
+  const npcInteractionEnabled = () => !disposed && !document.hidden && view === "home" && !flying && introSession.getSnapshot() === 0 && reveal > 0.7;
+  const interact = () => {
+    npcs.update(0, character.position, camera, npcInteractionEnabled());
+    npcs.interact();
+  };
+  const isEditing = (target: EventTarget | null) => target instanceof HTMLElement && !!target.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])");
   const onKeyDown = (event: KeyboardEvent) => {
     if (view !== "home" || flying) return;
+    if (event.code === "KeyF") {
+      if (event.ctrlKey || event.metaKey || event.altKey || event.isComposing || isEditing(event.target) || !npcInteractionEnabled()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (!event.repeat) interact();
+      return;
+    }
     const key = KEY_MAP[event.code];
     if (!key || event.ctrlKey || event.metaKey || event.altKey || isEditing(event.target)) return;
     if (key === "space" && event.target instanceof HTMLElement && event.target.closest("button, a")) return;
@@ -268,6 +293,8 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     const width = host.clientWidth;
     const height = host.clientHeight;
     if (!width || !height) return;
+    viewportWidth = width;
+    viewportHeight = height;
     camera.aspect = width / height;
     camera.updateProjectionMatrix();
     renderer.setSize(width, height, false);
@@ -285,6 +312,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     (scene.fog as THREE.Fog).near = 7 + reveal * 24;
     (scene.fog as THREE.Fog).far = 19 + reveal * 105;
     city.update(introSession.getProgress(), reveal);
+    starfield.update(dt, reveal);
     const moveX = Number(held.has("d")) - Number(held.has("a"));
     const moveZ = Number(held.has("s")) - Number(held.has("w"));
     const moving = view === "home" && !flying && (moveX !== 0 || moveZ !== 0);
@@ -301,7 +329,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
         direction.set(moveX, 0, moveZ).normalize().applyAxisAngle(UP, yaw);
         const nextX = character.position.x + direction.x * 5.5 * dt;
         const nextZ = character.position.z + direction.z * 5.5 * dt;
-        const blocked = (x: number, z: number) => city.obstacles.some((block) => Math.abs(x - block.x) < block.halfWidth + 0.4 && Math.abs(z - block.z) < block.halfDepth + 0.4);
+        const blocked = (x: number, z: number) => npcs.blocks(x, z) || city.obstacles.some((block) => Math.abs(x - block.x) < block.halfWidth + 0.4 && Math.abs(z - block.z) < block.halfDepth + 0.4);
         if (!blocked(nextX, character.position.z)) character.position.x = THREE.MathUtils.clamp(nextX, -CITY_LIMIT, CITY_LIMIT);
         if (!blocked(character.position.x, nextZ)) character.position.z = THREE.MathUtils.clamp(nextZ, -CITY_LIMIT, 18);
         // The supplied GLB faces +Z in its local space.
@@ -328,14 +356,12 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
     modelPivot.position.y = reducedMotion || mixer ? 0 : Math.sin(time / (moving ? 95 : 450)) * (moving ? 0.045 : 0.015);
     camera.lookAt(cameraTarget);
     camera.updateMatrixWorld();
-    if (gallery && (view === "home" || flying)) {
-      galleryPosition.copy(WORKS_POSITION).project(camera);
-      const distance = camera.position.distanceTo(WORKS_POSITION);
-      const scale = Math.min(host.clientWidth / 950, 1.6, host.clientHeight / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * distance) * 36 / 900);
-      gallery.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      gallery.style.left = `${(galleryPosition.x + 1) * host.clientWidth / 2}px`;
-      gallery.style.top = `${(1 - galleryPosition.y) * host.clientHeight / 2}px`;
-      gallery.style.visibility = galleryPosition.z < 1 && reveal > 0.7 ? "visible" : "hidden";
+    npcs.update(dt, character.position, camera, npcInteractionEnabled());
+    npcs.placeOverlay(npcOverlay, camera, viewportWidth, viewportHeight);
+    if (galleryViewport && galleryCamera) {
+      const projection = galleryProjection.project(camera, viewportWidth, viewportHeight);
+      if (galleryCamera.style.transform !== projection.cameraTransform) galleryCamera.style.transform = projection.cameraTransform;
+      galleryViewport.style.visibility = projection.visible && reveal > 0.7 && (view === "home" || flying) ? "visible" : "hidden";
     }
     composer.render(dt);
   };
@@ -365,6 +391,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
 
   return {
     setView,
+    interact,
     dispose() {
       disposed = true;
       window.clearTimeout(modelTimeout);
@@ -384,6 +411,9 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
       renderer.domElement.removeEventListener("pointerup", onPointerUp);
       renderer.domElement.removeEventListener("pointercancel", onPointerCancel);
       mixer?.stopAllAction();
+      npcs.dispose();
+      if (npcOverlay) npcOverlay.style.visibility = "hidden";
+      starfield.dispose();
       city.dispose();
       disposeObject(scene);
       bloom.dispose();

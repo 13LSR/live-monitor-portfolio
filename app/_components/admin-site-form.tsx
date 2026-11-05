@@ -388,12 +388,13 @@ export function AdminSiteForm({
           <input
             type="checkbox"
             checked={form.isFeatured}
-            onChange={(event) =>
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
               setForm((current) => ({
                 ...current,
-                isFeatured: event.target.checked,
-              }))
-            }
+                isFeatured: checked,
+              }));
+            }}
             disabled={pending}
           />
         </ToggleCard>
@@ -435,12 +436,13 @@ export function AdminSiteForm({
           <input
             type="checkbox"
             checked={form.isVisible}
-            onChange={(event) =>
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
               setForm((current) => ({
                 ...current,
-                isVisible: event.target.checked,
-              }))
-            }
+                isVisible: checked,
+              }));
+            }}
             disabled={pending}
           />
         </ToggleCard>
@@ -451,12 +453,13 @@ export function AdminSiteForm({
           <input
             type="checkbox"
             checked={form.allowInteraction}
-            onChange={(event) =>
+            onChange={(event) => {
+              const checked = event.currentTarget.checked;
               setForm((current) => ({
                 ...current,
-                allowInteraction: event.target.checked,
-              }))
-            }
+                allowInteraction: checked,
+              }));
+            }}
             disabled={pending}
           />
         </ToggleCard>
