@@ -7,6 +7,7 @@ import ts from "typescript";
 import * as formUtils from "../app/_lib/site-form-utils.ts";
 import * as siteCover from "../shared/site-cover.ts";
 import * as techStack from "../shared/tech-stack.ts";
+import { emptyArchitecture } from "../shared/site-architecture.ts";
 import { verifySavedSite } from "../app/_lib/site-save-verification.ts";
 import { createSessionCookie } from "../worker/src/cookies.ts";
 import worker from "../worker/src/index.ts";
@@ -50,6 +51,7 @@ function mountEditor(initialSite, onSubmit) {
       if (id === "@/shared/site-cover") return siteCover;
       if (id === "@/shared/tech-stack") return techStack;
       if (id === "@/app/_components/tech-stack-label") return { TechStackLabel: "span" };
+      if (id === "./admin-architecture-editor") return { AdminArchitectureEditor: "architecture-editor" };
       if (id === "@/app/_lib/site-form-utils") return formUtils;
       return require(id);
     },
@@ -65,6 +67,13 @@ function mountEditor(initialSite, onSubmit) {
       assert.ok(field, `Missing field: ${label}`);
       return field;
     },
+    changeArchitecture(value) {
+      const editor = findElement(tree, (element) => element.type === "architecture-editor");
+      editor.props.onChange(value);
+      updates.splice(0).forEach((update) => update());
+      tree = render();
+    },
+    getArchitecture() { return findElement(tree, (element) => element.type === "architecture-editor").props.value; },
     changeField(label, value) {
       const field = this.getField(label);
       if (field.props.onInputChange) field.props.onInputChange(value);
@@ -207,4 +216,17 @@ it("detects old Workers, lost fields and missing records instead of reporting su
   assert.throws(() => verifySavedSite([oldRecord], payload), /Worker/);
   assert.throws(() => verifySavedSite([{ ...saved, summary: "lost edit" }], payload), /不一致/);
   assert.throws(() => verifySavedSite([], payload, site.id), /未读取/);
+});
+
+it("submits architecture edits, reopens the saved details and explicitly clears them", async () => {
+  let submitted;
+  const editor = mountEditor(site, async (payload) => { submitted = payload; return true; });
+  editor.changeArchitecture({ ...emptyArchitecture(), frontend: "  React 前端  ", nodes: [{ id: "frontend", label: "网站", kind: "frontend", technology: "React", description: "界面" }] });
+  await editor.submit();
+  assert.equal(submitted.architecture.frontend, "React 前端");
+  const reopened = mountEditor({ ...site, ...submitted }, async (payload) => { submitted = payload; return true; });
+  assert.equal(reopened.getArchitecture().nodes[0].technology, "React");
+  reopened.changeArchitecture(emptyArchitecture());
+  await reopened.submit();
+  assert.equal(submitted.architecture, null);
 });

@@ -1,4 +1,5 @@
 import type { SiteRecord } from "./types";
+import type { SiteArchitecture } from "./site-architecture";
 
 export interface PublicSitesResponse {
   sites: SiteRecord[];
@@ -47,6 +48,7 @@ export interface SitePayload {
   repoUrl: string | null;
   fallbackUrl: string | null;
   coverUrl: string | null;
+  architecture?: SiteArchitecture | null;
   coverMode: "iframe" | "text" | "gallery";
   sortOrder: number;
   isVisible: boolean;

@@ -1,3 +1,5 @@
+import type { SiteArchitecture } from "./site-architecture";
+
 export type SiteCategory = "web" | "landing" | "tool" | "other";
 
 export type CoverMode = "iframe" | "text" | "gallery";
@@ -17,6 +19,7 @@ export interface SiteRecord {
   repoUrl: string | null;
   fallbackUrl: string | null;
   coverUrl: string | null;
+  architecture?: SiteArchitecture | null;
   coverMode: CoverMode;
   sortOrder: number;
   isVisible: boolean;

@@ -1,0 +1,39 @@
+.architecture-details { --diagram-line: #768ba3; --diagram-panel: #141e2c; --diagram-text: #d4deea; display: grid; gap: 1.4rem; color: var(--diagram-text); font-size: .85rem; line-height: 1.7; }
+.architecture-details p { white-space: pre-wrap; overflow-wrap: anywhere; }
+.architecture-details h4 { margin: 0 0 .5rem; font-size: .9rem; font-weight: 600; }
+.architecture-diagram { overflow-x: auto; border: 1px solid #334054; border-radius: 8px; background: #0a111d; overscroll-behavior: contain; }
+.architecture-diagram svg { width: 100%; display: block; color: var(--diagram-line); }
+.architecture-node { fill: var(--diagram-panel); stroke: #526781; stroke-width: 1; }
+.architecture-node.is-frontend { stroke: #679fa7; }.architecture-node.is-backend { stroke: #ac85b7; }.architecture-node.is-data { stroke: #ba9d64; }
+.architecture-edge { fill: none; stroke: var(--diagram-line); stroke-width: 1.5; }
+.architecture-node__kind { fill: #9aabbf; font-size: 10px; }.architecture-node__label { fill: var(--diagram-text); font-size: 13px; }.architecture-node__tech { fill: #99b8c9; font-size: 10px; }
+.architecture-components, .architecture-notes { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.architecture-components section { padding: 1rem; border: 1px solid #2d3b4b; border-radius: 8px; background: #101926; }
+.architecture-caption { margin: 0 0 .25rem; color: #98aec2; font-size: .68rem; }
+.architecture-technologies { display: flex; flex-wrap: wrap; gap: .6rem; margin-bottom: .5rem; color: #abcad7; }
+.architecture-connections { display: grid; gap: .4rem; margin: 0; padding-left: 1.2rem; }
+.architecture-connections small { display: block; color: #a2b0c0; }
+.project-flip { perspective: 1800px; width: 100%; }
+.project-flip__rotor { position: relative; display: grid; transform-style: preserve-3d; transition: transform 720ms cubic-bezier(.22,.75,.18,1); }
+.project-flip[data-flipped="true"] .project-flip__rotor { transform: rotateY(180deg); }
+.project-flip__front { grid-area: 1 / 1; min-width: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; }
+.project-flip__back { position: absolute; inset: 0; min-width: 0; display: flex; flex-direction: column; transform: rotateY(180deg); backface-visibility: hidden; -webkit-backface-visibility: hidden; background: #0c1421; color: #d4deea; border: 1px solid #53647b; border-radius: 6px; box-shadow: 0 35px 80px #0007; }
+.project-flip__back header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.2rem; border-bottom: 1px solid #334054; }
+.project-flip__back header p { margin: 0 0 .25rem; color: #8ca7be; font-size: .65rem; letter-spacing: .12em; }
+.project-flip__back h3 { margin: 0; font-size: 1rem; }.project-flip__back button { flex: none; min-height: 44px; padding: .5rem .8rem; border: 1px solid #6a7c95; border-radius: 24px; font-size: .75rem; cursor: pointer; }
+.project-flip__body { min-height: 0; overflow: auto; overscroll-behavior: contain; padding: 1.2rem; touch-action: pan-x pan-y; }
+.project-flip__body:focus-visible, .architecture-diagram:focus-visible { outline: 2px solid #91c6ff; outline-offset: -3px; }
+.admin-architecture { display: grid; gap: 1rem; }
+.admin-architecture label { display: grid; gap: .4rem; min-width: 0; font-size: .8rem; }
+.admin-architecture__hint { font-size: .8rem; color: var(--muted); }
+.admin-architecture__heading { display: flex; justify-content: space-between; align-items: center; gap: .5rem; }
+.admin-architecture button { padding: .45rem .8rem; border: 1px solid var(--line); border-radius: 4px; min-height: 38px; cursor: pointer; font-size: .8rem; }
+.admin-architecture button:disabled { opacity: .45; cursor: default; }
+.admin-architecture__notes, .admin-architecture__node { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .8rem; }
+.admin-architecture__notes label:first-child { grid-column: 1 / -1; }
+.admin-architecture__node { padding: 1rem; border: 1px solid var(--line); background: #fffdf7; border-radius: 6px; }
+.admin-architecture__node button { justify-self: start; }
+.admin-architecture__edge { display: grid; grid-template-columns: 1fr 1fr 1.5fr auto; gap: .5rem; align-items: end; }
+.admin-architecture__preview summary { cursor: pointer; padding: .7rem 0; }.admin-architecture__preview .architecture-details { background: #0c1421; padding: 1rem; border-radius: 6px; }
+@media (max-width: 640px) { .architecture-components, .architecture-notes, .admin-architecture__node, .admin-architecture__notes { grid-template-columns: 1fr; }.admin-architecture__edge { grid-template-columns: 1fr 1fr; }.project-flip__body { padding: .8rem; } }
+@media (prefers-reduced-motion: reduce) { .project-flip__rotor { transition: none; } }

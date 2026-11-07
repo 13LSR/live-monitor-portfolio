@@ -1,6 +1,7 @@
 import type { SitePayload } from "../../shared/contracts";
 import type { SiteRecord } from "../../shared/types";
 import { isCoverUrl } from "../../shared/site-cover.ts";
+import { getArchitectureError, normalizeArchitecture, parseArchitecture } from "../../shared/site-architecture.ts";
 
 export interface NormalizedSiteStoragePayload {
   name: string;
@@ -16,6 +17,7 @@ export interface NormalizedSiteStoragePayload {
   repoUrl: string | null;
   fallbackUrl: string | null;
   coverUrl: string | null;
+  architectureJson: string | null;
   coverMode: SitePayload["coverMode"];
   sortOrder: number;
   isVisibleValue: 1 | 0;
@@ -37,6 +39,7 @@ interface SiteRowForMapping {
   repo_url?: string | null;
   fallback_url?: string | null;
   cover_url?: string | null;
+  architecture?: string | null;
   cover_mode: string;
   sort_order: number;
   is_visible: number;
@@ -134,7 +137,7 @@ export function getSitePayloadValidationError(
     return "Cover URL must be a valid http(s) image URL";
   }
 
-  return null;
+  return getArchitectureError(payload.architecture);
 }
 
 export function normalizeSitePayloadForStorage(
@@ -154,6 +157,7 @@ export function normalizeSitePayloadForStorage(
     repoUrl: normalizeOptionalUrl(payload.repoUrl),
     fallbackUrl: normalizeOptionalUrl(payload.fallbackUrl),
     coverUrl: normalizeOptionalUrl(payload.coverUrl ?? null),
+    architectureJson: normalizeArchitecture(payload.architecture) ? JSON.stringify(normalizeArchitecture(payload.architecture)) : null,
     coverMode: payload.coverMode,
     sortOrder: payload.sortOrder,
     isVisibleValue: payload.isVisible ? 1 : 0,
@@ -199,6 +203,7 @@ export function mapSiteRowToSiteRecord(row: SiteRowForMapping): SiteRecord {
     repoUrl: normalizeOptionalUrl(row.repo_url ?? null),
     fallbackUrl: normalizeOptionalUrl(row.fallback_url ?? null),
     coverUrl: isCoverUrl(row.cover_url) ? row.cover_url.trim() : null,
+    architecture: parseArchitecture(row.architecture),
     coverMode: row.cover_mode as SiteRecord["coverMode"],
     sortOrder: row.sort_order,
     isVisible: row.is_visible === 1,

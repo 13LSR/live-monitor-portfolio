@@ -1,5 +1,6 @@
 import type { SitePayload } from "@/shared/contracts";
 import { isCoverUrl } from "../../shared/site-cover.ts";
+import { getArchitectureError, normalizeArchitecture } from "../../shared/site-architecture.ts";
 
 interface NextSlugInput {
   currentSlug: string;
@@ -72,7 +73,7 @@ export function validateAdminSitePayload(payload: SitePayload) {
     return "请输入有效的 http:// 或 https:// 封面图片链接（最多 2048 字符）。";
   }
 
-  return null;
+  return getArchitectureError(payload.architecture);
 }
 
 export function buildSitePayloadForSubmit(payload: SitePayload): SitePayload {
@@ -89,6 +90,7 @@ export function buildSitePayloadForSubmit(payload: SitePayload): SitePayload {
     repoUrl: normalizeOptionalUrl(payload.repoUrl),
     fallbackUrl: normalizeOptionalUrl(payload.fallbackUrl),
     coverUrl: normalizeOptionalUrl(payload.coverUrl ?? null),
+    ...(payload.architecture !== undefined ? { architecture: normalizeArchitecture(payload.architecture) } : {}),
   };
 }
 

@@ -3,11 +3,15 @@ import "animal-island-ui/style";
 import "./globals.css";
 import "./_styles/immersive.css";
 import "./_styles/gallery.css";
+import "./_styles/architecture.css";
 import { PortfolioShell } from "@/app/_components/portfolio-shell";
+import { SITE_NAME, SITE_ORIGIN, SITE_DESCRIPTION } from "@/shared/site-identity";
+import { pageMetadata } from "@/app/_lib/page-metadata";
 
 export const metadata: Metadata = {
-  title: "小茄的网站作品集",
-  description: "收录站长正在运行的网站作品，也记录每一次认真完成的创作。",
+  ...pageMetadata(SITE_NAME, SITE_DESCRIPTION, "/"),
+  metadataBase: new URL(SITE_ORIGIN),
+  title: { default: SITE_NAME, template: `%s | ${SITE_NAME}` },
 };
 
 export default function RootLayout({

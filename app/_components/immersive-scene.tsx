@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { createPortal } from "react-dom";
 import type { createSceneRuntime } from "@/app/_lib/scene/scene-runtime";
 import { afterPaint } from "@/app/_lib/after-paint";
 import { introSession } from "@/app/_lib/scene/intro-session";
@@ -9,6 +10,7 @@ import type { SceneView } from "@/app/_lib/scene/camera-flight";
 import { HomeGallery } from "@/app/_components/home-gallery";
 import { usePortfolioData } from "@/app/_components/portfolio-data";
 import type { NpcDialogue } from "@/app/_lib/scene/scene-npcs";
+import { isQualityMode, QUALITY_LABELS, QUALITY_STORAGE_KEY, type QualityMode, type SceneQuality } from "@/app/_lib/scene/scene-quality";
 
 const directions = [
   { key: "w", arrow: "↑", label: "向前" },
@@ -28,6 +30,8 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
   const [unavailable, setUnavailable] = useState(false);
   const [pressedKeys, setPressedKeys] = useState<string[]>([]);
   const [dialogue, setDialogue] = useState<NpcDialogue | null>(null);
+  const [qualityMode, setQualityMode] = useState<QualityMode>("auto");
+  const [quality, setQuality] = useState<SceneQuality>("high");
   const tutorialVisible = view === "home" && countdown > 0;
 
   useEffect(() => {
@@ -39,11 +43,14 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
     const cancelStart = afterPaint(() => {
       void import("@/app/_lib/scene/scene-runtime").then(({ createSceneRuntime }) => {
         if (cancelled) return;
+        let storedQuality: QualityMode = "auto";
+        try { const saved = localStorage.getItem(QUALITY_STORAGE_KEY); if (isQualityMode(saved)) storedQuality = saved; } catch { /* Storage can be disabled. */ }
         runtime.current = createSceneRuntime(host, {
           onReady: () => { setReady(true); setPressedKeys([]); },
           onKeys: setPressedKeys,
           onDialogue: setDialogue,
-        }, initialView.current);
+          onQualityChange: (level, mode) => { setQuality(level); setQualityMode(mode); },
+        }, initialView.current, storedQuality);
       }).catch((error) => {
         if (cancelled) return;
         console.error("3D 场景暂时无法启动", error);
@@ -79,6 +86,10 @@ export function ImmersiveScene({ view }: { view: SceneView }) {
 
   return (
     <section ref={hostRef} data-view={view} className={`immersive-scene${tutorialVisible ? " is-tutorial" : ""}${unavailable ? " is-unavailable" : ""}`} aria-label="3D 创作空间">
+      {ready && !unavailable && !tutorialVisible && createPortal(<label className="scene-quality-control"><span>画质</span><select aria-label="3D 画质" value={qualityMode}
+        onChange={(event) => { const mode = event.currentTarget.value; if (!isQualityMode(mode)) return; runtime.current?.setQualityMode(mode); try { localStorage.setItem(QUALITY_STORAGE_KEY, mode); } catch { /* Keep the session preference. */ } }}>
+        {(Object.keys(QUALITY_LABELS) as QualityMode[]).map((mode) => <option key={mode} value={mode}>{mode === "auto" ? `自动 · ${QUALITY_LABELS[quality]}` : QUALITY_LABELS[mode]}</option>)}
+      </select></label>, document.body)}
       <div className="scene-vignette" aria-hidden="true" />
       <div className="scene-scanlines" aria-hidden="true" />
       <HomeGallery active={view === "home" && !tutorialVisible} />

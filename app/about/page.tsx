@@ -1,5 +1,8 @@
 import Link from "next/link";
 import { SiteNav } from "@/app/_components/site-nav";
+import { pageMetadata } from "@/app/_lib/page-metadata";
+
+export const metadata = pageMetadata("关于小茄", "认识独立创作者小茄：关注网站、在线工具与 AI 应用，喜欢把好奇心做成可以体验的作品。", "/about");
 
 export default function AboutPage() {
   return (

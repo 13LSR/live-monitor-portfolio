@@ -134,6 +134,9 @@ export function createStarfield(scene: THREE.Scene, compact: boolean, reducedMot
   let disposed = false;
 
   return {
+    setDensity(fraction: number) {
+      geometry.setDrawRange(0, Math.max(1, Math.round(count * THREE.MathUtils.clamp(fraction, .1, 1))));
+    },
     update(dt: number, reveal: number) {
       if (disposed) return;
       if (!reducedMotion) material.uniforms.uTime.value += Math.max(0, Math.min(dt, 0.04));

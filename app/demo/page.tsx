@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 export const metadata: Metadata = {
-  title: "评审导览 · 小茄的网站作品集",
+  robots: { index: false, follow: false },
+  alternates: { canonical: null },
+  openGraph: null,
+  twitter: null,
+  title: "评审导览",
   description:
     "60秒快速了解活体网站作品集的核心创新、推荐体验顺序和技术架构。",
 };

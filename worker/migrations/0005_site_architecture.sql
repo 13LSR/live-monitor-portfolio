@@ -1,0 +1,1 @@
+ALTER TABLE sites ADD COLUMN architecture TEXT DEFAULT NULL;

@@ -13,6 +13,7 @@ export function createSceneEffects(renderer: THREE.WebGLRenderer, scene: THREE.S
   composer.addPass(output);
   return {
     resize(width: number, height: number) {
+      composer.setPixelRatio(renderer.getPixelRatio());
       composer.setSize(width, height);
       bloom.setSize(Math.floor(width * renderer.getPixelRatio() / 2), Math.floor(height * renderer.getPixelRatio() / 2));
     },

@@ -285,6 +285,9 @@
   .immersive-scene__controls { top: 10rem; gap: 1.5rem; }
 }
 
+.scene-quality-control { position: fixed; z-index: 8; top: 5rem; right: clamp(.75rem, 2vw, 2rem); display: flex; align-items: center; gap: .45rem; color: #aeb8c9; font-size: .65rem; pointer-events: auto; }
+.scene-quality-control select { max-width: 8rem; min-height: 36px; padding: .3rem .5rem; border: 1px solid #56627880; border-radius: 6px; background: #0c1421; color: #d0dae7; font: inherit; cursor: pointer; }
+@media (max-width: 767px) { .scene-quality-control { top: 4.4rem; }.scene-quality-control > span { display: none; } }
 @media (prefers-reduced-motion: reduce) {
   .scene-scanlines { display: none; }
   .scene-dialogue { animation: none; }

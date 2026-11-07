@@ -35,6 +35,7 @@ export function PortfolioShowcase({ sites }: PortfolioShowcaseProps) {
   }, [pageCount, orderedSites, selectSite]);
 
   const onTouchStart = (event: React.TouchEvent<HTMLDivElement>) => {
+    if (event.target instanceof Element && event.target.closest('.project-flip[data-flipped="true"]')) { touchStart.current = null; return; }
     const touch = event.changedTouches[0];
     touchStart.current = touch ? { x: touch.clientX, y: touch.clientY } : null;
   };
@@ -50,6 +51,7 @@ export function PortfolioShowcase({ sites }: PortfolioShowcaseProps) {
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.ctrlKey || event.metaKey || event.altKey || event.repeat) return;
+      if (event.target instanceof Element && event.target.closest('.project-flip[data-flipped="true"]')) return;
       if (event.target instanceof HTMLElement && event.target.closest("input, textarea, select, [contenteditable='true'], [role='dialog']")) return;
       if (["ArrowRight", "ArrowDown", "PageDown"].includes(event.key)) {
         event.preventDefault();
@@ -68,6 +70,7 @@ export function PortfolioShowcase({ sites }: PortfolioShowcaseProps) {
     if (!showcase || pageCount < 2) return;
     const onWheel = (event: WheelEvent) => {
       if (event.ctrlKey) return;
+      if (event.target instanceof Element && event.target.closest('.project-flip[data-flipped="true"]')) return;
       const delta = Math.abs(event.deltaX) > Math.abs(event.deltaY) ? event.deltaX : event.deltaY;
       if (!delta) return;
       event.preventDefault();
@@ -96,6 +99,7 @@ export function PortfolioShowcase({ sites }: PortfolioShowcaseProps) {
     if (!stage || window.matchMedia("(prefers-reduced-motion: reduce), (pointer: coarse)").matches) return;
     let frame = 0;
     const move = (event: PointerEvent) => {
+      if (event.target instanceof Element && event.target.closest('.project-flip[data-flipped="true"]')) { reset(); return; }
       cancelAnimationFrame(frame);
       frame = requestAnimationFrame(() => {
         const rect = stage.getBoundingClientRect();

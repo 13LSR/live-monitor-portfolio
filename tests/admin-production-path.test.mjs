@@ -583,6 +583,7 @@ describe("admin production API path", () => {
       "0002_portfolio_fields.sql",
       "0003_login_attempts.sql",
       "0004_site_cover.sql",
+      "0005_site_architecture.sql",
     ]);
     assert.ok(statements.length > 0);
     assert.equal(
@@ -901,6 +902,7 @@ describe("admin production API path", () => {
     };
 
     assert.deepEqual(normalizeSitePayloadForStorage(validPayload), {
+      architectureJson: null,
       name: "Demo",
       slug: "demo",
       url: "https://example.com",
@@ -1037,6 +1039,7 @@ describe("admin production API path", () => {
       )
     );
     db.exec(readFileSync(join(root, "worker/migrations/0004_site_cover.sql"), "utf8"));
+    db.exec(readFileSync(join(root, "worker/migrations/0005_site_architecture.sql"), "utf8"));
     const env = createSqliteD1Env(db);
     const payload = {
       name: " Demo ",
@@ -1099,6 +1102,7 @@ describe("admin production API path", () => {
       )
     );
     db.exec(readFileSync(join(root, "worker/migrations/0004_site_cover.sql"), "utf8"));
+    db.exec(readFileSync(join(root, "worker/migrations/0005_site_architecture.sql"), "utf8"));
     const env = createSqliteD1Env(db);
 
     await insertSite(env, {

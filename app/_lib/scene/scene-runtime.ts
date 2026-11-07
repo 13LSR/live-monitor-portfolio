@@ -8,11 +8,13 @@ import { createWorldGalleryProjection } from "./world-gallery";
 import { createStarfield } from "./starfield";
 import { createNpcRuntime } from "./npc-runtime";
 import type { NpcDialogue } from "./scene-npcs";
+import { createQualityController, QUALITY_SETTINGS, type QualityMode, type SceneQuality } from "./scene-quality.ts";
 
 interface SceneCallbacks {
   onReady(): void;
   onKeys(keys: string[]): void;
   onDialogue(dialogue: NpcDialogue | null): void;
+  onQualityChange?(quality: SceneQuality, mode: QualityMode): void;
 }
 
 const KEY_MAP: Record<string, string> = {
@@ -21,9 +23,10 @@ const KEY_MAP: Record<string, string> = {
 };
 const UP = new THREE.Vector3(0, 1, 0);
 
-export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbacks, initialView: SceneView = "home") {
+export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbacks, initialView: SceneView = "home", initialQuality: QualityMode = "auto") {
   const compact = window.matchMedia("(max-width: 767px)").matches;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const qualityController = createQualityController(compact, initialQuality, applyQuality);
   // A three-quarter opening leaves the left-hand signs clear of the HUD.
   // Narrow screens use a shallower angle to keep the plaza in view.
   const initialYaw = compact ? 0.06 : Math.min(Math.PI / 5, Math.max(0.18, (window.innerWidth / window.innerHeight - 0.5) * 0.42));
@@ -47,6 +50,7 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   const starfield = createStarfield(scene, compact, reducedMotion);
   const npcs = createNpcRuntime(scene, city.obstacles, { reducedMotion, onDialogue: callbacks.onDialogue, deferLoading: true });
   let effects: ReturnType<typeof createSceneEffects> | undefined;
+  let effectsLoading = false;
 
   scene.add(new THREE.HemisphereLight("#bbd4f4", "#17142d", 1.25));
   const keyLight = new THREE.DirectionalLight("#eef2ff", 2.8);
@@ -107,6 +111,27 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   const npcOverlay = host.querySelector<HTMLElement>(".scene-npc-overlay");
   let viewportWidth = 0;
   let viewportHeight = 0;
+
+  function syncEffects() {
+    if (!QUALITY_SETTINGS[qualityController.quality].bloom) { effects?.dispose(); effects = undefined; return; }
+    if (!firstFrameRendered || disposed || effects || effectsLoading) return;
+    effectsLoading = true;
+    void import("./scene-effects").then(({ createSceneEffects }) => {
+      if (disposed || !QUALITY_SETTINGS[qualityController.quality].bloom) return;
+      effects = createSceneEffects(renderer, scene, camera);
+      effects.resize(viewportWidth, viewportHeight);
+      qualityController.reset();
+    }).catch(() => { /* The base renderer remains usable without bloom. */ }).finally(() => { effectsLoading = false; });
+  }
+  function applyQuality(quality: SceneQuality, mode: QualityMode) {
+    const settings = QUALITY_SETTINGS[quality];
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, settings.pixelRatio));
+    city.setReflection(settings.reflectionSize);
+    starfield.setDensity(settings.starFraction);
+    resize();
+    syncEffects();
+    callbacks.onQualityChange?.(quality, mode);
+  }
 
   function destination() {
     if (view === "works") {
@@ -306,7 +331,9 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   const animate = (time: number) => {
     if (disposed || document.hidden) return;
     frame = window.requestAnimationFrame(animate);
-    const dt = Math.min((time - (lastTime || time)) / 1000, 0.04);
+    const frameTime = time - (lastTime || time);
+    if (lastTime && !flying && introSession.getSnapshot() === 0) qualityController.sample(frameTime);
+    const dt = Math.min(frameTime / 1000, 0.04);
     lastTime = time;
     const complete = introSession.getSnapshot() === 0;
     reveal = THREE.MathUtils.damp(reveal, complete ? 1 : 0, 3.2, dt);
@@ -369,16 +396,11 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
       firstFrameRendered = true;
       callbacks.onReady();
       startModels();
-      cancelEffectStart = afterPaint(() => {
-        void import("./scene-effects").then(({ createSceneEffects }) => {
-          if (disposed) return;
-          effects = createSceneEffects(renderer, scene, camera);
-          effects.resize(viewportWidth, viewportHeight);
-        }).catch(() => { /* The base renderer remains usable without bloom. */ });
-      });
+      cancelEffectStart = afterPaint(syncEffects);
     }
   };
   const onVisibilityChange = () => {
+    qualityController.reset();
     clearKeys();
     window.cancelAnimationFrame(frame);
     lastTime = 0;
@@ -399,11 +421,12 @@ export function createSceneRuntime(host: HTMLDivElement, callbacks: SceneCallbac
   renderer.domElement.addEventListener("pointercancel", onPointerCancel);
   const observer = new ResizeObserver(resize);
   observer.observe(host);
-  resize();
+  applyQuality(qualityController.quality, qualityController.mode);
   frame = window.requestAnimationFrame(animate);
 
   return {
     setView,
+    setQualityMode: qualityController.setMode,
     interact,
     dispose() {
       disposed = true;

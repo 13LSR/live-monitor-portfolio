@@ -18,6 +18,7 @@ export interface SiteRow {
   repo_url: string | null;
   fallback_url: string | null;
   cover_url: string | null;
+  architecture: string | null;
   cover_mode: string;
   sort_order: number;
   is_visible: number;
@@ -29,10 +30,10 @@ export interface SiteRow {
 export async function listSites(env: Env, includeHidden = false) {
   const statement = env.DB.prepare(
     includeHidden
-      ? `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_url, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
+      ? `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_url, architecture, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
          FROM sites
          ORDER BY sort_order ASC, id ASC`
-      : `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_url, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
+      : `SELECT id, name, slug, url, monitor_key, category, description, summary, tags, tech_stack, is_featured, repo_url, fallback_url, cover_url, architecture, cover_mode, sort_order, is_visible, allow_interaction, created_at, updated_at
          FROM sites
          WHERE is_visible = 1
          ORDER BY sort_order ASC, id ASC`
@@ -48,9 +49,9 @@ export async function insertSite(env: Env, payload: SitePayload) {
   return env.DB.prepare(
     `INSERT INTO sites (
       name, slug, url, monitor_key, category, description, summary, tags,
-      tech_stack, is_featured, repo_url, fallback_url, cover_url, cover_mode, sort_order,
+      tech_stack, is_featured, repo_url, fallback_url, cover_url, architecture, cover_mode, sort_order,
       is_visible, allow_interaction, created_at, updated_at
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
   )
     .bind(
       normalized.name,
@@ -66,6 +67,7 @@ export async function insertSite(env: Env, payload: SitePayload) {
       normalized.repoUrl,
       normalized.fallbackUrl,
       normalized.coverUrl,
+      normalized.architectureJson,
       normalized.coverMode,
       normalized.sortOrder,
       normalized.isVisibleValue,
@@ -88,7 +90,8 @@ export async function updateSiteById(
     `UPDATE sites
      SET name = ?, slug = ?, url = ?, monitor_key = ?, category = ?, description = ?,
          summary = ?, tags = ?, tech_stack = ?, is_featured = ?, repo_url = ?,
-         fallback_url = ?, cover_url = ?, cover_mode = ?, sort_order = ?, is_visible = ?,
+         fallback_url = ?, cover_url = ?, architecture = CASE WHEN ? = 1 THEN ? ELSE architecture END,
+         cover_mode = ?, sort_order = ?, is_visible = ?,
          allow_interaction = ?, updated_at = ?
      WHERE id = ?`
   )
@@ -106,6 +109,8 @@ export async function updateSiteById(
       normalized.repoUrl,
       normalized.fallbackUrl,
       normalized.coverUrl,
+      payload.architecture === undefined ? 0 : 1,
+      normalized.architectureJson,
       normalized.coverMode,
       normalized.sortOrder,
       normalized.isVisibleValue,

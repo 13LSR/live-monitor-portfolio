@@ -6,14 +6,62 @@ on:
       - main
   workflow_dispatch:
 
+concurrency:
+  group: portfolio-production
+  cancel-in-progress: false
+
 jobs:
   checks:
     uses: ./.github/workflows/ci.yml
     permissions:
       contents: read
 
-  deploy:
+  deploy-api:
     needs: checks
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - name: Validate deployment credentials
+        shell: bash
+        env:
+          WORKER_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_API_TOKEN }}
+          WORKER_ACCOUNT: ${{ secrets.CLOUDFLARE_WORKER_ACCOUNT_ID }}
+          PAGES_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          PAGES_ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          PAGES_PROJECT: ${{ vars.CLOUDFLARE_PAGES_PROJECT_NAME }}
+        run: |
+          for key in WORKER_TOKEN WORKER_ACCOUNT PAGES_TOKEN PAGES_ACCOUNT PAGES_PROJECT; do
+            if [ -z "${!key}" ]; then
+              echo "::error::Missing deployment configuration: $key. No migration or deployment was started."
+              exit 1
+            fi
+          done
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: worker/package-lock.json
+      - name: Install Worker dependencies
+        run: npm ci --prefix worker
+      - name: Apply D1 migrations
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_WORKER_ACCOUNT_ID }}
+        run: npx --no-install wrangler d1 migrations apply live-monitor-portfolio --remote
+      - name: Deploy Worker
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_WORKER_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_WORKER_ACCOUNT_ID }}
+        run: npx --no-install wrangler deploy
+
+  deploy:
+    needs: [checks, deploy-api]
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
       contents: read

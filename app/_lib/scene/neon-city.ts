@@ -203,6 +203,11 @@ export function createNeonCity(scene: THREE.Scene, compact: boolean) {
   floor.rotation.x = -Math.PI / 2;
   floor.position.y = -0.035;
   scene.add(floor);
+  const matteFloor = new THREE.Mesh(new THREE.PlaneGeometry(220, 220), new THREE.MeshStandardMaterial({ color: "#101724", roughness: .9 }));
+  matteFloor.rotation.copy(floor.rotation);
+  matteFloor.position.copy(floor.position);
+  matteFloor.visible = false;
+  scene.add(matteFloor);
   // Fine surface grain softens the reflection without another render target.
   const surface = new THREE.Mesh(new THREE.PlaneGeometry(220, 220), new THREE.ShaderMaterial({
     transparent: true,
@@ -229,6 +234,11 @@ export function createNeonCity(scene: THREE.Scene, compact: boolean) {
 
   return {
     obstacles,
+    setReflection(size: number) {
+      floor.visible = size > 0;
+      matteFloor.visible = size === 0;
+      if (size > 0) floor.getRenderTarget().setSize(size, size);
+    },
     update(progress: number, revealed: number) {
       ringMaterial.uniforms.progress.value = progress;
       ringMaterial.uniforms.opacity.value = 0.85 * (1 - revealed);

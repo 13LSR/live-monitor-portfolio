@@ -15,6 +15,7 @@ import { SiteCover } from "@/app/_components/site-cover";
 import { TechStackLabel } from "@/app/_components/tech-stack-label";
 import { TECH_STACK_SUGGESTIONS } from "@/shared/tech-stack";
 import type { SiteRecord } from "@/shared/types";
+import { AdminArchitectureEditor } from "./admin-architecture-editor";
 
 const emptyForm: SitePayload = {
   name: "",
@@ -30,6 +31,7 @@ const emptyForm: SitePayload = {
   repoUrl: null,
   fallbackUrl: null,
   coverUrl: DEFAULT_COVER_URL,
+  architecture: null,
   coverMode: "iframe",
   sortOrder: 0,
   isVisible: true,
@@ -383,6 +385,7 @@ export function AdminSiteForm({
         </ToggleCard>
       </Card>
 
+      <AdminArchitectureEditor value={form.architecture ?? null} onChange={(value) => updateField("architecture", value)} pending={pending} />
       <fieldset className="admin-editor__section" disabled={pending}>
         <legend>封面与展示</legend>
       <Field label="封面图片链接" hint="粘贴图床图片直链；留空使用默认随机图片。建议使用固定的 HTTPS 图片链接。">
@@ -591,6 +594,7 @@ function getFormState(initialSite?: SiteRecord | null): SitePayload {
     repoUrl: initialSite.repoUrl,
     fallbackUrl: initialSite.fallbackUrl,
     coverUrl: initialSite.coverUrl ?? null,
+    architecture: initialSite.architecture ?? null,
     coverMode: initialSite.coverMode,
     sortOrder: initialSite.sortOrder,
     isVisible: initialSite.isVisible,

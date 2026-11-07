@@ -5,6 +5,7 @@ import type { SiteWithStatus } from "@/app/_lib/site-mappers";
 import { ProjectPreview } from "@/app/_components/project-preview";
 import { usePageVisibility } from "@/app/_components/use-page-visibility";
 import { TechStackLabel } from "@/app/_components/tech-stack-label";
+import { ArchitectureDetails } from "./architecture-details";
 
 interface PortfolioProjectProps {
   site: SiteWithStatus;
@@ -30,7 +31,15 @@ export function PortfolioProject({
   const pageVisible = usePageVisibility();
   const [loadedFrameUrl, setLoadedFrameUrl] = useState<string | null>(null);
   const [interactionEnabled, setInteractionEnabled] = useState(false);
-  const interactionActive = interactionEnabled && site.allowInteraction;
+  const [flipped, setFlipped] = useState(false);
+  const flipButtonRef = useRef<HTMLButtonElement>(null);
+  const backButtonRef = useRef<HTMLButtonElement>(null);
+  const interactionActive = interactionEnabled && site.allowInteraction && !flipped;
+  const flip = (next: boolean) => {
+    setFlipped(next);
+    setInteractionEnabled(false);
+    requestAnimationFrame(() => (next ? backButtonRef : flipButtonRef).current?.focus({ preventScroll: true }));
+  };
   const frameLoaded = loadedFrameUrl === site.url;
   const isOffline = site.status.isOnline === false;
   const fallbackVisitUrl = site.fallbackUrl ?? site.url;
@@ -76,6 +85,11 @@ export function PortfolioProject({
   }, []);
 
   return (
+    <div className="project-flip" data-flipped={flipped} onKeyDown={(event) => {
+      if (flipped && event.key === "Escape") { event.stopPropagation(); flip(false); }
+    }}>
+    <div className="project-flip__rotor">
+    <div className="project-flip__front" inert={flipped} aria-hidden={flipped}>
     <article
       ref={projectRef}
       className={`portfolio-project${isVisible ? " is-visible" : ""}${
@@ -110,7 +124,7 @@ export function PortfolioProject({
       <div className="portfolio-project__preview">
         <ProjectPreview
           site={site}
-          active={(isNearViewport && pageVisible && !isOffline) || interactionActive}
+          active={!flipped && ((isNearViewport && pageVisible && !isOffline) || interactionActive)}
           interactionEnabled={interactionActive}
           onLoadedChange={onLoadedChange}
         />
@@ -148,6 +162,7 @@ export function PortfolioProject({
           ) : null}
         </div>
         <div className="portfolio-project__actions">
+          {site.architecture ? <button ref={flipButtonRef} type="button" aria-expanded={flipped} onClick={() => flip(true)}>架构详情 <span aria-hidden="true">↻</span></button> : null}
           {site.repoUrl ? (
             <a href={site.repoUrl} target="_blank" rel="noreferrer">
               查看源码
@@ -175,5 +190,14 @@ export function PortfolioProject({
         </div>
       </div>
     </article>
+    </div>
+    {site.architecture ? <section className="project-flip__back" inert={!flipped} aria-hidden={!flipped} aria-label={`${site.name}的架构详情`}>
+      <header><div><p>BEHIND THE BUILD</p><h3>{site.name} · 架构详情</h3></div><button ref={backButtonRef} type="button" onClick={() => flip(false)}>返回作品 ↶</button></header>
+      <div className="project-flip__body" tabIndex={flipped ? 0 : -1} role="region" aria-label="架构详情内容，可滚动阅读">
+        {flipped && <ArchitectureDetails value={site.architecture} />}
+      </div>
+    </section> : null}
+    </div>
+    </div>
   );
 }
